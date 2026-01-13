@@ -1,5 +1,5 @@
 # CMake build script for ZeroMQ tests
-cmake_minimum_required(VERSION "2.8.1")
+cmake_minimum_required(VERSION 3.10)
 
 # On Windows: solution file will be called tests.sln
 project(tests)
@@ -182,7 +182,7 @@ foreach(test ${tests})
   else()
     # per-test directories not generated on OS X / Darwin
     if(NOT APPLE)
-      link_directories(${test} PRIVATE "${ZeroMQ_SOURCE_DIR}/../lib")
+      link_directories(${test} PRIVATE "${CMAKE_SOURCE_DIR}/../lib")
     endif()
   endif()
 

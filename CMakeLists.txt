@@ -1,7 +1,7 @@
 # CMake build script for ZeroMQ (zlink distribution)
 
 # Set minimum CMake version before project()
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.10)
 
 # Enable VERSION in project() command
 if(POLICY CMP0048)
