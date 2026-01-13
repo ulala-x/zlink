@@ -5,6 +5,9 @@
 
 #include "precompiled.hpp"
 #include <string.h>
+#ifdef __GLIBC__
+#include <features.h>
+#endif
 
 #ifdef ZMQ_HAVE_WINDOWS
 #define strcasecmp _stricmp
@@ -13,7 +16,15 @@
 #ifndef ZMQ_HAVE_STRLCPY
 #ifdef ZMQ_HAVE_LIBBSD
 #include <bsd/string.h>
+#define ZMQ_HAVE_STRLCPY 1
 #else
+#if defined(__GLIBC__) && defined(__GLIBC_PREREQ) && __GLIBC_PREREQ(2, 38)
+#define ZMQ_HAVE_STRLCPY 1
+#endif
+#endif
+#endif
+
+#ifndef ZMQ_HAVE_STRLCPY
 static inline size_t
 strlcpy (char *dest_, const char *src_, const size_t dest_size_)
 {
@@ -24,7 +35,6 @@ strlcpy (char *dest_, const char *src_, const size_t dest_size_)
     return dest_size_ - remain;
 }
 #endif
-#endif
 template <size_t size>
 static inline int strcpy_s (char (&dest_)[size], const char *const src_)
 {
@@ -33,7 +43,7 @@ static inline int strcpy_s (char (&dest_)[size], const char *const src_)
 }
 #endif
 
-#ifndef HAVE_STRNLEN
+#if !defined(HAVE_STRNLEN) && !defined(__GLIBC__)
 static inline size_t strnlen (const char *s, size_t len)
 {
     for (size_t i = 0; i < len; i++) {

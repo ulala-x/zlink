@@ -219,6 +219,11 @@ bool zmq::pipe_t::check_write ()
     return true;
 }
 
+bool zmq::pipe_t::is_active () const
+{
+    return _state == active;
+}
+
 bool zmq::pipe_t::write (const msg_t *msg_)
 {
     if (unlikely (!check_write ()))

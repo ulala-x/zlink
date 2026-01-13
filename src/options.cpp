@@ -145,8 +145,8 @@ zmq::options_t::options_t () :
     recovery_ivl (10000),
     multicast_hops (1),
     multicast_maxtpdu (1500),
-    sndbuf (-1),
-    rcvbuf (-1),
+    sndbuf (524288),  // 512KB default for better throughput
+    rcvbuf (524288),  // 512KB default for better throughput
     tos (0),
     priority (0),
     type (-1),
@@ -184,6 +184,9 @@ zmq::options_t::options_t () :
     in_batch_size (8192),
     out_batch_size (8192),
     monitor_event_version (1),
+    can_send_hello_msg (false),
+    can_recv_disconnect_msg (false),
+    can_recv_hiccup_msg (false),
     busy_poll (0)
 #ifdef ZMQ_HAVE_TLS
     ,

@@ -21,7 +21,7 @@
 #endif
 
 // XSI vector I/O
-#if defined ZMQ_HAVE_UIO
+#if defined ZMQ_HAVE_UIO || defined(__linux__)
 #include <sys/uio.h>
 #else
 struct iovec

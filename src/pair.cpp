@@ -29,10 +29,18 @@ void zmq::pair_t::xattach_pipe (pipe_t *pipe_,
 
     //  ZMQ_PAIR socket can only be connected to a single peer.
     //  The socket rejects any further connection requests.
-    if (_pipe == NULL)
+    if (_pipe == NULL) {
         _pipe = pipe_;
-    else
-        pipe_->terminate (false);
+        return;
+    }
+
+    if (!_pipe->is_active ()) {
+        _pipe->terminate (false);
+        _pipe = pipe_;
+        return;
+    }
+
+    pipe_->terminate (false);
 }
 
 void zmq::pair_t::xpipe_terminated (pipe_t *pipe_)

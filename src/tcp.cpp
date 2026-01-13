@@ -56,6 +56,22 @@ int zmq::set_tcp_send_buffer (fd_t sockfd_, int bufsize_)
       setsockopt (sockfd_, SOL_SOCKET, SO_SNDBUF,
                   reinterpret_cast<char *> (&bufsize_), sizeof bufsize_);
     assert_success_or_recoverable (sockfd_, rc);
+
+#ifndef NDEBUG
+    // Log actual buffer size after setting (may differ from requested)
+    if (rc == 0) {
+        int actual_bufsize = 0;
+        socklen_t optlen = sizeof (actual_bufsize);
+        const int get_rc = getsockopt (sockfd_, SOL_SOCKET, SO_SNDBUF,
+                                       reinterpret_cast<char *> (&actual_bufsize),
+                                       &optlen);
+        if (get_rc == 0) {
+            fprintf (stderr, "[TCP] SO_SNDBUF: requested=%d, actual=%d\n",
+                     bufsize_, actual_bufsize);
+        }
+    }
+#endif
+
     return rc;
 }
 
@@ -65,6 +81,22 @@ int zmq::set_tcp_receive_buffer (fd_t sockfd_, int bufsize_)
       setsockopt (sockfd_, SOL_SOCKET, SO_RCVBUF,
                   reinterpret_cast<char *> (&bufsize_), sizeof bufsize_);
     assert_success_or_recoverable (sockfd_, rc);
+
+#ifndef NDEBUG
+    // Log actual buffer size after setting (may differ from requested)
+    if (rc == 0) {
+        int actual_bufsize = 0;
+        socklen_t optlen = sizeof (actual_bufsize);
+        const int get_rc = getsockopt (sockfd_, SOL_SOCKET, SO_RCVBUF,
+                                       reinterpret_cast<char *> (&actual_bufsize),
+                                       &optlen);
+        if (get_rc == 0) {
+            fprintf (stderr, "[TCP] SO_RCVBUF: requested=%d, actual=%d\n",
+                     bufsize_, actual_bufsize);
+        }
+    }
+#endif
+
     return rc;
 }
 

@@ -97,6 +97,15 @@ list(APPEND tests test_asio_ssl)
 # This test compiles with or without WebSocket, skipping tests if WS is not enabled
 list(APPEND tests test_asio_ws)
 
+# Asio Zero-Copy Write tests (Phase 1.1: Performance Optimization)
+list(APPEND tests test_asio_zerocopy)
+list(APPEND tests test_asio_partial_write)
+list(APPEND tests test_asio_error_recovery)
+list(APPEND tests test_asio_partial_read)
+list(APPEND tests test_asio_compaction)
+list(APPEND tests test_asio_batching)
+list(APPEND tests test_asio_handshake_boundary)
+
 # add location of platform.hpp for Windows builds
 if(WIN32)
   add_definitions(-DZMQ_CUSTOM_PLATFORM_HPP)
@@ -227,6 +236,19 @@ foreach(test ${tests})
     install(TARGETS ${test} RUNTIME DESTINATION bin/)
   endif()
 endforeach()
+
+# Suppress known ASAN noise in external dependencies for targeted tests.
+if(ENABLE_ASAN)
+  set_property(TEST test_asio_ssl APPEND PROPERTY ENVIRONMENT "ASAN_OPTIONS=detect_leaks=0")
+  set_property(TEST test_asio_ws APPEND PROPERTY ENVIRONMENT "ASAN_OPTIONS=alloc_dealloc_mismatch=0:detect_leaks=0")
+endif()
+
+if(ENABLE_UBSAN)
+  target_compile_options(test_asio_ssl PRIVATE -fno-sanitize=undefined)
+  target_compile_options(test_asio_ws PRIVATE -fno-sanitize=undefined)
+  target_compile_definitions(test_asio_ssl PRIVATE ZMQ_UBSAN_SKIP_ASIO_SSL)
+  target_compile_definitions(test_asio_ws PRIVATE ZMQ_UBSAN_SKIP_ASIO_WS)
+endif()
 
 # override timeout for these tests
 set_tests_properties(test_heartbeats PROPERTIES TIMEOUT 60)

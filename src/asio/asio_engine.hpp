@@ -104,6 +104,12 @@ class asio_engine_t : public i_engine
     //  Start asynchronous write operation
     void start_async_write ();
 
+#ifdef ZMQ_ASIO_WRITE_BATCHING
+    //  Start batching timer for small writes
+    void start_batch_timer ();
+    void on_batch_timer (const boost::system::error_code &ec);
+#endif
+
     //  Handle read completion
     void on_read_complete (const boost::system::error_code &ec,
                            std::size_t bytes_transferred);
@@ -111,6 +117,12 @@ class asio_engine_t : public i_engine
     //  Handle write completion
     void on_write_complete (const boost::system::error_code &ec,
                             std::size_t bytes_transferred);
+
+#ifdef ZMQ_ASIO_ZEROCOPY_WRITE
+    //  Handle zero-copy write completion
+    void on_zerocopy_write_complete (const boost::system::error_code &ec,
+                                     std::size_t bytes_transferred);
+#endif
 
     //  Set up handshake timer
     void set_handshake_timer ();
@@ -214,6 +226,9 @@ class asio_engine_t : public i_engine
 
     //  Timers for handshake and heartbeat (allocated during plug())
     std::unique_ptr<boost::asio::steady_timer> _timer;
+#ifdef ZMQ_ASIO_WRITE_BATCHING
+    std::unique_ptr<boost::asio::steady_timer> _batch_timer;
+#endif
 
     //  Current timer ID
     int _current_timer_id;
@@ -255,6 +270,28 @@ class asio_engine_t : public i_engine
 
     //  Socket
     zmq::socket_base_t *_socket;
+
+#ifdef ZMQ_ASIO_WRITE_BATCHING
+    bool _batch_timer_active;
+    size_t _write_batch_max_bytes;
+    size_t _write_batch_max_messages;
+    int _write_batch_timeout_us;
+    bool _write_batching_enabled;
+#endif
+#ifdef ZMQ_ASIO_LAZY_COMPACT
+    bool _lazy_compact_enabled;
+#endif
+#ifdef ZMQ_ASIO_ZEROCOPY_WRITE
+    //  True if current write operation is using zero-copy path
+    bool _using_zerocopy;
+    size_t _zerocopy_header_size;
+    const unsigned char *_zerocopy_body;
+    size_t _zerocopy_body_size;
+    bool _zerocopy_write_enabled;
+#endif
+#ifdef ZMQ_ASIO_HANDSHAKE_ZEROCOPY
+    bool _handshake_zerocopy_enabled;
+#endif
 
     ZMQ_NON_COPYABLE_NOR_MOVABLE (asio_engine_t)
 };

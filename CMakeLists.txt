@@ -76,12 +76,24 @@ if(ENABLE_UBSAN)
   message(STATUS "Instrumenting with Undefined Behavior Sanitizer")
   set(CMAKE_BUILD_TYPE "Debug")
   set(UBSAN_FLAGS "${UBSAN_FLAGS} -fno-omit-frame-pointer")
-  set(UBSAN_FLAGS "${UBSAN_FLAGS} -fsanitize=undefined")
-  set(UBSAN_FLAGS "${UBSAN_FLAGS} -fsanitize=implicit-conversion")
-  set(UBSAN_FLAGS "${UBSAN_FLAGS} -fsanitize=implicit-integer-truncation")
-  set(UBSAN_FLAGS "${UBSAN_FLAGS} -fsanitize=integer")
-  set(UBSAN_FLAGS "${UBSAN_FLAGS} -fsanitize=nullability")
-  set(UBSAN_FLAGS "${UBSAN_FLAGS} -fsanitize=vptr")
+
+  function(zmq_add_ubsan_flag flag)
+    string(REPLACE "=" "_" flag_key "${flag}")
+    string(REPLACE "-" "_" flag_key "${flag_key}")
+    string(REPLACE ":" "_" flag_key "${flag_key}")
+    set(flag_var "ZMQ_HAS_UBSAN_${flag_key}")
+    check_cxx_compiler_flag("${flag}" ${flag_var})
+    if(${flag_var})
+      set(UBSAN_FLAGS "${UBSAN_FLAGS} ${flag}" PARENT_SCOPE)
+    endif()
+  endfunction()
+
+  zmq_add_ubsan_flag("-fsanitize=undefined")
+  zmq_add_ubsan_flag("-fsanitize=implicit-conversion")
+  zmq_add_ubsan_flag("-fsanitize=implicit-integer-truncation")
+  zmq_add_ubsan_flag("-fsanitize=integer")
+  zmq_add_ubsan_flag("-fsanitize=nullability")
+  zmq_add_ubsan_flag("-fsanitize=vptr")
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${UBSAN_FLAGS}")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${UBSAN_FLAGS}")
   set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${UBSAN_FLAGS}")
@@ -929,6 +941,7 @@ set(cxx-sources
     xsub.cpp
     zmq.cpp
     zmq_utils.cpp
+    zmq_debug.cpp
     decoder_allocators.cpp
     socket_poller.cpp
     timers.cpp
@@ -1026,7 +1039,8 @@ set(cxx-sources
     ypipe_base.hpp
     ypipe_conflate.hpp
     yqueue.hpp
-    zap_client.hpp)
+    zap_client.hpp
+    zmq_debug.h)
 
 if(MINGW)
   # Generate the right type when using -m32 or -m64
@@ -1477,6 +1491,46 @@ endif()
 set(ZMQ_BUILD_TESTS
     ${BUILD_TESTS}
     CACHE BOOL "Build the tests for ZeroMQ")
+
+# Debug counters for testing (enabled automatically when tests are built)
+option(ZMQ_DEBUG_COUNTERS "Enable debug counters for testing" OFF)
+option(ZMQ_ASIO_ZEROCOPY_WRITE "Enable zero-copy write path" OFF)
+option(ZMQ_ASIO_LAZY_COMPACT "Enable lazy read buffer compaction" OFF)
+option(ZMQ_ASIO_WRITE_BATCHING "Enable small-message write batching" OFF)
+option(ZMQ_ASIO_HANDSHAKE_ZEROCOPY "Enable handshake zero-copy input" OFF)
+
+if(BUILD_TESTS)
+    set(ZMQ_DEBUG_COUNTERS ON CACHE BOOL "Enable debug counters for testing" FORCE)
+    set(ZMQ_ASIO_ZEROCOPY_WRITE ON CACHE BOOL "Enable zero-copy write path" FORCE)
+    set(ZMQ_ASIO_LAZY_COMPACT ON CACHE BOOL "Enable lazy read buffer compaction" FORCE)
+    set(ZMQ_ASIO_WRITE_BATCHING ON CACHE BOOL "Enable small-message write batching" FORCE)
+    set(ZMQ_ASIO_HANDSHAKE_ZEROCOPY ON CACHE BOOL "Enable handshake zero-copy input" FORCE)
+endif()
+
+if(ZMQ_DEBUG_COUNTERS)
+    add_definitions(-DZMQ_DEBUG_COUNTERS)
+    message(STATUS "Debug counters enabled for testing")
+endif()
+
+if(ZMQ_ASIO_ZEROCOPY_WRITE)
+    add_definitions(-DZMQ_ASIO_ZEROCOPY_WRITE)
+    message(STATUS "Zero-copy write path enabled")
+endif()
+
+if(ZMQ_ASIO_LAZY_COMPACT)
+    add_definitions(-DZMQ_ASIO_LAZY_COMPACT)
+    message(STATUS "Lazy read buffer compaction enabled")
+endif()
+
+if(ZMQ_ASIO_WRITE_BATCHING)
+    add_definitions(-DZMQ_ASIO_WRITE_BATCHING)
+    message(STATUS "Small-message write batching enabled")
+endif()
+
+if(ZMQ_ASIO_HANDSHAKE_ZEROCOPY)
+    add_definitions(-DZMQ_ASIO_HANDSHAKE_ZEROCOPY)
+    message(STATUS "Handshake zero-copy input enabled")
+endif()
 
 if(ZMQ_BUILD_TESTS)
   enable_testing() # Enable testing only works in root scope

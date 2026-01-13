@@ -79,14 +79,12 @@ void tcp_transport_t::close ()
         boost::system::error_code ec;
         _socket->close (ec);
         //  Ignore close errors
-        _socket.reset ();
     }
 #else
     if (_stream_descriptor) {
         boost::system::error_code ec;
         _stream_descriptor->close (ec);
         //  Ignore close errors
-        _stream_descriptor.reset ();
     }
 #endif
 }
@@ -96,14 +94,14 @@ void tcp_transport_t::async_read_some (unsigned char *buffer,
                                        completion_handler_t handler)
 {
 #if defined ZMQ_HAVE_WINDOWS
-    if (_socket) {
+    if (_socket && _socket->is_open ()) {
         _socket->async_read_some (boost::asio::buffer (buffer, buffer_size),
                                   handler);
     } else if (handler) {
         handler (boost::asio::error::bad_descriptor, 0);
     }
 #else
-    if (_stream_descriptor) {
+    if (_stream_descriptor && _stream_descriptor->is_open ()) {
         _stream_descriptor->async_read_some (
           boost::asio::buffer (buffer, buffer_size), handler);
     } else if (handler) {
@@ -117,7 +115,7 @@ void tcp_transport_t::async_write_some (const unsigned char *buffer,
                                         completion_handler_t handler)
 {
 #if defined ZMQ_HAVE_WINDOWS
-    if (_socket) {
+    if (_socket && _socket->is_open ()) {
         boost::asio::async_write (*_socket,
                                   boost::asio::buffer (buffer, buffer_size),
                                   handler);
@@ -125,10 +123,31 @@ void tcp_transport_t::async_write_some (const unsigned char *buffer,
         handler (boost::asio::error::bad_descriptor, 0);
     }
 #else
-    if (_stream_descriptor) {
+    if (_stream_descriptor && _stream_descriptor->is_open ()) {
         boost::asio::async_write (*_stream_descriptor,
                                   boost::asio::buffer (buffer, buffer_size),
                                   handler);
+    } else if (handler) {
+        handler (boost::asio::error::bad_descriptor, 0);
+    }
+#endif
+}
+
+void tcp_transport_t::async_write_scatter (
+  const std::vector<boost::asio::const_buffer> &buffers,
+  completion_handler_t handler)
+{
+#if defined ZMQ_HAVE_WINDOWS
+    if (_socket && _socket->is_open ()) {
+        //  Use native scatter-gather I/O on Windows
+        boost::asio::async_write (*_socket, buffers, handler);
+    } else if (handler) {
+        handler (boost::asio::error::bad_descriptor, 0);
+    }
+#else
+    if (_stream_descriptor && _stream_descriptor->is_open ()) {
+        //  Use native scatter-gather I/O on POSIX (writev)
+        boost::asio::async_write (*_stream_descriptor, buffers, handler);
     } else if (handler) {
         handler (boost::asio::error::bad_descriptor, 0);
     }

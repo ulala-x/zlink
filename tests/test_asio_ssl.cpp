@@ -20,10 +20,26 @@
 
 #include <unity.h>
 
-#if defined ZMQ_IOTHREAD_POLLER_USE_ASIO && defined ZMQ_HAVE_ASIO_SSL
+#if defined ZMQ_UBSAN_SKIP_ASIO_SSL
+
+void setUp ()
+{
+}
+
+void tearDown ()
+{
+}
+
+void test_asio_ssl_ubsan_skip ()
+{
+    TEST_IGNORE_MESSAGE ("UBSAN build: Asio SSL tests disabled");
+}
+
+#elif defined ZMQ_IOTHREAD_POLLER_USE_ASIO && defined ZMQ_HAVE_ASIO_SSL
 
 #include <boost/asio.hpp>
 #include <boost/asio/ssl.hpp>
+#include <openssl/ssl.h>
 
 #include <stdio.h>
 #include <string.h>
@@ -534,7 +550,9 @@ int main ()
 
     UNITY_BEGIN ();
 
-#if defined ZMQ_IOTHREAD_POLLER_USE_ASIO && defined ZMQ_HAVE_ASIO_SSL
+#if defined ZMQ_UBSAN_SKIP_ASIO_SSL
+    RUN_TEST (test_asio_ssl_ubsan_skip);
+#elif defined ZMQ_IOTHREAD_POLLER_USE_ASIO && defined ZMQ_HAVE_ASIO_SSL
     RUN_TEST (test_ssl_context_creation);
     RUN_TEST (test_ssl_certificate_loading);
     RUN_TEST (test_ssl_stream_creation);
@@ -548,5 +566,10 @@ int main ()
     RUN_TEST (test_asio_ssl_not_enabled);
 #endif
 
-    return UNITY_END ();
+    const int result = UNITY_END ();
+#if defined ZMQ_IOTHREAD_POLLER_USE_ASIO && defined ZMQ_HAVE_ASIO_SSL \
+  && !defined ZMQ_UBSAN_SKIP_ASIO_SSL
+    OPENSSL_cleanup ();
+#endif
+    return result;
 }

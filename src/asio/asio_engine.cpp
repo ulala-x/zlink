@@ -18,7 +18,10 @@
 #include "../ip.hpp"
 #include "../tcp.hpp"
 #include "../likely.hpp"
+#include "../zmq_debug.h"
 
+#include <cstdlib>
+#include <cstring>
 #ifndef ZMQ_HAVE_WINDOWS
 #include <unistd.h>
 #endif
@@ -39,6 +42,32 @@
 #else
 #define ENGINE_DBG(fmt, ...)
 #endif
+
+namespace
+{
+bool get_env_flag (const char *name_, bool default_value_)
+{
+    const char *value = std::getenv (name_);
+    if (!value || *value == '\0')
+        return default_value_;
+
+    if (strcmp (value, "0") == 0 || strcmp (value, "false") == 0
+        || strcmp (value, "off") == 0)
+        return false;
+
+    if (strcmp (value, "1") == 0 || strcmp (value, "true") == 0
+        || strcmp (value, "on") == 0)
+        return true;
+
+    return default_value_;
+}
+
+bool is_tcp_endpoint (const std::string &endpoint_)
+{
+    static const char prefix[] = "tcp://";
+    return endpoint_.compare (0, sizeof (prefix) - 1, prefix) == 0;
+}
+} // namespace
 
 //  Draft API message property names (kept for internal use)
 #define ZMQ_MSG_PROPERTY_ROUTING_ID "Routing-Id"
@@ -122,6 +151,29 @@ zmq::asio_engine_t::asio_engine_t (
     _read_buffer_ptr (NULL),
     _session (NULL),
     _socket (NULL)
+#ifdef ZMQ_ASIO_WRITE_BATCHING
+    , _batch_timer_active (false)
+    , _write_batch_max_bytes (64 * 1024)
+    , _write_batch_max_messages (100)
+    , _write_batch_timeout_us (100)
+    , _write_batching_enabled (
+        get_env_flag ("ZMQ_ASIO_WRITE_BATCHING", true))
+#endif
+#ifdef ZMQ_ASIO_LAZY_COMPACT
+    , _lazy_compact_enabled (get_env_flag ("ZMQ_ASIO_LAZY_COMPACT", true))
+#endif
+#ifdef ZMQ_ASIO_ZEROCOPY_WRITE
+    , _using_zerocopy (false)
+    , _zerocopy_header_size (0)
+    , _zerocopy_body (NULL)
+    , _zerocopy_body_size (0)
+    , _zerocopy_write_enabled (
+        get_env_flag ("ZMQ_ASIO_ZEROCOPY_WRITE", true))
+#endif
+#ifdef ZMQ_ASIO_HANDSHAKE_ZEROCOPY
+    , _handshake_zerocopy_enabled (
+        get_env_flag ("ZMQ_ASIO_HANDSHAKE_ZEROCOPY", true))
+#endif
 {
     ENGINE_DBG ("Constructor called, fd=%d", fd_);
 
@@ -204,6 +256,11 @@ void zmq::asio_engine_t::plug (io_thread_t *io_thread_,
     //  Allocate timer with correct io_context
     _timer = std::unique_ptr<boost::asio::steady_timer> (
       new boost::asio::steady_timer (*_io_context));
+#ifdef ZMQ_ASIO_WRITE_BATCHING
+    _batch_timer = std::unique_ptr<boost::asio::steady_timer> (
+      new boost::asio::steady_timer (*_io_context));
+    _batch_timer_active = false;
+#endif
 
     _io_error = false;
 
@@ -295,6 +352,12 @@ void zmq::asio_engine_t::unplug ()
         _transport->close ();
     if (_timer)
         _timer->cancel ();
+#ifdef ZMQ_ASIO_WRITE_BATCHING
+    if (_batch_timer) {
+        _batch_timer->cancel ();
+        _batch_timer_active = false;
+    }
+#endif
 
     _session = NULL;
 }
@@ -310,8 +373,9 @@ void zmq::asio_engine_t::terminate ()
 
     //  Drain any pending async handlers while the object is still alive.
     //  The _terminating flag ensures callbacks are no-ops.
-    if (_io_context && (_read_pending || _write_pending)) {
-        _io_context->poll ();
+    if (_io_context) {
+        while (_io_context->poll () > 0) {
+        }
     }
 
     delete this;
@@ -332,19 +396,69 @@ void zmq::asio_engine_t::start_async_read ()
     if (_decoder) {
         _decoder->get_buffer (&_read_buffer_ptr, &read_size);
 
-        //  If we have partial data from previous read, move it to buffer start.
-        //  The decoder expects data to start from the beginning of its buffer.
-        if (_insize > 0 && _inpos != _read_buffer_ptr) {
-            ENGINE_DBG ("start_async_read: moving %zu partial bytes to buffer start",
-                        _insize);
-            memmove (_read_buffer_ptr, _inpos, _insize);
-            _inpos = _read_buffer_ptr;
-        }
+        if (_insize > 0) {
+            unsigned char *const buffer_start = _read_buffer_ptr;
+            unsigned char *const buffer_end = buffer_start + read_size;
+            unsigned char *const data_end = _inpos + _insize;
+            const size_t remaining =
+              data_end <= buffer_end ? buffer_end - data_end : 0;
+            const size_t consumed = _inpos - buffer_start;
 
-        //  Read into buffer after any existing partial data
-        if (_insize > 0 && read_size > _insize) {
-            _read_buffer_ptr += _insize;
-            read_size -= _insize;
+#ifdef ZMQ_ASIO_LAZY_COMPACT
+            if (_lazy_compact_enabled) {
+                static const size_t min_consumed = 2048;
+                const size_t min_space =
+                  std::max<size_t> (2048, read_size / 5);
+                bool need_compaction = remaining == 0;
+                if (!need_compaction) {
+                    need_compaction =
+                      consumed >= min_consumed && remaining < min_space;
+                }
+
+                if (need_compaction) {
+                    ENGINE_DBG ("start_async_read: compacting %zu partial bytes "
+                                "(consumed=%zu, remaining=%zu)",
+                                _insize, consumed, remaining);
+                    memmove (buffer_start, _inpos, _insize);
+                    _inpos = buffer_start;
+                    _read_buffer_ptr = buffer_start + _insize;
+                    read_size -= _insize;
+                    zmq_debug_inc_compaction_count ();
+                    zmq_debug_add_compaction_bytes (_insize);
+                } else {
+                    _read_buffer_ptr = data_end;
+                    read_size = remaining;
+                    zmq_debug_inc_compaction_skipped_count ();
+                }
+            } else {
+                if (_inpos != _read_buffer_ptr) {
+                    ENGINE_DBG ("start_async_read: moving %zu partial bytes to buffer start",
+                                _insize);
+                    memmove (_read_buffer_ptr, _inpos, _insize);
+                    _inpos = _read_buffer_ptr;
+                }
+
+                if (read_size > _insize) {
+                    _read_buffer_ptr += _insize;
+                    read_size -= _insize;
+                }
+            }
+#else
+            //  If we have partial data from previous read, move it to buffer start.
+            //  The decoder expects data to start from the beginning of its buffer.
+            if (_inpos != _read_buffer_ptr) {
+                ENGINE_DBG ("start_async_read: moving %zu partial bytes to buffer start",
+                            _insize);
+                memmove (_read_buffer_ptr, _inpos, _insize);
+                _inpos = _read_buffer_ptr;
+            }
+
+            //  Read into buffer after any existing partial data
+            if (read_size > _insize) {
+                _read_buffer_ptr += _insize;
+                read_size -= _insize;
+            }
+#endif
         }
     } else {
         //  During handshake, use internal buffer
@@ -370,8 +484,45 @@ void zmq::asio_engine_t::start_async_write ()
 
     ENGINE_DBG ("start_async_write");
 
+#ifdef ZMQ_ASIO_WRITE_BATCHING
+    if (_write_batching_enabled && _batch_timer_active && _batch_timer) {
+        _batch_timer->cancel ();
+        _batch_timer_active = false;
+    }
+#endif
+
     //  Prepare output buffer
     process_output ();
+
+#ifdef ZMQ_ASIO_ZEROCOPY_WRITE
+    //  Check if we're using zero-copy path
+    if (_zerocopy_write_enabled && _using_zerocopy) {
+        ENGINE_DBG ("start_async_write: scatter-gather, header=%zu, body=%zu",
+                    _zerocopy_header_size, _zerocopy_body_size);
+
+        _write_pending = true;
+        zmq_debug_inc_scatter_gather_count ();
+
+        std::vector<boost::asio::const_buffer> buffers;
+        if (!_write_buffer.empty ()) {
+            buffers.push_back (
+              boost::asio::buffer (_write_buffer.data (), _write_buffer.size ()));
+        }
+        if (_zerocopy_body_size > 0 && _zerocopy_body) {
+            buffers.push_back (
+              boost::asio::buffer (_zerocopy_body, _zerocopy_body_size));
+        }
+
+        if (_transport) {
+            _transport->async_write_scatter (
+              buffers,
+              [this] (const boost::system::error_code &ec, std::size_t bytes) {
+                  on_zerocopy_write_complete (ec, bytes);
+              });
+        }
+        return;
+    }
+#endif
 
     if (_write_buffer.empty ()) {
         _output_stopped = true;
@@ -388,6 +539,38 @@ void zmq::asio_engine_t::start_async_write ()
           });
     }
 }
+
+#ifdef ZMQ_ASIO_WRITE_BATCHING
+void zmq::asio_engine_t::start_batch_timer ()
+{
+    if (!_write_batching_enabled || !_batch_timer || _batch_timer_active)
+        return;
+
+    _batch_timer_active = true;
+    _batch_timer->expires_after (
+      std::chrono::microseconds (_write_batch_timeout_us));
+    _batch_timer->async_wait ([this] (const boost::system::error_code &ec) {
+        on_batch_timer (ec);
+    });
+}
+
+void zmq::asio_engine_t::on_batch_timer (const boost::system::error_code &ec)
+{
+    _batch_timer_active = false;
+
+    if (!_write_batching_enabled)
+        return;
+
+    if (ec == boost::asio::error::operation_aborted)
+        return;
+
+    if (_terminating || _io_error || _write_pending || _output_stopped)
+        return;
+
+    zmq_debug_inc_batch_timeout_flush_count ();
+    start_async_write ();
+}
+#endif
 
 void zmq::asio_engine_t::on_read_complete (const boost::system::error_code &ec,
                                            std::size_t bytes_transferred)
@@ -477,6 +660,11 @@ void zmq::asio_engine_t::on_write_complete (const boost::system::error_code &ec,
         return;
     }
 
+    //  Check for partial write
+    if (bytes_transferred < _write_buffer.size ()) {
+        zmq_debug_inc_partial_write_count ();
+    }
+
     _write_buffer.clear ();
 
     //  If still handshaking and there's nothing more to write, just return
@@ -487,6 +675,94 @@ void zmq::asio_engine_t::on_write_complete (const boost::system::error_code &ec,
     if (!_output_stopped)
         start_async_write ();
 }
+
+#ifdef ZMQ_ASIO_ZEROCOPY_WRITE
+void zmq::asio_engine_t::on_zerocopy_write_complete (
+  const boost::system::error_code &ec, std::size_t bytes_transferred)
+{
+    _write_pending = false;
+    ENGINE_DBG ("on_zerocopy_write_complete: ec=%s, bytes=%zu, terminating=%d",
+                ec.message ().c_str (), bytes_transferred, _terminating);
+
+    const size_t total_size = _zerocopy_header_size + _zerocopy_body_size;
+    size_t body_written = 0;
+    if (bytes_transferred > _zerocopy_header_size)
+        body_written = bytes_transferred - _zerocopy_header_size;
+
+    //  If terminating, just return - terminate() is draining handlers
+    if (_terminating) {
+        //  Release encoder buffer before returning
+        if (_encoder) {
+            _encoder->release_output_buffer_ref (_zerocopy_body_size);
+        }
+        _write_buffer.clear ();
+        _zerocopy_header_size = 0;
+        _zerocopy_body = NULL;
+        _zerocopy_body_size = 0;
+        _outpos = NULL;
+        _outsize = 0;
+        return;
+    }
+
+    if (!_plugged) {
+        //  Release encoder buffer before returning
+        if (_encoder) {
+            _encoder->release_output_buffer_ref (_zerocopy_body_size);
+        }
+        _write_buffer.clear ();
+        _zerocopy_header_size = 0;
+        _zerocopy_body = NULL;
+        _zerocopy_body_size = 0;
+        _outpos = NULL;
+        _outsize = 0;
+        return;
+    }
+
+    if (ec) {
+        //  Release encoder buffer on error
+        if (_encoder) {
+            _encoder->release_output_buffer_ref (_zerocopy_body_size);
+        }
+        _write_buffer.clear ();
+        _zerocopy_header_size = 0;
+        _zerocopy_body = NULL;
+        _zerocopy_body_size = 0;
+        _outpos = NULL;
+        _outsize = 0;
+
+        if (ec == boost::asio::error::operation_aborted)
+            return;
+        //  IO error - stop writing but continue reading to detect connection close
+        _io_error = true;
+        return;
+    }
+
+    //  Check for partial write
+    if (bytes_transferred < total_size) {
+        zmq_debug_inc_partial_write_count ();
+    }
+
+    //  Release encoder buffer after successful write
+    if (_encoder) {
+        if (body_written > _zerocopy_body_size)
+            body_written = _zerocopy_body_size;
+        _encoder->release_output_buffer_ref (body_written);
+    }
+
+    //  Reset output position and size
+    _write_buffer.clear ();
+    _zerocopy_header_size = 0;
+    _zerocopy_body = NULL;
+    _zerocopy_body_size = 0;
+    _outpos = NULL;
+    _outsize = 0;
+    _using_zerocopy = false;
+
+    //  Continue writing if more data available
+    if (!_output_stopped)
+        start_async_write ();
+}
+#endif
 
 bool zmq::asio_engine_t::process_input ()
 {
@@ -544,15 +820,37 @@ bool zmq::asio_engine_t::process_input ()
         decode_size = _insize;
 
         if (!input_in_decoder_buffer) {
+#ifdef ZMQ_ASIO_HANDSHAKE_ZEROCOPY
+            const bool handshake_zerocopy =
+              _handshake_zerocopy_enabled
+              && is_tcp_endpoint (_endpoint_uri_pair.identifier ());
+            if (handshake_zerocopy) {
+                decode_buf = _inpos;
+                decode_size = _insize;
+            } else {
+                _decoder->get_buffer (&decode_buf, &decode_size);
+                decode_size = std::min (_insize, decode_size);
+                memcpy (decode_buf, _inpos, decode_size);
+                _decoder->resize_buffer (decode_size);
+                zmq_debug_inc_handshake_copy_count ();
+                zmq_debug_add_handshake_copy_bytes (decode_size);
+                ENGINE_DBG ("process_input: copied %zu bytes from external input "
+                            "buffer to decoder buffer",
+                            decode_size);
+            }
+#else
             //  Data came from an external buffer (handshake/greeting); copy
             //  into decoder buffer to preserve decoder buffer invariants.
             _decoder->get_buffer (&decode_buf, &decode_size);
             decode_size = std::min (_insize, decode_size);
             memcpy (decode_buf, _inpos, decode_size);
             _decoder->resize_buffer (decode_size);
+            zmq_debug_inc_handshake_copy_count ();
+            zmq_debug_add_handshake_copy_bytes (decode_size);
             ENGINE_DBG ("process_input: copied %zu bytes from external input "
                         "buffer to decoder buffer",
                         decode_size);
+#endif
         }
 
         ENGINE_DBG ("process_input: decode loop decode_size=%zu", decode_size);
@@ -601,7 +899,20 @@ void zmq::asio_engine_t::process_output ()
         _outpos = NULL;
         _outsize = _encoder->encode (&_outpos, 0);
 
-        while (_outsize < static_cast<size_t> (_options.out_batch_size)) {
+#ifdef ZMQ_ASIO_WRITE_BATCHING
+        const bool batching_enabled =
+          _write_batching_enabled && !_handshaking;
+        size_t msg_count = 0;
+        const size_t target_batch = batching_enabled
+          ? std::min<size_t> (static_cast<size_t> (_options.out_batch_size),
+                              _write_batch_max_bytes)
+          : static_cast<size_t> (_options.out_batch_size);
+#else
+        const size_t target_batch =
+          static_cast<size_t> (_options.out_batch_size);
+#endif
+
+        while (_outsize < target_batch) {
             if ((this->*_next_msg) (&_tx_msg) == -1) {
                 if (errno == ECONNRESET)
                     return;
@@ -609,14 +920,91 @@ void zmq::asio_engine_t::process_output ()
                     break;
             }
             _encoder->load_msg (&_tx_msg);
+#ifdef ZMQ_ASIO_WRITE_BATCHING
+            if (batching_enabled)
+                ++msg_count;
+#endif
+
+#ifdef ZMQ_ASIO_ZEROCOPY_WRITE
+            _using_zerocopy = false;
+            _zerocopy_header_size = 0;
+            _zerocopy_body = NULL;
+            _zerocopy_body_size = 0;
+
+            static const size_t ZEROCOPY_THRESHOLD = 8192;
+            if (_zerocopy_write_enabled && !_handshaking
+                && _tx_msg.size () >= ZEROCOPY_THRESHOLD) {
+                encoder_buffer_ref header_ref;
+                if (_encoder->get_output_buffer_ref (header_ref)
+                    && header_ref.size > 0) {
+                    const size_t header_size = header_ref.size;
+                    const size_t pending_size = _outsize;
+                    const size_t combined_size = pending_size + header_size;
+                    if (_write_buffer.capacity () < combined_size)
+                        _write_buffer.reserve (combined_size);
+                    if (pending_size > 0) {
+                        _write_buffer.resize (pending_size);
+                        memcpy (_write_buffer.data (), _outpos, pending_size);
+                        zmq_debug_add_bytes_copied (pending_size);
+#ifdef ZMQ_ASIO_WRITE_BATCHING
+                        if (batching_enabled) {
+                            size_t batch_messages = msg_count > 1 ? msg_count - 1 : 1;
+                            zmq_debug_inc_batch_flush_count ();
+                            if (pending_size >= target_batch)
+                                zmq_debug_inc_batch_size_flush_count ();
+                            if (batch_messages >= _write_batch_max_messages)
+                                zmq_debug_inc_batch_count_flush_count ();
+                            zmq_debug_add_batch_messages (batch_messages);
+                            zmq_debug_add_batch_bytes (pending_size);
+                        }
+#endif
+                    }
+                    _write_buffer.resize (combined_size);
+                    memcpy (_write_buffer.data () + pending_size, header_ref.data,
+                            header_size);
+                    zmq_debug_add_bytes_copied (header_size);
+
+                    _encoder->release_output_buffer_ref (header_size);
+
+                    _using_zerocopy = true;
+                    _zerocopy_header_size = header_size;
+                    _zerocopy_body = static_cast<unsigned char *> (_tx_msg.data ());
+                    _zerocopy_body_size = _tx_msg.size ();
+                    _outpos = NULL;
+                    _outsize = 0;
+                    zmq_debug_inc_zerocopy_count ();
+                    return;
+                }
+            }
+#endif
+
             unsigned char *bufptr = _outpos + _outsize;
-            const size_t n =
-              _encoder->encode (&bufptr, _options.out_batch_size - _outsize);
+            const size_t n = _encoder->encode (&bufptr, target_batch - _outsize);
             zmq_assert (n > 0);
             if (_outpos == NULL)
                 _outpos = bufptr;
             _outsize += n;
+
+#ifdef ZMQ_ASIO_WRITE_BATCHING
+            if (batching_enabled && msg_count >= _write_batch_max_messages)
+                break;
+#endif
         }
+
+#ifdef ZMQ_ASIO_WRITE_BATCHING
+        if (batching_enabled && _outsize > 0) {
+            size_t batch_messages = msg_count;
+            if (batch_messages == 0)
+                batch_messages = 1;
+            zmq_debug_inc_batch_flush_count ();
+            if (_outsize >= target_batch)
+                zmq_debug_inc_batch_size_flush_count ();
+            if (msg_count >= _write_batch_max_messages)
+                zmq_debug_inc_batch_count_flush_count ();
+            zmq_debug_add_batch_messages (batch_messages);
+            zmq_debug_add_batch_bytes (_outsize);
+        }
+#endif
 
         //  If there is no data to send, mark output as stopped.
         if (_outsize == 0) {
@@ -624,6 +1012,14 @@ void zmq::asio_engine_t::process_output ()
             return;
         }
     }
+
+#ifdef ZMQ_ASIO_ZEROCOPY_WRITE
+    _using_zerocopy = false;
+    if (_zerocopy_write_enabled) {
+        zmq_debug_inc_fallback_count ();
+        zmq_debug_add_bytes_copied (_outsize);
+    }
+#endif
 
     //  Copy data to write buffer (reuse capacity to avoid reallocations)
     const size_t out_batch_size =
@@ -656,7 +1052,14 @@ void zmq::asio_engine_t::restart_output ()
     }
 
     //  Start async write
+#ifdef ZMQ_ASIO_WRITE_BATCHING
+    if (!_write_batching_enabled || _handshaking || _write_pending)
+        start_async_write ();
+    else
+        start_batch_timer ();
+#else
     start_async_write ();
+#endif
 }
 
 bool zmq::asio_engine_t::restart_input ()
@@ -943,8 +1346,9 @@ void zmq::asio_engine_t::error (error_reason_t reason_)
 
     //  Drain any pending async handlers while the object is still alive.
     //  The _terminating flag ensures callbacks are no-ops.
-    if (_io_context && (_read_pending || _write_pending)) {
-        _io_context->poll ();
+    if (_io_context) {
+        while (_io_context->poll () > 0) {
+        }
     }
 
     delete this;

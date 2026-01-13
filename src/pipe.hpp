@@ -78,6 +78,9 @@ class pipe_t ZMQ_FINAL : public object_t,
     //  function returns false.
     bool check_write ();
 
+    //  Returns true if the pipe is in active state.
+    bool is_active () const;
+
     //  Writes a message to the underlying pipe. Returns false if the
     //  message does not pass check_write. If false, the message object
     //  retains ownership of its message buffer.

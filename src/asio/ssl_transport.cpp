@@ -81,7 +81,6 @@ void ssl_transport_t::close ()
           boost::asio::ip::tcp::socket::shutdown_both, ec);
         _ssl_stream->lowest_layer ().close (ec);
 
-        _ssl_stream.reset ();
         _handshake_complete = false;
     }
 }
@@ -90,7 +89,8 @@ void ssl_transport_t::async_read_some (unsigned char *buffer,
                                        std::size_t buffer_size,
                                        completion_handler_t handler)
 {
-    if (!_ssl_stream || !_handshake_complete) {
+    if (!_ssl_stream || !_handshake_complete
+        || !_ssl_stream->lowest_layer ().is_open ()) {
         if (handler) {
             handler (boost::asio::error::not_connected, 0);
         }
@@ -105,7 +105,8 @@ void ssl_transport_t::async_write_some (const unsigned char *buffer,
                                         std::size_t buffer_size,
                                         completion_handler_t handler)
 {
-    if (!_ssl_stream || !_handshake_complete) {
+    if (!_ssl_stream || !_handshake_complete
+        || !_ssl_stream->lowest_layer ().is_open ()) {
         if (handler) {
             handler (boost::asio::error::not_connected, 0);
         }
@@ -115,6 +116,22 @@ void ssl_transport_t::async_write_some (const unsigned char *buffer,
     boost::asio::async_write (*_ssl_stream,
                               boost::asio::buffer (buffer, buffer_size),
                               handler);
+}
+
+void ssl_transport_t::async_write_scatter (
+  const std::vector<boost::asio::const_buffer> &buffers,
+  completion_handler_t handler)
+{
+    if (!_ssl_stream || !_handshake_complete
+        || !_ssl_stream->lowest_layer ().is_open ()) {
+        if (handler) {
+            handler (boost::asio::error::not_connected, 0);
+        }
+        return;
+    }
+
+    //  SSL streams support scatter-gather I/O natively
+    boost::asio::async_write (*_ssl_stream, buffers, handler);
 }
 
 void ssl_transport_t::async_handshake (int handshake_type,

@@ -1,0 +1,12 @@
+/home/ulalax/project/ulalax/zlink/build_debug/CMakeFiles/objects.dir
+/home/ulalax/project/ulalax/zlink/build_debug/CMakeFiles/libzmq.dir
+/home/ulalax/project/ulalax/zlink/build_debug/CMakeFiles/libzmq-static.dir
+/home/ulalax/project/ulalax/zlink/build_debug/CMakeFiles/clang-format.dir
+/home/ulalax/project/ulalax/zlink/build_debug/CMakeFiles/clang-format-check.dir
+/home/ulalax/project/ulalax/zlink/build_debug/CMakeFiles/clang-format-diff.dir
+/home/ulalax/project/ulalax/zlink/build_debug/CMakeFiles/edit_cache.dir
+/home/ulalax/project/ulalax/zlink/build_debug/CMakeFiles/rebuild_cache.dir
+/home/ulalax/project/ulalax/zlink/build_debug/CMakeFiles/list_install_components.dir
+/home/ulalax/project/ulalax/zlink/build_debug/CMakeFiles/install.dir
+/home/ulalax/project/ulalax/zlink/build_debug/CMakeFiles/install/local.dir
+/home/ulalax/project/ulalax/zlink/build_debug/CMakeFiles/install/strip.dir

@@ -111,11 +111,7 @@ void wss_transport_t::close ()
         _wss_stream->next_layer ().next_layer ().shutdown (
           boost::asio::ip::tcp::socket::shutdown_both, ec);
         _wss_stream->next_layer ().next_layer ().close (ec);
-
-        _wss_stream.reset ();
     }
-
-    _read_buffer.reset ();
 
     _ssl_handshake_complete = false;
     _ws_handshake_complete = false;
@@ -127,7 +123,8 @@ void wss_transport_t::async_read_some (unsigned char *buffer,
                                        std::size_t buffer_size,
                                        completion_handler_t handler)
 {
-    if (!_wss_stream || !_ws_handshake_complete) {
+    if (!_wss_stream || !_ws_handshake_complete
+        || !_wss_stream->next_layer ().next_layer ().is_open ()) {
         if (handler) {
             handler (boost::asio::error::not_connected, 0);
         }
@@ -204,7 +201,8 @@ void wss_transport_t::async_write_some (const unsigned char *buffer,
                                         std::size_t buffer_size,
                                         completion_handler_t handler)
 {
-    if (!_wss_stream || !_ws_handshake_complete) {
+    if (!_wss_stream || !_ws_handshake_complete
+        || !_wss_stream->next_layer ().next_layer ().is_open ()) {
         if (handler) {
             handler (boost::asio::error::not_connected, 0);
         }
@@ -217,6 +215,32 @@ void wss_transport_t::async_write_some (const unsigned char *buffer,
       [handler] (const boost::system::error_code &ec,
                  std::size_t bytes_transferred) {
           ASIO_DBG ("WSS", "write complete: ec=%s, bytes=%zu",
+                    ec.message ().c_str (), bytes_transferred);
+          if (handler) {
+              handler (ec, bytes_transferred);
+          }
+      });
+}
+
+void wss_transport_t::async_write_scatter (
+  const std::vector<boost::asio::const_buffer> &buffers,
+  completion_handler_t handler)
+{
+    if (!_wss_stream || !_ws_handshake_complete
+        || !_wss_stream->next_layer ().next_layer ().is_open ()) {
+        if (handler) {
+            handler (boost::asio::error::not_connected, 0);
+        }
+        return;
+    }
+
+    //  WebSocket is frame-based, so we can pass multiple buffers directly.
+    //  Beast's async_write will serialize them into a single WebSocket frame.
+    _wss_stream->async_write (
+      buffers,
+      [handler] (const boost::system::error_code &ec,
+                 std::size_t bytes_transferred) {
+          ASIO_DBG ("WSS", "scatter write complete: ec=%s, bytes=%zu",
                     ec.message ().c_str (), bytes_transferred);
           if (handler) {
               handler (ec, bytes_transferred);

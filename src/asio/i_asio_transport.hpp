@@ -66,6 +66,16 @@ class i_asio_transport
                                    std::size_t buffer_size,
                                    completion_handler_t handler) = 0;
 
+    //  Start async scatter-gather write operation.
+    //  Writes data from multiple buffers in a single operation.
+    //  This can improve performance by avoiding buffer copies.
+    //  TCP/SSL: Uses native scatter-gather I/O
+    //  WebSocket: Falls back to merging buffers (frame-based protocol)
+    //  Calls handler on completion with error code and total bytes written.
+    virtual void async_write_scatter (
+      const std::vector<boost::asio::const_buffer> &buffers,
+      completion_handler_t handler) = 0;
+
     //  Check if this transport requires a handshake phase.
     //  TCP: false, SSL: true, WebSocket: true
     virtual bool requires_handshake () const { return false; }

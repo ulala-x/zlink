@@ -106,6 +106,45 @@ template <typename T> class encoder_base_t : public i_encoder
         (static_cast<T *> (this)->*_next) ();
     }
 
+    //  Buffer pinning API for zero-copy operations
+    //  Acquire a reference to the current output buffer without copying.
+    //  Returns false if no data is available.
+    bool get_output_buffer_ref (encoder_buffer_ref &ref_)
+    {
+        if (_to_write == 0) {
+            return false;
+        }
+
+        ref_.data = _write_pos;
+        ref_.size = _to_write;
+        ref_.pinned = true;  // Mark buffer as pinned for async write
+        return true;
+    }
+
+    //  Release the output buffer reference after async write completes.
+    //  This allows the encoder to continue with the next state.
+    void release_output_buffer_ref (size_t bytes_written_)
+    {
+        zmq_assert (bytes_written_ <= _to_write);
+        _write_pos += bytes_written_;
+        _to_write -= bytes_written_;
+
+        if (_to_write != 0)
+            return;
+
+        if (_new_msg_flag) {
+            int rc = _in_progress->close ();
+            errno_assert (rc == 0);
+            rc = _in_progress->init ();
+            errno_assert (rc == 0);
+            _in_progress = NULL;
+            return;
+        }
+
+        if (_next)
+            (static_cast<T *> (this)->*_next) ();
+    }
+
   protected:
     //  Prototype of state machine action.
     typedef void (T::*step_t) ();

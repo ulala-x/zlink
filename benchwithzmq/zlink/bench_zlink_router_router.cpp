@@ -112,6 +112,7 @@ int main(int argc, char** argv) {
     std::string transport = argv[2];
     size_t size = std::stoul(argv[3]);
     int count = (size <= 1024) ? 200000 : 20000;
+    count = bench_override_count(count);
     run_router_router(transport, size, count, lib_name);
     return 0;
 }

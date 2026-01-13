@@ -5,6 +5,8 @@
 #include <vector>
 #include <string>
 #include <cstdio>
+#include <cstdlib>
+#include <climits>
 #include <iostream>
 #include <iomanip>
 
@@ -45,6 +47,16 @@ inline std::string make_endpoint(const std::string& transport, const std::string
     }
     static int port = 5555;
     return "tcp://127.0.0.1:" + std::to_string(port++);
+}
+
+inline int bench_override_count(int fallback) {
+    const char *env = std::getenv("BENCH_MSG_COUNT");
+    if (!env || !*env) return fallback;
+    char *end = nullptr;
+    long value = std::strtol(env, &end, 10);
+    if (end == env || value <= 0) return fallback;
+    if (value > INT_MAX) return fallback;
+    return static_cast<int>(value);
 }
 
 #endif

@@ -20,7 +20,22 @@
 
 #include <unity.h>
 
-#if defined ZMQ_IOTHREAD_POLLER_USE_ASIO && defined ZMQ_HAVE_ASIO_WS
+#if defined ZMQ_UBSAN_SKIP_ASIO_WS
+
+void setUp ()
+{
+}
+
+void tearDown ()
+{
+}
+
+void test_asio_ws_ubsan_skip ()
+{
+    TEST_IGNORE_MESSAGE ("UBSAN build: Asio WS tests disabled");
+}
+
+#elif defined ZMQ_IOTHREAD_POLLER_USE_ASIO && defined ZMQ_HAVE_ASIO_WS
 
 #include <boost/asio.hpp>
 #include <boost/beast/core.hpp>
@@ -736,7 +751,9 @@ int main ()
 
     UNITY_BEGIN ();
 
-#if defined ZMQ_IOTHREAD_POLLER_USE_ASIO && defined ZMQ_HAVE_ASIO_WS
+#if defined ZMQ_UBSAN_SKIP_ASIO_WS
+    RUN_TEST (test_asio_ws_ubsan_skip);
+#elif defined ZMQ_IOTHREAD_POLLER_USE_ASIO && defined ZMQ_HAVE_ASIO_WS
     //  Phase 3: Beast WebSocket infrastructure tests
     RUN_TEST (test_ws_stream_creation);
     RUN_TEST (test_ws_stream_options);

@@ -118,7 +118,8 @@ void ws_transport_t::async_read_some (unsigned char *buffer,
                                       std::size_t buffer_size,
                                       completion_handler_t handler)
 {
-    if (!_ws_stream || !_handshake_complete) {
+    if (!_ws_stream || !_handshake_complete
+        || !_ws_stream->next_layer ().is_open ()) {
         if (handler) {
             handler (boost::asio::error::not_connected, 0);
         }
@@ -196,7 +197,8 @@ void ws_transport_t::async_write_some (const unsigned char *buffer,
                                        std::size_t buffer_size,
                                        completion_handler_t handler)
 {
-    if (!_ws_stream || !_handshake_complete) {
+    if (!_ws_stream || !_handshake_complete
+        || !_ws_stream->next_layer ().is_open ()) {
         if (handler) {
             handler (boost::asio::error::not_connected, 0);
         }
@@ -210,6 +212,32 @@ void ws_transport_t::async_write_some (const unsigned char *buffer,
       [handler] (const boost::system::error_code &ec,
                  std::size_t bytes_transferred) {
           ASIO_DBG ("WS", "write complete: ec=%s, bytes=%zu",
+                    ec.message ().c_str (), bytes_transferred);
+          if (handler) {
+              handler (ec, bytes_transferred);
+          }
+      });
+}
+
+void ws_transport_t::async_write_scatter (
+  const std::vector<boost::asio::const_buffer> &buffers,
+  completion_handler_t handler)
+{
+    if (!_ws_stream || !_handshake_complete
+        || !_ws_stream->next_layer ().is_open ()) {
+        if (handler) {
+            handler (boost::asio::error::not_connected, 0);
+        }
+        return;
+    }
+
+    //  WebSocket is frame-based, so we can pass multiple buffers directly.
+    //  Beast's async_write will serialize them into a single WebSocket frame.
+    _ws_stream->async_write (
+      buffers,
+      [handler] (const boost::system::error_code &ec,
+                 std::size_t bytes_transferred) {
+          ASIO_DBG ("WS", "scatter write complete: ec=%s, bytes=%zu",
                     ec.message ().c_str (), bytes_transferred);
           if (handler) {
               handler (ec, bytes_transferred);

@@ -56,6 +56,9 @@ class ssl_transport_t : public i_asio_transport
                            std::size_t buffer_size,
                            completion_handler_t handler) ZMQ_OVERRIDE;
 
+    void async_write_scatter (const std::vector<boost::asio::const_buffer> &buffers,
+                              completion_handler_t handler) ZMQ_OVERRIDE;
+
     //  SSL-specific overrides
     bool requires_handshake () const ZMQ_OVERRIDE { return true; }
     void async_handshake (int handshake_type,
