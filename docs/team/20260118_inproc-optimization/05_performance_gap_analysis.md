@@ -1,0 +1,224 @@
+# inproc Performance Gap Analysis
+
+## 현재 상황
+
+### 5회 평균 성능 비교 (10K messages, 64B)
+
+| Pattern | zlink | libzmq-ref | Gap | 달성률 |
+|---------|-------|------------|-----|--------|
+| PAIR | 4.83 M/s | 6.04 M/s | **-1.21 M/s** | **80.0%** ❌ |
+| PUBSUB | 4.66 M/s | 5.50 M/s | **-0.84 M/s** | **84.7%** ❌ |
+| DEALER_DEALER | 4.86 M/s | 5.97 M/s | **-1.11 M/s** | **81.5%** ❌ |
+| DEALER_ROUTER | 4.53 M/s | 5.34 M/s | **-0.81 M/s** | **84.9%** ❌ |
+
+**평균 달성률: ~82.8%** (TCP 93%보다 약 10%p 낮음)
+
+### Transport별 달성률 비교
+
+| Transport | 달성률 | Gap | 상태 |
+|-----------|--------|-----|------|
+| **IPC** | **81-106%** | 0 ~ +0.3 M/s | ✅ 해결 |
+| **TCP** | **93%** | -0.4 M/s | ✅ 해결 |
+| **inproc** | **83%** | -1.0 M/s | ❌ **개선 필요** |
+
+## 문제 분석
+
+### Phase 1 최적화 효과
+
+Codex가 적용한 mailbox_t 최적화:
+- condition_variable → signaler 기반 wakeup
+- Lock-free recv path (single-reader)
+- ASIO schedule 단순화
+
+**결과**: 일부 개선되었으나 여전히 ~17% gap 존재
+
+### 왜 inproc만 gap이 클까?
+
+#### Hypothesis A: inproc 특성
+
+**inproc 구조**:
+```
+Writer Thread                 Reader Thread
+  ↓                               ↓
+ypipe (lock-free queue)
+  ↓                               ↓
+mailbox (signaler)
+  ↓                               ↓
+ASIO event notification
+```
+
+**특징**:
+- No network stack (pure memory)
+- Lock-free ypipe for data
+- mailbox for activation signals
+- Cross-thread communication overhead
+
+**문제점**:
+- ASIO 추상화 레이어 오버헤드가 순수 메모리 통신에서 더 두드러짐
+- IPC/TCP는 네트워크 I/O가 dominant → ASIO 오버헤드 상대적으로 작음
+- inproc는 메모리 속도 → ASIO 오버헤드가 상대적으로 큼
+
+#### Hypothesis B: signaler 구현 차이
+
+**libzmq-ref signaler**:
+- eventfd (Linux)
+- socketpair (fallback)
+- 최소한의 syscall
+
+**zlink signaler**:
+- 동일한 구현 사용?
+- ASIO integration 추가 레이어?
+
+**확인 필요**: `src/signaler.cpp` 분석
+
+#### Hypothesis C: ypipe vs ASIO 상호작용
+
+**libzmq-ref**:
+```
+ypipe.write() → mailbox.send() → eventfd write → epoll wakeup
+```
+
+**zlink**:
+```
+ypipe.write() → mailbox.send() → signaler → ASIO schedule → io_context wakeup
+```
+
+**추가 레이어**:
+- ASIO의 `post()` / `dispatch()`
+- io_context event queue
+- Handler 호출 오버헤드
+
+**Gap 원인?**: ASIO 레이어가 inproc 초고속에서 병목
+
+#### Hypothesis D: Memory ordering / Cache coherence
+
+**inproc 특성**:
+- 극도로 빠른 cross-thread communication
+- Cache line bouncing 민감
+- Memory ordering 중요
+
+**가능성**:
+- ypipe의 atomic operations
+- mailbox signaling
+- ASIO handler dispatch
+
+**Profiling 필요**: perf로 cache misses 측정
+
+#### Hypothesis E: Batch processing 부족
+
+**libzmq-ref**:
+- recv 시 가능한 많은 메시지 한 번에 처리?
+- Batch notification?
+
+**zlink**:
+- 메시지당 notification?
+- ASIO handler 호출 빈도?
+
+**확인 필요**: recv path 분석
+
+## 조사 계획
+
+### P0: Profiling (Immediate)
+
+1. **perf stat 비교**
+   ```bash
+   # zlink inproc
+   perf stat -e cycles,instructions,cache-misses,cache-references \
+     BENCH_MSG_COUNT=10000 ./build/bin/comp_zlink_pair zlink inproc 64
+
+   # libzmq-ref inproc
+   perf stat -e cycles,instructions,cache-misses,cache-references \
+     BENCH_MSG_COUNT=10000 ./build/bin/comp_std_zmq_pair std inproc 64
+   ```
+
+   **목표**: CPU cycles, IPC, cache miss rate 비교
+
+2. **perf record + flamegraph**
+   ```bash
+   perf record -F 999 -g -- \
+     BENCH_MSG_COUNT=100000 ./build/bin/comp_zlink_pair zlink inproc 64
+   perf script | stackcollapse-perf.pl | flamegraph.pl > zlink_inproc.svg
+   ```
+
+   **목표**: Hotspot 식별
+
+3. **strace syscall 비교**
+   ```bash
+   strace -c BENCH_MSG_COUNT=10000 ./build/bin/comp_zlink_pair zlink inproc 64
+   strace -c BENCH_MSG_COUNT=10000 ./build/bin/comp_std_zmq_pair std inproc 64
+   ```
+
+   **목표**: Syscall 빈도 비교
+
+### P1: Code Analysis (High)
+
+1. **signaler 구현 비교**
+   - `src/signaler.cpp` vs libzmq-ref
+   - eventfd vs ASIO integration
+
+2. **mailbox recv path 분석**
+   - Lock-free인가?
+   - Batch processing 여부
+   - ASIO schedule 타이밍
+
+3. **ypipe 구현 검증**
+   - libzmq-ref와 동일한가?
+   - Atomic ordering 올바른가?
+
+### P2: Experimental Optimizations (Medium)
+
+1. **ASIO bypass 실험**
+   - inproc만 ASIO 없이 직접 signaler 사용
+   - Baseline 성능 측정
+
+2. **Batch notification**
+   - 여러 메시지 한 번에 notify
+   - Latency vs throughput tradeoff
+
+3. **Cache line padding**
+   - ypipe의 critical data structures
+   - False sharing 제거
+
+## 예상 개선 가능성
+
+**현재 gap**: 약 1.0 M/s (17%)
+
+**최적화 시나리오**:
+
+| Optimization | 예상 개선 | 근거 |
+|--------------|----------|------|
+| ASIO overhead 제거 | +0.3-0.5 M/s | TCP/IPC에서 ASIO 효과 봄 |
+| Batch processing | +0.2-0.3 M/s | Notification 빈도 감소 |
+| Cache optimization | +0.1-0.2 M/s | Memory-intensive workload |
+| **Total** | **+0.6-1.0 M/s** | **90-95% 달성 가능** |
+
+**목표 달성률**: 90%+ (libzmq-ref의 5.4-5.8 M/s)
+
+## 다음 단계
+
+1. ✅ **Gap 정량화** - 완료 (82.8% 달성)
+2. ⏳ **Profiling 실행** - perf stat, flamegraph
+3. ⏳ **Code 분석** - signaler, mailbox, ypipe
+4. ⏳ **최적화 구현** - 우선순위별
+5. ⏳ **Benchmark 검증** - 목표 90%+
+
+## 기대 효과
+
+**inproc를 90%+로 개선 시**:
+
+| Pattern | 현재 | 목표 | 개선폭 |
+|---------|------|------|--------|
+| PAIR | 4.83 M/s | **5.43 M/s** | **+0.6 M/s** |
+| DEALER_DEALER | 4.86 M/s | **5.37 M/s** | **+0.5 M/s** |
+| PUBSUB | 4.66 M/s | **4.95 M/s** | **+0.3 M/s** |
+
+**Impact**:
+- 모든 transport 90%+ 달성
+- zlink = true libzmq-ref replacement
+- Production ready 완성
+
+---
+
+**Status**: Gap identified, profiling needed
+**Priority**: High (마지막 남은 최적화 기회)
+**Timeline**: 1-2 weeks (profiling + optimization)
