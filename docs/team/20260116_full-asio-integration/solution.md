@@ -193,6 +193,12 @@ void asio_poller_t::loop() {
 - FD 기반 등록 인터페이스 제거
 - 소켓 타입별 async_wait 처리
 
+### 4.1. ZMQ_FD 제거 이후 zmq_poll 폴백
+
+**ZMQ_FD는 더 이상 제공되지 않음**
+- `ZMQ_FD`는 `EINVAL`로 동작하며, `zmq_poll`은 `ZMQ_EVENTS` 기반 폴백 경로를 사용한다.
+- 폴백은 주기적 폴링이므로 기존 fd 기반보다 지연/CPU 비용이 증가할 수 있다.
+
 ## 구현 순서 (수정)
 
 Gemini 피드백 반영:

@@ -52,3 +52,13 @@
 ---
 
 요약하면, 현재 코드베이스 기준으로 IPC는 POSIX에서 `stream_descriptor`에 강하게 의존하며, mailbox의 fd 기반 설계는 io_thread/reaper/소켓 옵션 경로에서 다수 활용됩니다. 계획대로 변경 시에는 Gemini의 지적 사항을 반드시 해결해야 합니다.
+
+## 4. ZMQ_FD 제거 이후 zmq_poll 대응
+
+### 현 구현 확인
+- `ZMQ_FD`는 ASIO 통합 이후 더 이상 fd를 노출하지 않으므로 `EINVAL`을 반환합니다. (`src/socket_base.cpp`)
+- `zmq_poll`은 `ZMQ_FD` 실패 시에도 동작하도록, `ZMQ_EVENTS` 기반 폴백 경로를 추가했습니다. (`src/zmq.cpp`)
+
+### 검증 결론
+- `ZMQ_FD` 제거에 따른 `zmq_poll` 실패를 방지했으며, 소켓-only polling 시에도 동작합니다.
+- 폴백은 주기적 폴링으로 동작하므로, 기존 fd 기반 경로보다 지연/CPU 비용이 증가할 수 있습니다.
