@@ -338,3 +338,30 @@ BENCH_SNDBUF=4194304 BENCH_RCVBUF=4194304 BENCH_MSG_COUNT=2000 \
 
 - 변동성이 크고 PUBSUB/DEALER_ROUTER 개선이 불확실.
 - 기본 동작 변경은 보류하고 원상 복구 예정.
+
+## Phase 11: DEALER_ROUTER syscall 비교 (tcp 262144)
+
+### Goal
+
+- DEALER_ROUTER tcp large-size 저하 원인 추가 확인.
+
+### Bench
+
+```
+BENCH_MSG_COUNT=2000 LD_LIBRARY_PATH=build/lib \
+  strace -f -c -o /tmp/strace_dealer_router_zlink.txt \
+  ./build/bin/comp_zlink_dealer_router zlink tcp 262144
+BENCH_MSG_COUNT=2000 LD_LIBRARY_PATH=benchwithzmq/libzmq/libzmq_dist/lib \
+  strace -f -c -o /tmp/strace_dealer_router_libzmq.txt \
+  ./build/bin/comp_std_zmq_dealer_router libzmq tcp 262144
+```
+
+### Results (strace summary)
+
+- zlink: sendto 30009, recvfrom 34013, epoll_wait 34128, futex 1314
+- libzmq: sendto 12010, recvfrom 12020, epoll_wait 16023, futex 389
+
+### Status
+
+- DEALER_ROUTER에서도 sendto/recvfrom 호출 수가 2~3배 높음.
+- tcp large-size 공통 병목으로 지속 관찰 필요.

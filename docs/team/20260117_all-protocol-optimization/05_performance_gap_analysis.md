@@ -38,3 +38,5 @@
 - PUBSUB tcp 262144 (msg_count=2000)에서 zlink는 sendto/recvfrom 호출 수가
   libzmq 대비 2~3배 높음.
 - syscall per message 증가가 tcp large-size 저하의 주요 후보.
+- DEALER_ROUTER tcp 262144도 sendto/recvfrom이 2~3배 높음
+  (30009/34013 vs 12010/12020).
