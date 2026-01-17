@@ -695,3 +695,62 @@ BENCH_MSG_COUNT=2000 BENCH_IO_THREADS=2 BENCH_SNDBUF=4194304 \
 
 - 상세 테이블: `docs/team/20260117_all-protocol-optimization/13_unpinned_strace_pubsub_sndbuf.md`
 - sendto/recvfrom 호출 수는 버퍼 상향에도 큰 변화 없음.
+
+## Phase 24: TCP max transfer size 실험
+
+### Goal
+
+- async_write 내부 분할 크기를 늘려 syscall 수 감소 및 tcp 개선 여부 확인.
+
+### Change
+
+- `ZMQ_ASIO_TCP_MAX_TRANSFER` 환경변수 추가:
+  async_write completion condition의 최대 전송 크기를 지정.
+
+### Bench
+
+```
+BENCH_NO_TASKSET=1 BENCH_IO_THREADS=2 BENCH_MSG_COUNT=2000 \
+  ZMQ_ASIO_TCP_MAX_TRANSFER=262144 LD_LIBRARY_PATH=build/lib \
+  strace -f -c -o /tmp/strace_pubsub_zlink_unpinned_262144_max262144.txt \
+  ./build/bin/comp_zlink_pubsub zlink tcp 262144
+
+BENCH_NO_TASKSET=1 BENCH_IO_THREADS=2 BENCH_MSG_COUNT=2000 \
+  ZMQ_ASIO_TCP_STATS=1 ZMQ_ASIO_TCP_MAX_TRANSFER=262144 \
+  LD_LIBRARY_PATH=build/lib ./build/bin/comp_zlink_pubsub zlink tcp 262144
+
+BENCH_NO_TASKSET=1 BENCH_IO_THREADS=2 BENCH_TRANSPORTS=tcp \
+  BENCH_MSG_SIZES=1024,262144 ZMQ_ASIO_TCP_MAX_TRANSFER=262144 \
+  ./benchwithzmq/run_comparison.py PUBSUB --runs=3 --refresh-libzmq --build-dir build/bin
+
+BENCH_NO_TASKSET=1 BENCH_IO_THREADS=2 BENCH_TRANSPORTS=tcp \
+  BENCH_MSG_SIZES=1024,262144 ZMQ_ASIO_TCP_MAX_TRANSFER=262144 \
+  ./benchwithzmq/run_comparison.py ROUTER_ROUTER --runs=3 --refresh-libzmq --build-dir build/bin
+```
+
+### Results
+
+- 상세 테이블: `docs/team/20260117_all-protocol-optimization/14_tcp_max_transfer_size_test.md`
+- sendto/recvfrom 호출 수가 약 6~7k 수준으로 감소.
+- tcp 262144 저하가 -20%대에서 -11%~-14%로 완화됨.
+
+## Phase 25: TCP max transfer 전체 tcp 매트릭스
+
+### Goal
+
+- max transfer 적용 시 tcp 전 구간 성능 변화 확인.
+
+### Bench
+
+```
+BENCH_NO_TASKSET=1 BENCH_IO_THREADS=2 BENCH_TRANSPORTS=tcp \
+  BENCH_MSG_SIZES=64,256,1024,65536,131072,262144 \
+  ZMQ_ASIO_TCP_MAX_TRANSFER=262144 \
+  ./benchwithzmq/run_comparison.py ALL --runs=3 --refresh-libzmq --build-dir build/bin
+```
+
+### Results
+
+- 상세 테이블: `docs/team/20260117_all-protocol-optimization/15_tcp_max_transfer_full_tcp_matrix.md`
+- 262144B는 -11%~-15%로 기존 대비 개선.
+- 256B~1024B는 여전히 -15%~ -20%대로 잔존.

@@ -50,6 +50,46 @@ bool tcp_allow_sync_write ()
     return enabled == 1;
 }
 
+std::size_t tcp_max_transfer_size ()
+{
+    static std::size_t size = static_cast<std::size_t> (-1);
+    if (size == static_cast<std::size_t> (-1)) {
+        const char *env = std::getenv ("ZMQ_ASIO_TCP_MAX_TRANSFER");
+        if (env && *env) {
+            char *end = NULL;
+            const unsigned long val = std::strtoul (env, &end, 10);
+            if (end != env && val > 0)
+                size = static_cast<std::size_t> (val);
+            else
+                size = 0;
+        } else {
+            size = 0;
+        }
+    }
+    return size;
+}
+
+struct transfer_all_with_max_t
+{
+    explicit transfer_all_with_max_t (std::size_t total_,
+                                      std::size_t max_)
+        : total (total_), max_transfer (max_)
+    {
+    }
+
+    template <typename Error>
+    std::size_t operator()(const Error &err, std::size_t bytes_transferred)
+    {
+        if (err)
+            return 0;
+        const std::size_t remaining = total - bytes_transferred;
+        return remaining < max_transfer ? remaining : max_transfer;
+    }
+
+    std::size_t total;
+    std::size_t max_transfer;
+};
+
 bool tcp_stats_enabled ()
 {
     static int enabled = -1;
@@ -231,21 +271,45 @@ void tcp_transport_t::async_write_some (const unsigned char *buffer,
     }
 
     if (_socket) {
+        const std::size_t max_transfer = tcp_max_transfer_size ();
         if (tcp_stats_enabled ()) {
-            boost::asio::async_write (
-              *_socket, boost::asio::buffer (buffer, buffer_size),
-              [handler](const boost::system::error_code &ec,
-                        std::size_t bytes) {
-                  if (ec)
-                      ++tcp_async_write_errors;
-                  else
-                      tcp_async_write_bytes += bytes;
-                  if (handler)
-                      handler (ec, bytes);
-              });
+            if (max_transfer > 0) {
+                transfer_all_with_max_t completion (buffer_size, max_transfer);
+                boost::asio::async_write (
+                  *_socket, boost::asio::buffer (buffer, buffer_size),
+                  completion,
+                  [handler](const boost::system::error_code &ec,
+                            std::size_t bytes) {
+                      if (ec)
+                          ++tcp_async_write_errors;
+                      else
+                          tcp_async_write_bytes += bytes;
+                      if (handler)
+                          handler (ec, bytes);
+                  });
+            } else {
+                boost::asio::async_write (
+                  *_socket, boost::asio::buffer (buffer, buffer_size),
+                  [handler](const boost::system::error_code &ec,
+                            std::size_t bytes) {
+                      if (ec)
+                          ++tcp_async_write_errors;
+                      else
+                          tcp_async_write_bytes += bytes;
+                      if (handler)
+                          handler (ec, bytes);
+                  });
+            }
         } else {
-            boost::asio::async_write (
-              *_socket, boost::asio::buffer (buffer, buffer_size), handler);
+            if (max_transfer > 0) {
+                transfer_all_with_max_t completion (buffer_size, max_transfer);
+                boost::asio::async_write (
+                  *_socket, boost::asio::buffer (buffer, buffer_size),
+                  completion, handler);
+            } else {
+                boost::asio::async_write (
+                  *_socket, boost::asio::buffer (buffer, buffer_size), handler);
+            }
         }
     } else if (handler) {
         handler (boost::asio::error::bad_descriptor, 0);

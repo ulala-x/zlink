@@ -116,3 +116,6 @@
 - SNDBUF/RCVBUF 4MB 상향에도 sendto/recvfrom 호출 수는 큰 변화 없음.
 - async_write 내부 분할(Boost.Asio write loop)이 syscall 증가의
   주요 후보로 추정됨.
+  - `ZMQ_ASIO_TCP_MAX_TRANSFER=262144`로 sendto/recvfrom 호출이
+    15k → 6~7k로 감소하며 tcp 262144 저하가 -11%~-14%로 완화됨.
+  - 256B~1024B 구간은 여전히 -15%~-20%대로 잔존.
