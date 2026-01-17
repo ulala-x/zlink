@@ -118,7 +118,10 @@ def run_single_test(binary_name, lib_name, transport, size):
         if IS_WINDOWS:
             cmd = [binary_path, lib_name, transport, str(size)]
         else:
-            cmd = ["taskset", "-c", "1", binary_path, lib_name, transport, str(size)]
+            if os.environ.get("BENCH_NO_TASKSET"):
+                cmd = [binary_path, lib_name, transport, str(size)]
+            else:
+                cmd = ["taskset", "-c", "1", binary_path, lib_name, transport, str(size)]
         result = subprocess.run(cmd, env=env, capture_output=True, text=True, timeout=60)
         if result.returncode != 0:
             return []
