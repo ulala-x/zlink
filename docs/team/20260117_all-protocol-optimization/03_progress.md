@@ -365,3 +365,34 @@ BENCH_MSG_COUNT=2000 LD_LIBRARY_PATH=benchwithzmq/libzmq/libzmq_dist/lib \
 
 - DEALER_ROUTER에서도 sendto/recvfrom 호출 수가 2~3배 높음.
 - tcp large-size 공통 병목으로 지속 관찰 필요.
+
+## Phase 12: Benchmark 안정화 체크 (msg_count=20000, runs=5)
+
+### Goal
+
+- libzmq cache refresh + 긴 실행으로 변동성 확인.
+
+### Bench
+
+```
+BENCH_MSG_COUNT=20000 BENCH_TRANSPORTS=tcp BENCH_MSG_SIZES=262144 \
+  ./benchwithzmq/run_comparison.py PUBSUB --runs 5 --refresh-libzmq --build-dir build/bin
+BENCH_MSG_COUNT=20000 BENCH_TRANSPORTS=tcp BENCH_MSG_SIZES=262144 \
+  ./benchwithzmq/run_comparison.py DEALER_ROUTER --runs 5 --refresh-libzmq --build-dir build/bin
+BENCH_MSG_COUNT=20000 BENCH_TRANSPORTS=tcp BENCH_MSG_SIZES=262144 \
+  ./benchwithzmq/run_comparison.py ROUTER_ROUTER --runs 5 --refresh-libzmq --build-dir build/bin
+BENCH_MSG_COUNT=20000 BENCH_TRANSPORTS=tcp BENCH_MSG_SIZES=262144 \
+  ./benchwithzmq/run_comparison.py ROUTER_ROUTER_POLL --runs 5 --refresh-libzmq --build-dir build/bin
+```
+
+### Results (Diff %, tcp 262144)
+
+- PUBSUB: -4.89% throughput
+- DEALER_ROUTER: -10.75% throughput
+- ROUTER_ROUTER: +1.39% throughput
+- ROUTER_ROUTER_POLL: +1.62% throughput
+
+### Status
+
+- 장시간/다회 실행 시 ROUTER 계열은 개선 또는 동급 수준.
+- DEALER_ROUTER는 여전히 ~-10% 수준 유지.

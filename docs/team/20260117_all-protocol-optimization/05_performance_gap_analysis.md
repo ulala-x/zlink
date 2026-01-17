@@ -40,3 +40,5 @@
 - syscall per message 증가가 tcp large-size 저하의 주요 후보.
 - DEALER_ROUTER tcp 262144도 sendto/recvfrom이 2~3배 높음
   (30009/34013 vs 12010/12020).
+- msg_count=20000, runs=5 재측정 시 tcp 262144에서
+  ROUTER/ROUTER_POLL은 동급 또는 소폭 우위, DEALER_ROUTER는 ~-10%.
