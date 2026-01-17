@@ -25,6 +25,8 @@
   syscall count 변화가 없어 기본값 8192 유지 예정.
 - ZMQ_ASIO_TCP_SYNC_WRITE=1 실험에서 sendto/recvfrom 감소는 확인되나
   tcp 262144 throughput 개선은 제한적(ROUTER_ROUTER -10% 내외 유지).
+- BENCH_SNDBUF/RCVBUF 4MB는 ROUTER 계열 개선 효과가 있으나
+  PUBSUB throughput이 악화되어 전면 적용은 보류.
 
 ## tcp large-size syscall hint
 

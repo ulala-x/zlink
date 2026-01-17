@@ -241,3 +241,44 @@ ZMQ_ASIO_TCP_SYNC_WRITE=1 LD_LIBRARY_PATH=build/lib BENCH_MSG_COUNT=2000 \
 
 - syscall 감소 효과는 확인되나 throughput 개선이 제한적.
 - 기본 동작 변경 없이 실험 결과로만 기록.
+
+## Phase 8: TCP socket buffer 실험 (BENCH_SNDBUF/RCVBUF)
+
+### Goal
+
+- 커널 send/recv buffer 확대로 tcp large-size 개선 여부 확인.
+
+### Harness Change
+
+- bench 프로그램에서 `BENCH_SNDBUF`, `BENCH_RCVBUF` 환경변수 지원 추가
+  (양쪽 libzmq/zlink에 동일 적용).
+
+### Bench (3-run, tcp 262144)
+
+```
+BENCH_SNDBUF=4194304 BENCH_RCVBUF=4194304 BENCH_MSG_COUNT=2000 \
+  BENCH_TRANSPORTS=tcp BENCH_MSG_SIZES=262144 \
+  ./benchwithzmq/run_comparison.py PUBSUB --runs 3 --refresh-libzmq --build-dir build/bin
+BENCH_SNDBUF=4194304 BENCH_RCVBUF=4194304 BENCH_MSG_COUNT=2000 \
+  BENCH_TRANSPORTS=tcp BENCH_MSG_SIZES=262144 \
+  ./benchwithzmq/run_comparison.py ROUTER_ROUTER --runs 3 --refresh-libzmq --build-dir build/bin
+BENCH_SNDBUF=4194304 BENCH_RCVBUF=4194304 BENCH_MSG_COUNT=2000 \
+  BENCH_TRANSPORTS=tcp BENCH_MSG_SIZES=262144 \
+  ./benchwithzmq/run_comparison.py ROUTER_ROUTER_POLL --runs 3 --refresh-libzmq --build-dir build/bin
+```
+
+### Results (Diff %, tcp 262144, 4MB)
+
+- PUBSUB: -11.87% throughput
+- ROUTER_ROUTER: -0.46% throughput
+- ROUTER_ROUTER_POLL: +3.66% throughput
+
+### Additional Check (1MB)
+
+- PUBSUB: -20.93% throughput
+- ROUTER_ROUTER: -21.03% throughput
+
+### Status
+
+- 큰 버퍼는 ROUTER 계열은 개선되지만 PUBSUB이 악화됨.
+- 전체 패턴 공통 최적화로는 부적합, 원인 추가 분석 필요.
