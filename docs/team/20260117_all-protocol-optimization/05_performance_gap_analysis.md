@@ -61,3 +61,8 @@
 - DEALER_DEALER: ipc 256B (-10.09%), ipc 131072B (-19.49%).
 - DEALER_ROUTER: ipc 131072B (-18.02%).
 - ROUTER_ROUTER: ipc 131072B (-19.47%).
+
+## IO thread scaling note
+
+- zlink은 IO thread 1개에서 syscall/락 오버헤드가 병목이 되는 경향이 있어
+  IO thread=2에서 개선 폭이 크게 나타난 것으로 추정됨.

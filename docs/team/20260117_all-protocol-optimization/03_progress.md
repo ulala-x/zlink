@@ -505,3 +505,19 @@ BENCH_IO_THREADS=2 BENCH_TRANSPORTS=inproc,tcp,ipc \
 
 - tcp 구간은 전반적으로 개선 유지.
 - 잔여 음수 구간은 ipc 131072B 중심으로 집중됨.
+
+## Phase 17: IO thread=2 개선 원인 가설 정리
+
+### Observation
+
+- IO thread=2에서 zlink 향상이 libzmq보다 크게 나타남.
+
+### Hypotheses
+
+- zlink(ASIO 경로)의 syscall 비용/락 비용이 높아 IO thread 1개가 병목이 됨.
+- IO thread 분산으로 poll/epoll 및 send/recv 처리 큐가 분리되어
+  head-of-line blocking이 완화됨.
+- libzmq는 기본 IO thread 1개에서도 상대적으로 효율이 높아
+  추가 thread에 대한 이득이 작음.
+- `run_comparison.py`는 `taskset -c 1`로 고정되어 있어
+  개선이 단순 멀티코어 효과가 아니라 스케줄링/큐 분산 효과일 가능성.
