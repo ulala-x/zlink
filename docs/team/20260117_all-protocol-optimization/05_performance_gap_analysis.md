@@ -21,6 +21,8 @@
 - WSL 환경으로 perf/flamegraph 제한.
 - 필요 시 strace 중심 비교.
 - PAIR tcp 65536B latency가 음수로 출력되는 이상치 확인.
+- in/out batch size 65536 실험에서 tcp/large 개선 폭이 제한적이고
+  syscall count 변화가 없어 기본값 8192 유지 예정.
 
 ## tcp large-size syscall hint
 

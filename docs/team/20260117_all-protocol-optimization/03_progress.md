@@ -107,3 +107,64 @@ BENCH_MSG_COUNT=2000 LD_LIBRARY_PATH=benchwithzmq/libzmq/libzmq_dist/lib \\
 
 - zlink는 sendto/recvfrom 호출 수가 2~3배 높음.
 - tcp large-size에서 syscall per message 증가 가능성 확인.
+
+## Phase 6: in/out batch size 확장 실험 (8192 -> 65536)
+
+### Goal
+
+- tcp large-size syscall 감소/throughput 개선 여부 확인.
+
+### Change
+
+- `src/options.cpp` 기본값 변경:
+  - `in_batch_size`: 8192 -> 65536
+  - `out_batch_size`: 8192 -> 65536
+
+### Bench (1-run, large sizes only)
+
+```
+BENCH_MSG_COUNT=2000 BENCH_TRANSPORTS=tcp BENCH_MSG_SIZES=131072,262144 \
+  ./benchwithzmq/run_comparison.py PUBSUB --runs 1 --refresh-libzmq --build-dir build/bin
+BENCH_MSG_COUNT=2000 BENCH_TRANSPORTS=tcp BENCH_MSG_SIZES=131072,262144 \
+  ./benchwithzmq/run_comparison.py ROUTER_ROUTER --runs 1 --refresh-libzmq --build-dir build/bin
+BENCH_MSG_COUNT=2000 BENCH_TRANSPORTS=tcp BENCH_MSG_SIZES=131072,262144 \
+  ./benchwithzmq/run_comparison.py ROUTER_ROUTER_POLL --runs 1 --refresh-libzmq --build-dir build/bin
+
+BENCH_MSG_COUNT=2000 BENCH_TRANSPORTS=ipc BENCH_MSG_SIZES=131072,262144 \
+  ./benchwithzmq/run_comparison.py PUBSUB --runs 1 --refresh-libzmq --build-dir build/bin
+BENCH_MSG_COUNT=2000 BENCH_TRANSPORTS=ipc BENCH_MSG_SIZES=131072,262144 \
+  ./benchwithzmq/run_comparison.py ROUTER_ROUTER --runs 1 --refresh-libzmq --build-dir build/bin
+BENCH_MSG_COUNT=2000 BENCH_TRANSPORTS=ipc BENCH_MSG_SIZES=131072,262144 \
+  ./benchwithzmq/run_comparison.py ROUTER_ROUTER_POLL --runs 1 --refresh-libzmq --build-dir build/bin
+```
+
+### Results (Diff %)
+
+- tcp
+  - PUBSUB 131072B: +13.53% throughput, 262144B: -23.66% throughput
+  - ROUTER_ROUTER 131072B: +7.37% throughput, 262144B: -20.86% throughput
+  - ROUTER_ROUTER_POLL 131072B: -10.67% throughput, 262144B: +0.72% throughput
+- ipc
+  - PUBSUB 131072B: -12.76% throughput, 262144B: -18.67% throughput
+  - ROUTER_ROUTER 131072B: -23.38% throughput, 262144B: +0.53% throughput
+  - ROUTER_ROUTER_POLL 131072B: -6.67% throughput, 262144B: -4.49% throughput
+
+### Strace 재확인 (PUBSUB tcp 262144)
+
+```
+LD_LIBRARY_PATH=build/lib BENCH_MSG_COUNT=2000 \
+  strace -f -c -o /tmp/strace_pubsub_zlink_batch.txt \
+  ./build/bin/comp_zlink_pubsub zlink tcp 262144
+LD_LIBRARY_PATH=benchwithzmq/libzmq/libzmq_dist/lib BENCH_MSG_COUNT=2000 \
+  strace -f -c -o /tmp/strace_pubsub_libzmq_batch.txt \
+  ./build/bin/comp_std_zmq_pubsub libzmq tcp 262144
+```
+
+- zlink syscall counts (batch 65536): sendto 15010, recvfrom 16013, epoll_wait 16053, futex 957
+- libzmq syscall counts: sendto 6011, recvfrom 6019, epoll_wait 7022, futex 436
+
+### Status
+
+- syscall 호출 수가 이전과 유사하여 개선 효과 확인되지 않음.
+- tcp 262144 개선 폭이 제한적이고 ipc 일부 구간은 악화.
+- 기본값 8192로 되돌림.
