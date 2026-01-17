@@ -1047,3 +1047,30 @@ ROUTER_ROUTER_POLL (msg_count=2000)
 - `-march=native` 기준 대부분 사이즈/패턴 90%+ 달성.
 - ROUTER_ROUTER_POLL은 msg_count 축소 환경에서 64B/256B가 90% 미달.
 - small-size poll은 기본 msg_count 재검증 필요.
+
+## Phase 35: ROUTER_ROUTER_POLL small-size 재측정 (default msg_count)
+
+### Goal
+
+- poll 패턴 small-size의 msg_count 축소 영향 제거.
+
+### Bench
+
+```
+BENCH_TRANSPORTS=inproc BENCH_MSG_SIZES=64,256,1024 \
+  ./benchwithzmq/run_comparison.py ROUTER_ROUTER_POLL --runs 3 \
+  --refresh-libzmq --build-dir build-native/bin
+```
+
+### Results (throughput, inproc, 3-run avg)
+
+```
+64B  +1.67%
+256B -4.06%
+1024B +3.05%
+```
+
+### Status
+
+- small-size는 default msg_count 기준 90%+ 달성 확인.
+- large-size는 msg_count=2000 결과 유지.
