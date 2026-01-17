@@ -168,3 +168,76 @@ LD_LIBRARY_PATH=benchwithzmq/libzmq/libzmq_dist/lib BENCH_MSG_COUNT=2000 \
 - syscall 호출 수가 이전과 유사하여 개선 효과 확인되지 않음.
 - tcp 262144 개선 폭이 제한적이고 ipc 일부 구간은 악화.
 - 기본값 8192로 되돌림.
+
+## Phase 7: TCP sync write 실험 (ZMQ_ASIO_TCP_SYNC_WRITE=1)
+
+### Goal
+
+- sendto/recvfrom 호출 수 감소 및 tcp large-size 개선 여부 확인.
+
+### Bench (1-run, large sizes)
+
+```
+ZMQ_ASIO_TCP_SYNC_WRITE=1 BENCH_MSG_COUNT=2000 BENCH_TRANSPORTS=tcp \
+  BENCH_MSG_SIZES=131072,262144 \
+  ./benchwithzmq/run_comparison.py PUBSUB --runs 1 --refresh-libzmq --build-dir build/bin
+ZMQ_ASIO_TCP_SYNC_WRITE=1 BENCH_MSG_COUNT=2000 BENCH_TRANSPORTS=tcp \
+  BENCH_MSG_SIZES=131072,262144 \
+  ./benchwithzmq/run_comparison.py ROUTER_ROUTER --runs 1 --refresh-libzmq --build-dir build/bin
+ZMQ_ASIO_TCP_SYNC_WRITE=1 BENCH_MSG_COUNT=2000 BENCH_TRANSPORTS=tcp \
+  BENCH_MSG_SIZES=131072,262144 \
+  ./benchwithzmq/run_comparison.py ROUTER_ROUTER_POLL --runs 1 --refresh-libzmq --build-dir build/bin
+```
+
+### 1-run Results (Diff %)
+
+- PUBSUB 262144B: -20.03% throughput
+- ROUTER_ROUTER 262144B: -3.74% throughput
+- ROUTER_ROUTER_POLL 262144B: -13.20% throughput
+
+### Bench (3-run, tcp 262144 only)
+
+```
+BENCH_MSG_COUNT=2000 BENCH_TRANSPORTS=tcp BENCH_MSG_SIZES=262144 \
+  ./benchwithzmq/run_comparison.py PUBSUB --runs 3 --refresh-libzmq --build-dir build/bin
+ZMQ_ASIO_TCP_SYNC_WRITE=1 BENCH_MSG_COUNT=2000 BENCH_TRANSPORTS=tcp \
+  BENCH_MSG_SIZES=262144 \
+  ./benchwithzmq/run_comparison.py PUBSUB --runs 3 --refresh-libzmq --build-dir build/bin
+
+BENCH_MSG_COUNT=2000 BENCH_TRANSPORTS=tcp BENCH_MSG_SIZES=262144 \
+  ./benchwithzmq/run_comparison.py ROUTER_ROUTER --runs 3 --refresh-libzmq --build-dir build/bin
+ZMQ_ASIO_TCP_SYNC_WRITE=1 BENCH_MSG_COUNT=2000 BENCH_TRANSPORTS=tcp \
+  BENCH_MSG_SIZES=262144 \
+  ./benchwithzmq/run_comparison.py ROUTER_ROUTER --runs 3 --refresh-libzmq --build-dir build/bin
+
+BENCH_MSG_COUNT=2000 BENCH_TRANSPORTS=tcp BENCH_MSG_SIZES=262144 \
+  ./benchwithzmq/run_comparison.py ROUTER_ROUTER_POLL --runs 3 --refresh-libzmq --build-dir build/bin
+ZMQ_ASIO_TCP_SYNC_WRITE=1 BENCH_MSG_COUNT=2000 BENCH_TRANSPORTS=tcp \
+  BENCH_MSG_SIZES=262144 \
+  ./benchwithzmq/run_comparison.py ROUTER_ROUTER_POLL --runs 3 --refresh-libzmq --build-dir build/bin
+```
+
+### 3-run Results (Diff %, tcp 262144)
+
+- PUBSUB: 기본 +0.75% throughput, sync write -4.68%
+- ROUTER_ROUTER: 기본 -10.44%, sync write -9.84% (latency 개선)
+- ROUTER_ROUTER_POLL: 기본 -16.05%, sync write -15.77%
+
+### Strace (PUBSUB/ROUTER_ROUTER tcp 262144)
+
+```
+ZMQ_ASIO_TCP_SYNC_WRITE=1 LD_LIBRARY_PATH=build/lib BENCH_MSG_COUNT=2000 \
+  strace -f -c -o /tmp/strace_pubsub_zlink_sync.txt \
+  ./build/bin/comp_zlink_pubsub zlink tcp 262144
+ZMQ_ASIO_TCP_SYNC_WRITE=1 LD_LIBRARY_PATH=build/lib BENCH_MSG_COUNT=2000 \
+  strace -f -c -o /tmp/strace_router_router_zlink_sync.txt \
+  ./build/bin/comp_zlink_router_router zlink tcp 262144
+```
+
+- PUBSUB: sendto 15010 -> 11982, recvfrom 16013 -> 12967 감소
+- ROUTER_ROUTER: sendto 20012 -> 13984, recvfrom 22019 -> 15975 감소
+
+### Status
+
+- syscall 감소 효과는 확인되나 throughput 개선이 제한적.
+- 기본 동작 변경 없이 실험 결과로만 기록.
