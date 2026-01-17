@@ -717,3 +717,19 @@ PUBSUB:             zlink 50,975.47  libzmq 70,242.44  (72.57%)
 ### Status
 
 - 저하 패턴 개선 없음, 일부 악화 → `recv_failable` 경로로 롤백.
+
+## Phase 26: perf 설치 재시도 (실패)
+
+### Goal
+
+- user-space hotspot 분석을 위해 perf 설치.
+
+### Actions
+
+1. `perf --version` 확인.
+2. `sudo -n apt-get update`로 설치 가능 여부 확인.
+
+### Result
+
+- perf 미설치 상태 유지.
+- sudo 비밀번호 필요로 설치 실패.

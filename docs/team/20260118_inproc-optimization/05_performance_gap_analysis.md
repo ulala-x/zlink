@@ -75,6 +75,10 @@
 - `wait(0)` 복귀 후 저하 패턴 개선 없음, 일부 악화.
 - `recv_failable` 경로 유지 결정.
 
+### perf 설치 상태 (Phase 26)
+
+- WSL 커널용 perf 미설치, sudo 필요로 설치 불가.
+
 ### 최신 5회 평균 (Phase 9 이후, 10K messages, 64B)
 
 | Pattern | zlink | libzmq-ref | Gap | 달성률 |
