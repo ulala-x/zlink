@@ -10,7 +10,9 @@
   - `ZMQ_ASIO_OUT_BATCH_SIZE`
 - Ran tcp batch-size sweeps with `ZMQ_ASIO_TCP_MAX_TRANSFER=262144` at `BENCH_IO_THREADS=2` (unpinned).
 - Verified that 256 KB batch sizes amplify 1024B gains but worsen 262144B.
+- Added full-size tcp sweep for PUBSUB/ROUTER_ROUTER/ROUTER_ROUTER_POLL; 64 KB batching helps <=1024B but regresses 64KB+.
 - Findings captured in `01_tcp_batch_size_override_test.md`.
+- Full-size sweep results in `02_tcp_batch_size_full_size_sweep.md`.
 
 ## Next
 
