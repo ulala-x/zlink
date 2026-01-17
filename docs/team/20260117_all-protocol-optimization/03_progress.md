@@ -604,3 +604,31 @@ BENCH_MSG_COUNT=2000 BENCH_IO_THREADS=2 \
 - 1024B: zlink sendto/recvfrom 1263/2266, libzmq 1264/1270
 - 262144B: zlink sendto/recvfrom 15010/16013, libzmq 6010/6018
 - 상세 표는 `docs/team/20260117_all-protocol-optimization/10_unpinned_strace_pubsub.md`
+
+## Phase 21: Benchmark cache-key fix + unpinned IO thread=2 rerun
+
+### Goal
+
+- cache가 다른 환경(threads/msg_count/buffers)을 섞어 쓰는 문제를 제거하고
+  unpinned IO thread=2 전체 매트릭스 재확인.
+
+### Change
+
+- `run_comparison.py`에 cache key 도입:
+  transports/sizes/runs/IO threads/buffers/msg_count/no_taskset 기준으로
+  baseline 캐시 분리.
+- `--refresh` 별칭 추가 (`--refresh-libzmq`와 동일 동작).
+
+### Bench
+
+```
+BENCH_NO_TASKSET=1 BENCH_IO_THREADS=2 BENCH_TRANSPORTS=inproc,tcp,ipc \
+  BENCH_MSG_SIZES=64,256,1024,65536,131072,262144 \
+  ./benchwithzmq/run_comparison.py ALL --runs=3 --refresh-libzmq --build-dir build/bin
+```
+
+### Results
+
+- 상세 테이블: `docs/team/20260117_all-protocol-optimization/11_unpinned_io_threads2_full_matrix_cache_key.md`
+- tcp 256B 이상은 패턴 대부분 -15%~-22% 수준으로 여전히 음수.
+- ipc 중/대형은 대체로 우위 유지, inproc은 혼합(소폭 음/양).

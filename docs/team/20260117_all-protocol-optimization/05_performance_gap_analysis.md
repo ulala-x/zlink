@@ -85,6 +85,25 @@
   tcp 256B (-11.62%), tcp 1024B (-15.10%), tcp 65536B (-13.19%),
   tcp 131072B (-18.27%), tcp 262144B (-18.98%), ipc 256B (-10.12%).
 
+## Unpinned IO_THREADS=2 Rerun Gaps (cache-keyed, runs=3)
+
+- PAIR: tcp 256B (-21.88%), tcp 1024B (-19.86%), tcp 65536B (-17.77%),
+  tcp 131072B (-20.35%), tcp 262144B (-21.35%).
+- PUBSUB: inproc 262144B (-11.78%), tcp 256B (-18.43%), tcp 1024B (-13.79%),
+  tcp 65536B (-18.96%), tcp 131072B (-22.34%), tcp 262144B (-20.35%),
+  ipc 256B (-12.34%).
+- DEALER_DEALER: tcp 256B (-19.10%), tcp 1024B (-15.90%),
+  tcp 65536B (-20.78%), tcp 131072B (-21.01%), tcp 262144B (-18.29%).
+- DEALER_ROUTER: tcp 256B (-16.48%), tcp 1024B (-15.56%),
+  tcp 65536B (-14.01%), tcp 131072B (-22.64%), tcp 262144B (-19.63%),
+  ipc 256B (-13.49%), ipc 1024B (-10.55%).
+- ROUTER_ROUTER: inproc 262144B (-15.97%), tcp 256B (-17.52%),
+  tcp 1024B (-20.46%), tcp 65536B (-11.10%), tcp 131072B (-17.21%),
+  tcp 262144B (-19.60%).
+- ROUTER_ROUTER_POLL: inproc 131072B (-12.15%), inproc 262144B (-14.94%),
+  tcp 256B (-16.07%), tcp 1024B (-15.48%), tcp 131072B (-16.82%),
+  tcp 262144B (-18.26%).
+
 ## IO thread scaling note
 
 - zlink은 IO thread 1개에서 syscall/락 오버헤드가 병목이 되는 경향이 있어

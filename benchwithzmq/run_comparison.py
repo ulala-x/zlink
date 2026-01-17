@@ -97,6 +97,29 @@ else:
 
 base_env = os.environ.copy()
 
+def env_or_default(name, default=""):
+    val = os.environ.get(name)
+    if val is None:
+        return default
+    return val
+
+def build_cache_key(num_runs):
+    transports = ",".join(TRANSPORTS)
+    sizes = ",".join(str(s) for s in MSG_SIZES)
+    fields = {
+        "debug": "1" if os.environ.get("BENCH_DEBUG") else "0",
+        "io_threads": env_or_default("BENCH_IO_THREADS"),
+        "msg_count": env_or_default("BENCH_MSG_COUNT"),
+        "no_taskset": "1" if os.environ.get("BENCH_NO_TASKSET") else "0",
+        "rcvbuf": env_or_default("BENCH_RCVBUF"),
+        "runs": str(num_runs),
+        "sizes": sizes,
+        "sndbuf": env_or_default("BENCH_SNDBUF"),
+        "transports": transports,
+    }
+    parts = [f"{key}={fields[key]}" for key in sorted(fields.keys())]
+    return "|".join(parts)
+
 def get_env_for_lib(lib_name):
     env = base_env.copy()
     if IS_WINDOWS:
@@ -187,7 +210,7 @@ def parse_args():
     i = 1
     while i < len(sys.argv):
         arg = sys.argv[i]
-        if arg == "--refresh-libzmq":
+        if arg in ("--refresh-libzmq", "--refresh"):
             refresh = True
         elif arg == "--zlink-only":
             zlink_only = True
@@ -239,15 +262,25 @@ def main():
         return
 
     cache = {}
+    cache_key = ""
+    cache_bucket = {}
     if not zlink_only:
         if os.path.exists(CACHE_FILE):
             try:
                 with open(CACHE_FILE, 'r') as f:
                     cache = json.load(f)
-            except:
-                pass
+            except Exception:
+                cache = {}
         else:
             os.makedirs(os.path.dirname(CACHE_FILE), exist_ok=True)
+
+        legacy_keys = {"PAIR", "PUBSUB", "DEALER_DEALER", "DEALER_ROUTER",
+                       "ROUTER_ROUTER", "ROUTER_ROUTER_POLL"}
+        if any(k in legacy_keys for k in cache.keys()):
+            cache = {}
+
+        cache_key = build_cache_key(num_runs)
+        cache_bucket = cache.get(cache_key, {})
 
     comparisons = [
         ("comp_std_zmq_pair", "comp_zlink_pair", "PAIR"),
@@ -269,14 +302,16 @@ def main():
             z_stats, failures = collect_data(zlk_bin, "zlink", p_name, num_runs)
             all_failures.extend(failures)
         else:
-            if refresh or p_name not in cache:
+            if refresh or p_name not in cache_bucket:
                 s_stats, failures = collect_data(std_bin, "libzmq", p_name, num_runs)
                 all_failures.extend(failures)
-                cache[p_name] = s_stats
-                with open(CACHE_FILE, 'w') as f: json.dump(cache, f, indent=2)
+                cache_bucket[p_name] = s_stats
+                cache[cache_key] = cache_bucket
+                with open(CACHE_FILE, 'w') as f:
+                    json.dump(cache, f, indent=2)
             else:
-                print(f"  [libzmq] Using cached baseline.")
-                s_stats = cache[p_name]
+                print(f"  [libzmq] Using cached baseline (config match).")
+                s_stats = cache_bucket[p_name]
 
             z_stats, failures = collect_data(zlk_bin, "zlink", p_name, num_runs)
             all_failures.extend(failures)
