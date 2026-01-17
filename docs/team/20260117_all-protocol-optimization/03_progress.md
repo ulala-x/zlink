@@ -482,3 +482,26 @@ BENCH_IO_THREADS=2 BENCH_MSG_COUNT=20000 BENCH_TRANSPORTS=tcp \
 ### Result
 
 - DEALER_ROUTER tcp 262144: +13.38% throughput
+
+## Phase 16: IO thread=2 전체 매트릭스 재실행
+
+### Goal
+
+- 전체 패턴/프로토콜/사이즈를 동일 조건으로 재확인.
+
+### Bench
+
+```
+BENCH_IO_THREADS=2 BENCH_TRANSPORTS=inproc,tcp,ipc \
+  BENCH_MSG_SIZES=64,256,1024,65536,131072,262144 \
+  ./benchwithzmq/run_comparison.py ALL --runs 3 --refresh-libzmq --build-dir build/bin
+```
+
+### Results
+
+- 상세 테이블: `docs/team/20260117_all-protocol-optimization/07_io_threads2_full_rerun.md`
+
+### Status
+
+- tcp 구간은 전반적으로 개선 유지.
+- 잔여 음수 구간은 ipc 131072B 중심으로 집중됨.
