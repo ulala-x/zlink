@@ -44,3 +44,12 @@
   ROUTER/ROUTER_POLL은 동급 또는 소폭 우위, DEALER_ROUTER는 ~-10%.
 - BENCH_IO_THREADS=2 적용 시 tcp 262144에서 모든 패턴이
   zlink 우위로 전환(+20~+32% throughput).
+
+## IO_THREADS=2 Gaps (runs=3)
+
+- PAIR: ipc 1024B (-10.59%), ipc 131072B (-33.90%).
+- PUBSUB: ipc 131072B (-12.49%).
+- DEALER_DEALER: ipc 131072B (-21.56%).
+- DEALER_ROUTER: ipc 65536B (-15.55%), ipc 131072B (-19.62%).
+- ROUTER_ROUTER: ipc 131072B (-17.38%).
+- ROUTER_ROUTER_POLL: ipc 131072B (-12.28%).

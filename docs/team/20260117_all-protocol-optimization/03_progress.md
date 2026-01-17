@@ -439,3 +439,28 @@ BENCH_IO_THREADS=2 BENCH_MSG_COUNT=20000 BENCH_TRANSPORTS=tcp \
 
 - IO thread 증가 시 zlink가 tcp 262144에서 크게 개선됨.
 - default 변경 여부는 추가 검토 필요.
+
+## Phase 14: IO thread=2 전체 매트릭스 재측정
+
+### Goal
+
+- 모든 프로토콜/사이즈에서 IO thread=2 기준 성능 확인.
+
+### Bench
+
+```
+BENCH_IO_THREADS=2 BENCH_TRANSPORTS=inproc,tcp,ipc \
+  BENCH_MSG_SIZES=64,256,1024,65536,131072,262144 \
+  ./benchwithzmq/run_comparison.py <PATTERN> --runs 3 --refresh-libzmq --build-dir build/bin
+```
+
+### Results
+
+- 상세 테이블: `docs/team/20260117_all-protocol-optimization/04_io_threads_baseline.md`
+- tcp 구간은 대부분 패턴/사이즈에서 zlink 우위.
+- ipc 131072B 등 일부 구간은 여전히 음수 (요약은 gap 분석 참고).
+
+### Status
+
+- IO thread 설정이 성능 영향이 큼.
+- 적용 범위/기본값 변경 필요성은 추가 검토 필요.
