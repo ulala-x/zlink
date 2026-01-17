@@ -24,6 +24,8 @@ void run_pair(const std::string& transport, size_t msg_size, int msg_count, cons
     set_sockopt_int(s_bind, ZMQ_RCVHWM, hwm, "ZMQ_RCVHWM");
     set_sockopt_int(s_conn, ZMQ_RCVHWM, hwm, "ZMQ_RCVHWM");
     set_sockopt_int(s_conn, ZMQ_SNDHWM, hwm, "ZMQ_SNDHWM");
+    apply_bench_socket_buffers(s_bind);
+    apply_bench_socket_buffers(s_conn);
 
     std::string endpoint = bind_and_resolve_endpoint(s_bind, transport, lib_name + "_pair");
     if (endpoint.empty()) {

@@ -18,11 +18,13 @@ void run_pair(const std::string& transport, size_t msg_size, int msg_count, cons
     zmq_setsockopt(s_bind, ZMQ_TCP_NODELAY, &nodelay, sizeof(nodelay));
     zmq_setsockopt(s_conn, ZMQ_TCP_NODELAY, &nodelay, sizeof(nodelay));
 
-    int hwm = 0; 
+    int hwm = 0;
     zmq_setsockopt(s_bind, ZMQ_SNDHWM, &hwm, sizeof(hwm));
     zmq_setsockopt(s_bind, ZMQ_RCVHWM, &hwm, sizeof(hwm));
     zmq_setsockopt(s_conn, ZMQ_RCVHWM, &hwm, sizeof(hwm));
     zmq_setsockopt(s_conn, ZMQ_SNDHWM, &hwm, sizeof(hwm));
+    apply_bench_socket_buffers(s_bind);
+    apply_bench_socket_buffers(s_conn);
 
     std::string endpoint = bind_and_resolve_endpoint(s_bind, transport, lib_name + "_pair");
     if (endpoint.empty()) {

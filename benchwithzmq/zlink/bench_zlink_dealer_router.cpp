@@ -18,6 +18,8 @@ void run_dealer_router(const std::string& transport, size_t msg_size, int msg_co
     set_sockopt_int(router, ZMQ_RCVHWM, hwm, "ZMQ_RCVHWM");
     set_sockopt_int(dealer, ZMQ_RCVHWM, hwm, "ZMQ_RCVHWM");
     set_sockopt_int(dealer, ZMQ_SNDHWM, hwm, "ZMQ_SNDHWM");
+    apply_bench_socket_buffers(router);
+    apply_bench_socket_buffers(dealer);
 
     std::string endpoint = bind_and_resolve_endpoint(router, transport, lib_name + "_dealer_router");
     if (endpoint.empty()) {

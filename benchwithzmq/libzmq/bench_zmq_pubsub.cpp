@@ -13,6 +13,8 @@ void run_pubsub(const std::string& transport, size_t msg_size, int msg_count, co
     int hwm = 0;
     zmq_setsockopt(pub, ZMQ_SNDHWM, &hwm, sizeof(hwm));
     zmq_setsockopt(sub, ZMQ_RCVHWM, &hwm, sizeof(hwm));
+    apply_bench_socket_buffers(pub);
+    apply_bench_socket_buffers(sub);
     zmq_setsockopt(sub, ZMQ_SUBSCRIBE, "", 0);
 
     std::string endpoint = bind_and_resolve_endpoint(pub, transport, lib_name + "_pubsub");

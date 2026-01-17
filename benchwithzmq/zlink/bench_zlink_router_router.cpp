@@ -26,6 +26,8 @@ void run_router_router(const std::string& transport, size_t msg_size, int msg_co
     zmq_setsockopt(router1, ZMQ_RCVHWM, &hwm, sizeof(hwm));
     zmq_setsockopt(router2, ZMQ_SNDHWM, &hwm, sizeof(hwm));
     zmq_setsockopt(router2, ZMQ_RCVHWM, &hwm, sizeof(hwm));
+    apply_bench_socket_buffers(router1);
+    apply_bench_socket_buffers(router2);
 
     std::string endpoint = bind_and_resolve_endpoint(router1, transport, lib_name + "_router_router");
     if (endpoint.empty()) {

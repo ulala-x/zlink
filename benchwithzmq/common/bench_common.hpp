@@ -83,6 +83,23 @@ inline bool set_sockopt_int(void *socket_, int option_, int value_,
     return rc == 0;
 }
 
+inline int parse_env_int(const char *name_) {
+    const char *env = std::getenv(name_);
+    if (!env || !*env)
+        return -1;
+    const int val = std::atoi(env);
+    return val > 0 ? val : -1;
+}
+
+inline void apply_bench_socket_buffers(void *socket_) {
+    const int sndbuf = parse_env_int("BENCH_SNDBUF");
+    if (sndbuf > 0)
+        set_sockopt_int(socket_, ZMQ_SNDBUF, sndbuf, "ZMQ_SNDBUF");
+    const int rcvbuf = parse_env_int("BENCH_RCVBUF");
+    if (rcvbuf > 0)
+        set_sockopt_int(socket_, ZMQ_RCVBUF, rcvbuf, "ZMQ_RCVBUF");
+}
+
 inline void apply_debug_timeouts(void *socket_, const std::string &transport) {
     if (!bench_debug_enabled())
         return;

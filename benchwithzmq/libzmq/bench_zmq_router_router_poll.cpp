@@ -37,6 +37,8 @@ void run_router_router_poll(const std::string &transport,
     zmq_setsockopt(router1, ZMQ_RCVHWM, &hwm, sizeof(hwm));
     zmq_setsockopt(router2, ZMQ_SNDHWM, &hwm, sizeof(hwm));
     zmq_setsockopt(router2, ZMQ_RCVHWM, &hwm, sizeof(hwm));
+    apply_bench_socket_buffers(router1);
+    apply_bench_socket_buffers(router2);
 
     std::string endpoint =
       bind_and_resolve_endpoint(router1, transport, lib_name + "_router_router_poll");
