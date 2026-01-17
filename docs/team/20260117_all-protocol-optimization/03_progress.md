@@ -464,3 +464,21 @@ BENCH_IO_THREADS=2 BENCH_TRANSPORTS=inproc,tcp,ipc \
 
 - IO thread 설정이 성능 영향이 큼.
 - 적용 범위/기본값 변경 필요성은 추가 검토 필요.
+
+## Phase 15: libzmq IO thread=2 비교 재확인
+
+### Goal
+
+- libzmq에도 IO thread=2가 적용된 상태에서 비교 확인.
+
+### Bench
+
+```
+BENCH_IO_THREADS=2 BENCH_MSG_COUNT=20000 BENCH_TRANSPORTS=tcp \
+  BENCH_MSG_SIZES=262144 \
+  ./benchwithzmq/run_comparison.py DEALER_ROUTER --runs 3 --refresh-libzmq --build-dir build/bin
+```
+
+### Result
+
+- DEALER_ROUTER tcp 262144: +13.38% throughput
