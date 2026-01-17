@@ -289,3 +289,29 @@ BENCH_SNDBUF=4194304 BENCH_RCVBUF=4194304 BENCH_MSG_COUNT=2000 \
   - PUBSUB: -17.86% throughput
   - ROUTER_ROUTER: -18.50% throughput
   - ROUTER_ROUTER_POLL: -12.57% throughput
+
+## Phase 9: ROUTER 기본 sndbuf/rcvbuf 상향 실험
+
+### Goal
+
+- ROUTER 계열 tcp 262144 성능 개선 (기본값 변경).
+
+### Change
+
+- `src/router.cpp`에서 ROUTER 소켓 기본 `sndbuf/rcvbuf` 상향(2MB/4MB 테스트).
+
+### Results (tcp 262144, 3-run)
+
+- 4MB
+  - ROUTER_ROUTER: -2.79% throughput
+  - ROUTER_ROUTER_POLL: +5.40% throughput
+  - DEALER_ROUTER: -18.67% throughput (regression)
+- 2MB
+  - ROUTER_ROUTER: -3.22% throughput
+  - ROUTER_ROUTER_POLL: +2.30% throughput
+  - DEALER_ROUTER: -21.14% throughput (regression)
+
+### Status
+
+- ROUTER 계열 일부 개선되나 DEALER_ROUTER가 크게 악화됨.
+- 기본값 변경은 보류하고 원상 복구 예정.

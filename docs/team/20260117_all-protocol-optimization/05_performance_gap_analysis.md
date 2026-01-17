@@ -28,6 +28,8 @@
 - BENCH_SNDBUF/RCVBUF 4MB는 ROUTER 계열 개선 효과가 있으나
   PUBSUB throughput이 악화되어 전면 적용은 보류.
 - zlink만 4MB 적용 시 상대 throughput도 악화(12~18% 수준).
+- ROUTER 기본 sndbuf/rcvbuf 상향(2MB/4MB)은 ROUTER_ROUTER 개선을 보여도
+  DEALER_ROUTER tcp 262144에서 큰 회귀가 발생해 기본값 변경 보류.
 
 ## tcp large-size syscall hint
 
