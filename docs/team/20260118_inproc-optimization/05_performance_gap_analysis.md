@@ -85,6 +85,11 @@
 - libzmq는 epoll_wait/poll 비중이 높고 read 비중은 낮음.
 - syscall 분포 차이는 관찰되나 user-space 경로 차이 가능성 정도로만 판단.
 
+### HWM 정렬 (Phase 28)
+
+- libzmq DEALER_ROUTER 벤치에 HWM=0을 적용해 zlink와 정렬.
+- size=1024에서 DEALER_ROUTER 100.9%로 회복, 131072에서도 97.9%.
+
 ### 최신 5회 평균 (Phase 9 이후, 10K messages, 64B)
 
 | Pattern | zlink | libzmq-ref | Gap | 달성률 |

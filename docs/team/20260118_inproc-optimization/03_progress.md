@@ -768,3 +768,31 @@ PUBSUB:             zlink 50,975.47  libzmq 70,242.44  (72.57%)
 
 - zlink는 futex + read(EAGAIN) 비중이 높고, libzmq는 epoll_wait/poll 비중이 높음.
 - syscall 분포 차이는 보이지만 root 원인 단정은 어려움.
+
+## Phase 28: DEALER_ROUTER HWM 정렬 (libzmq bench)
+
+### Goal
+
+- zlink/libzmq bench 설정 정렬로 공정 비교.
+
+### Actions
+
+1. libzmq `bench_zmq_dealer_router.cpp`에 HWM=0 설정 추가.
+2. DEALER_ROUTER size별 재측정.
+
+### Bench (5-run avg, inproc)
+
+```
+size=64, msg_count=10000
+DEALER_ROUTER:      zlink 4,976,870.62  libzmq 5,356,658.60  (92.91%)
+
+size=1024, msg_count=10000
+DEALER_ROUTER:      zlink 1,969,989.44  libzmq 1,951,390.49  (100.95%)
+
+size=131072, msg_count=2000
+DEALER_ROUTER:      zlink 81,907.67  libzmq 83,650.83  (97.92%)
+```
+
+### Status
+
+- 1024B DEALER_ROUTER 90% 미달 이슈 해소.
