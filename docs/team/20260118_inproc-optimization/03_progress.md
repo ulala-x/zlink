@@ -873,3 +873,103 @@ libzmq: throughput 55,819.99   latency 7.30 us
 
 - msg_count=20000 구간은 timeout 발생, 2000에서는 정상 완료.
 - poll 벤치 large-size는 msg_count 조정 또는 내부 큐 압력 분석 필요.
+
+## Phase 31: msg_t content_t padding 정렬 실험 (Rollback)
+
+### Goal
+
+- large-size memcpy 경로 개선을 위해 데이터 포인터 16B 정렬 시도.
+
+### Actions
+
+1. `msg_t::content_t`에 padding 추가로 `sizeof(content_t)`를 16B 단위로 맞춤.
+2. 64K/128K/256K inproc 재측정.
+
+### Bench
+
+```
+BENCH_TRANSPORTS=inproc BENCH_MSG_SIZES=65536,131072,262144 \
+  ./benchwithzmq/run_comparison.py DEALER_DEALER --runs 5
+BENCH_TRANSPORTS=inproc BENCH_MSG_SIZES=65536,131072,262144 \
+  ./benchwithzmq/run_comparison.py PUBSUB --runs 5
+BENCH_TRANSPORTS=inproc BENCH_MSG_SIZES=65536,131072,262144 \
+  ./benchwithzmq/run_comparison.py ROUTER_ROUTER --runs 5
+```
+
+### Results (throughput, inproc, 5-run avg)
+
+```
+DEALER_DEALER
+65536B:  libzmq 0.16 M/s  zlink 0.11 M/s  (-31.85%)
+131072B: libzmq 0.11 M/s  zlink 0.08 M/s  (-27.63%)
+262144B: libzmq 0.07 M/s  zlink 0.05 M/s  (-18.31%)
+
+PUBSUB
+65536B:  libzmq 0.16 M/s  zlink 0.11 M/s  (-29.22%)
+131072B: libzmq 0.11 M/s  zlink 0.08 M/s  (-24.19%)
+262144B: libzmq 0.07 M/s  zlink 0.05 M/s  (-17.87%)
+
+ROUTER_ROUTER
+65536B:  libzmq 0.16 M/s  zlink 0.11 M/s  (-31.32%)
+131072B: libzmq 0.11 M/s  zlink 0.08 M/s  (-28.42%)
+262144B: libzmq 0.07 M/s  zlink 0.05 M/s  (-24.14%)
+```
+
+### Status
+
+- 전반적으로 2~4%p 이상 악화 → padding 정렬 변경은 롤백.
+
+## Phase 32: -march=native 빌드 플래그 영향 확인
+
+### Goal
+
+- large-size 저하가 컴파일 플래그 영향인지 확인.
+
+### Actions
+
+1. `-O3 -march=native`로 별도 빌드 (`build-native`).
+2. inproc 64K/128K/256K 재측정.
+
+### Build
+
+```
+cmake -B build-native -DBUILD_BENCHMARKS=ON -DCMAKE_BUILD_TYPE=Release \
+  -DBUILD_TESTS=ON -DWITH_DOCS=OFF -DWITH_TLS=ON \
+  -DCMAKE_CXX_FLAGS_RELEASE="-O3 -march=native"
+cmake --build build-native
+```
+
+### Bench
+
+```
+BENCH_TRANSPORTS=inproc BENCH_MSG_SIZES=65536,131072,262144 \
+  ./benchwithzmq/run_comparison.py DEALER_DEALER --runs 5 --build-dir build-native/bin
+BENCH_TRANSPORTS=inproc BENCH_MSG_SIZES=65536,131072,262144 \
+  ./benchwithzmq/run_comparison.py PUBSUB --runs 5 --build-dir build-native/bin
+BENCH_TRANSPORTS=inproc BENCH_MSG_SIZES=65536,131072,262144 \
+  ./benchwithzmq/run_comparison.py ROUTER_ROUTER --runs 5 --build-dir build-native/bin
+```
+
+### Results (throughput, inproc, 5-run avg)
+
+```
+DEALER_DEALER
+65536B:  libzmq 0.16 M/s  zlink 0.18 M/s  (+8.90%)
+131072B: libzmq 0.11 M/s  zlink 0.11 M/s  (+1.52%)
+262144B: libzmq 0.07 M/s  zlink 0.07 M/s  (+5.44%)
+
+PUBSUB
+65536B:  libzmq 0.16 M/s  zlink 0.17 M/s  (+3.04%)
+131072B: libzmq 0.11 M/s  zlink 0.11 M/s  (+1.35%)
+262144B: libzmq 0.07 M/s  zlink 0.07 M/s  (+2.67%)
+
+ROUTER_ROUTER
+65536B:  libzmq 0.16 M/s  zlink 0.17 M/s  (+4.59%)
+131072B: libzmq 0.11 M/s  zlink 0.11 M/s  (+1.10%)
+262144B: libzmq 0.07 M/s  zlink 0.06 M/s  (-5.73%)
+```
+
+### Status
+
+- `-march=native` 적용 시 large-size gap 대부분 해소.
+- 차이는 코드보다는 컴파일 플래그/ISA 최적화 영향 가능성 큼.

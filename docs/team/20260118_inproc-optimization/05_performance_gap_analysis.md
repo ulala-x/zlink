@@ -115,6 +115,18 @@
   - libzmq throughput 55,819.99 / latency 7.30 us
 - large-size poll 벤치는 msg_count 조정 또는 큐 압력 원인 분석 필요.
 
+### content_t padding 정렬 실험 (Phase 31)
+
+- `msg_t::content_t` padding 추가로 data 16B 정렬 시도.
+- 64K/128K/256K 전 패턴에서 throughput이 2~4%p 추가 하락 → 롤백.
+
+### -march=native 빌드 플래그 영향 (Phase 32)
+
+- `-O3 -march=native` 별도 빌드 시 large-size gap 대부분 해소.
+- DEALER_DEALER/PUBSUB는 64K~256K 구간에서 +1~9%로 전환.
+- ROUTER_ROUTER는 64K/128K 개선, 256K는 여전히 -5.7%.
+- 코드 변경보다 컴파일 플래그/ISA 최적화 영향이 큼.
+
 ### 최신 5회 평균 (Phase 9 이후, 10K messages, 64B)
 
 | Pattern | zlink | libzmq-ref | Gap | 달성률 |
