@@ -4,6 +4,7 @@
 #include <string.h>
 #include <limits.h>
 #include <set>
+#include <cstdlib>
 
 #include "options.hpp"
 #include "err.hpp"
@@ -26,6 +27,18 @@ static int sockopt_invalid ()
 #endif
     errno = EINVAL;
     return -1;
+}
+
+static int parse_env_positive_int (const char *name_, int fallback_)
+{
+    const char *env = std::getenv (name_);
+    if (!env || !*env)
+        return fallback_;
+    errno = 0;
+    const long value = std::strtol (env, NULL, 10);
+    if (errno != 0 || value <= 0 || value > INT_MAX)
+        return fallback_;
+    return static_cast<int> (value);
 }
 
 int zmq::do_getsockopt (void *const optval_,
@@ -192,6 +205,14 @@ zmq::options_t::options_t () :
     tls_trust_system (1)
 #endif
 {
+    const int in_override = parse_env_positive_int (
+      "ZMQ_ASIO_IN_BATCH_SIZE", -1);
+    if (in_override > 0)
+        in_batch_size = in_override;
+    const int out_override = parse_env_positive_int (
+      "ZMQ_ASIO_OUT_BATCH_SIZE", -1);
+    if (out_override > 0)
+        out_batch_size = out_override;
 }
 
 const int deciseconds_per_millisecond = 100;
