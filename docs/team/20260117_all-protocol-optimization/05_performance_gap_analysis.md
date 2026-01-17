@@ -30,6 +30,8 @@
 - zlink만 4MB 적용 시 상대 throughput도 악화(12~18% 수준).
 - ROUTER 기본 sndbuf/rcvbuf 상향(2MB/4MB)은 ROUTER_ROUTER 개선을 보여도
   DEALER_ROUTER tcp 262144에서 큰 회귀가 발생해 기본값 변경 보류.
+- TCP sync write 기본 활성화(타입 제한 포함)도 변동성이 커서
+  개선 여부가 불확실하므로 기본값 변경은 보류.
 
 ## tcp large-size syscall hint
 

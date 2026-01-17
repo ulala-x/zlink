@@ -315,3 +315,26 @@ BENCH_SNDBUF=4194304 BENCH_RCVBUF=4194304 BENCH_MSG_COUNT=2000 \
 
 - ROUTER 계열 일부 개선되나 DEALER_ROUTER가 크게 악화됨.
 - 기본값 변경은 보류하고 원상 복구 예정.
+
+## Phase 10: TCP sync write 기본 활성화 실험 (DEALER/ROUTER 제한)
+
+### Goal
+
+- tcp 262144 구간(특히 DEALER_ROUTER) 개선.
+
+### Change
+
+- `ZMQ_ASIO_TCP_SYNC_WRITE` 기본값을 ON으로 변경 시도.
+- `DEALER/ROUTER` 타입만 sync write 사용하도록 조건 추가.
+
+### Results (tcp 262144, 3-run)
+
+- ROUTER_ROUTER: -1.90% throughput
+- ROUTER_ROUTER_POLL: +0.81% throughput
+- DEALER_ROUTER: -10% ~ -30% 수준으로 변동 (안정적 개선 불가)
+- PUBSUB: -7% ~ -18% 변동 (개선 확인 못함)
+
+### Status
+
+- 변동성이 크고 PUBSUB/DEALER_ROUTER 개선이 불확실.
+- 기본 동작 변경은 보류하고 원상 복구 예정.
