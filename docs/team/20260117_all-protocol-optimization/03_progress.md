@@ -547,3 +547,60 @@ BENCH_NO_TASKSET=1 BENCH_IO_THREADS=<1|2|3|4> \
   추가 thread에 대한 이득이 작음.
 - `run_comparison.py`는 `taskset -c 1`로 고정되어 있어
   개선이 단순 멀티코어 효과가 아니라 스케줄링/큐 분산 효과일 가능성.
+
+## Phase 19: Unpinned IO thread=2 전체 매트릭스
+
+### Goal
+
+- CPU 핀 해제 상태에서 IO thread=2 full matrix 확인.
+
+### Bench
+
+```
+BENCH_NO_TASKSET=1 BENCH_IO_THREADS=2 BENCH_TRANSPORTS=inproc,tcp,ipc \
+  BENCH_MSG_SIZES=64,256,1024,65536,131072,262144 \
+  ./benchwithzmq/run_comparison.py ALL --runs 3 --refresh-libzmq --build-dir build/bin
+```
+
+### Results
+
+- 상세 테이블: `docs/team/20260117_all-protocol-optimization/09_unpinned_io_threads2_full_matrix.md`
+- tcp 256B 이상 구간에서 대부분 패턴이 음수.
+- ipc는 중/대형 구간이 대체로 우위, inproc은 대형 일부 음수.
+
+### Note
+
+- 초기 실행에서 `--refresh` 오타로 libzmq cache가 사용되어 결과가 왜곡됨.
+  (정상 실행은 `--refresh-libzmq`로 재실행)
+
+## Phase 20: Unpinned strace (PUBSUB tcp 1024/262144)
+
+### Goal
+
+- unpinned tcp 중/대형 구간 syscall 분포 확인.
+
+### Bench
+
+```
+BENCH_MSG_COUNT=2000 BENCH_IO_THREADS=2 LD_LIBRARY_PATH=build/lib \
+  strace -f -c -o /tmp/strace_pubsub_zlink_unpinned_1024.txt \
+  ./build/bin/comp_zlink_pubsub zlink tcp 1024
+BENCH_MSG_COUNT=2000 BENCH_IO_THREADS=2 \
+  LD_LIBRARY_PATH=benchwithzmq/libzmq/libzmq_dist/lib \
+  strace -f -c -o /tmp/strace_pubsub_libzmq_unpinned_1024.txt \
+  ./build/bin/comp_std_zmq_pubsub libzmq tcp 1024
+
+BENCH_MSG_COUNT=2000 BENCH_IO_THREADS=2 LD_LIBRARY_PATH=build/lib \
+  strace -f -c -o /tmp/strace_pubsub_zlink_unpinned_262144.txt \
+  ./build/bin/comp_zlink_pubsub zlink tcp 262144
+BENCH_MSG_COUNT=2000 BENCH_IO_THREADS=2 \
+  LD_LIBRARY_PATH=benchwithzmq/libzmq/libzmq_dist/lib \
+  strace -f -c -o /tmp/strace_pubsub_libzmq_unpinned_262144.txt \
+  ./build/bin/comp_std_zmq_pubsub libzmq tcp 262144
+```
+
+### Results (summary)
+
+- 1024B: zlink sendto/recvfrom 1263/2266, libzmq 1264/1270
+- 262144B: zlink sendto/recvfrom 15010/16013, libzmq 6010/6018
+- 상세 표는 `docs/team/20260117_all-protocol-optimization/10_unpinned_strace_pubsub.md`

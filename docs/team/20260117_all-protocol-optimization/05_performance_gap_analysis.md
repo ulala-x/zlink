@@ -67,6 +67,24 @@
 - CPU 핀 해제 시 tcp 1024/262144 구간은 IO thread=1~4 모두 음수 경향.
 - ipc는 IO thread>=2에서 중/대형 구간 개선이 뚜렷함.
 
+## Unpinned IO_THREADS=2 Full Matrix Gaps (runs=3)
+
+- PAIR: tcp 256B (-19.69%), tcp 1024B (-15.65%), tcp 65536B (-18.45%),
+  tcp 131072B (-22.30%), tcp 262144B (-21.77%).
+- PUBSUB: inproc 262144B (-12.95%), tcp 256B (-20.27%), tcp 1024B (-13.46%),
+  tcp 65536B (-17.64%), tcp 131072B (-21.57%), tcp 262144B (-20.14%),
+  ipc 256B (-12.93%).
+- DEALER_DEALER: tcp 256B (-20.25%), tcp 1024B (-15.04%),
+  tcp 65536B (-15.80%), tcp 131072B (-18.08%), tcp 262144B (-17.66%).
+- DEALER_ROUTER: tcp 256B (-16.41%), tcp 1024B (-15.80%),
+  tcp 65536B (-24.32%), tcp 131072B (-23.03%), tcp 262144B (-18.96%).
+- ROUTER_ROUTER: inproc 262144B (-13.06%), tcp 256B (-16.94%),
+  tcp 1024B (-14.10%), tcp 65536B (-15.22%), tcp 131072B (-19.43%),
+  tcp 262144B (-20.31%).
+- ROUTER_ROUTER_POLL: inproc 131072B (-15.39%), inproc 262144B (-22.85%),
+  tcp 256B (-11.62%), tcp 1024B (-15.10%), tcp 65536B (-13.19%),
+  tcp 131072B (-18.27%), tcp 262144B (-18.98%), ipc 256B (-10.12%).
+
 ## IO thread scaling note
 
 - zlink은 IO thread 1개에서 syscall/락 오버헤드가 병목이 되는 경향이 있어
