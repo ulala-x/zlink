@@ -25,6 +25,7 @@
 
 #include <sstream>
 #include <cstdlib>
+#include <limits.h>
 
 // Debug logging for ASIO engine - enable with -DZMQ_ASIO_DEBUG=1
 #if defined(ZMQ_ASIO_DEBUG)
@@ -93,6 +94,66 @@ static bool asio_allow_read_during_backpressure ()
     return enabled == 1;
 }
 
+enum transport_kind_t
+{
+    transport_tcp,
+    transport_ipc,
+    transport_inproc,
+    transport_other
+};
+
+static transport_kind_t get_transport_kind (
+  const zmq::endpoint_uri_pair_t &endpoint_uri_pair_)
+{
+    const std::string &id = endpoint_uri_pair_.identifier ();
+    if (id.compare (0, 6, "tcp://") == 0 || id.compare (0, 6, "tls://") == 0
+        || id.compare (0, 5, "ws://") == 0 || id.compare (0, 6, "wss://") == 0)
+        return transport_tcp;
+    if (id.compare (0, 6, "ipc://") == 0)
+        return transport_ipc;
+    if (id.compare (0, 9, "inproc://") == 0)
+        return transport_inproc;
+    return transport_other;
+}
+
+static int parse_env_positive_int (const char *name_, int fallback_)
+{
+    if (!name_ || !*name_)
+        return fallback_;
+    const char *env = std::getenv (name_);
+    if (!env || !*env)
+        return fallback_;
+    errno = 0;
+    const long value = std::strtol (env, NULL, 10);
+    if (errno != 0 || value <= 0 || value > INT_MAX)
+        return fallback_;
+    return static_cast<int> (value);
+}
+
+static int select_batch_override (transport_kind_t kind_,
+                                  int fallback_,
+                                  const char *tcp_env_,
+                                  const char *ipc_env_,
+                                  const char *inproc_env_)
+{
+    const char *env = NULL;
+    switch (kind_) {
+    case transport_tcp:
+        env = tcp_env_;
+        break;
+    case transport_ipc:
+        env = ipc_env_;
+        break;
+    case transport_inproc:
+        env = inproc_env_;
+        break;
+    default:
+        env = NULL;
+        break;
+    }
+    return parse_env_positive_int (env, fallback_);
+}
+
 zmq::asio_engine_t::asio_engine_t (
   fd_t fd_,
   const options_t &options_,
@@ -136,6 +197,14 @@ zmq::asio_engine_t::asio_engine_t (
     _socket (NULL)
 {
     ENGINE_DBG ("Constructor called, fd=%d", fd_);
+
+    const transport_kind_t kind = get_transport_kind (_endpoint_uri_pair);
+    _in_batch_size = static_cast<size_t> (select_batch_override (
+      kind, _options.in_batch_size, "ZMQ_ASIO_IN_BATCH_SIZE_TCP",
+      "ZMQ_ASIO_IN_BATCH_SIZE_IPC", "ZMQ_ASIO_IN_BATCH_SIZE_INPROC"));
+    _out_batch_size = static_cast<size_t> (select_batch_override (
+      kind, _options.out_batch_size, "ZMQ_ASIO_OUT_BATCH_SIZE_TCP",
+      "ZMQ_ASIO_OUT_BATCH_SIZE_IPC", "ZMQ_ASIO_OUT_BATCH_SIZE_INPROC"));
 
     const int rc = _tx_msg.init ();
     errno_assert (rc == 0);
@@ -450,8 +519,7 @@ void zmq::asio_engine_t::start_async_write ()
     //  write completion.
     if (_outsize > 0 && _outpos != NULL) {
         //  Copy encoder buffer to write buffer for async lifetime safety
-        const size_t out_batch_size =
-          static_cast<size_t> (_options.out_batch_size);
+        const size_t out_batch_size = _out_batch_size;
         const size_t target =
           _outsize > out_batch_size ? _outsize : out_batch_size;
         if (_write_buffer.capacity () < target)
@@ -738,7 +806,7 @@ bool zmq::asio_engine_t::prepare_output_buffer ()
     _outpos = NULL;
     _outsize = _encoder->encode (&_outpos, 0);
 
-    while (_outsize < static_cast<size_t> (_options.out_batch_size)) {
+    while (_outsize < _out_batch_size) {
         if ((this->*_next_msg) (&_tx_msg) == -1) {
             if (errno == ECONNRESET)
                 return false;
@@ -747,8 +815,7 @@ bool zmq::asio_engine_t::prepare_output_buffer ()
         }
         _encoder->load_msg (&_tx_msg);
         unsigned char *bufptr = _outpos + _outsize;
-        const size_t n =
-          _encoder->encode (&bufptr, _options.out_batch_size - _outsize);
+        const size_t n = _encoder->encode (&bufptr, _out_batch_size - _outsize);
         zmq_assert (n > 0);
         if (_outpos == NULL)
             _outpos = bufptr;
@@ -892,7 +959,7 @@ void zmq::asio_engine_t::process_output ()
         _outpos = NULL;
         _outsize = _encoder->encode (&_outpos, 0);
 
-        while (_outsize < static_cast<size_t> (_options.out_batch_size)) {
+        while (_outsize < _out_batch_size) {
             if ((this->*_next_msg) (&_tx_msg) == -1) {
                 if (errno == ECONNRESET)
                     return;
@@ -902,7 +969,7 @@ void zmq::asio_engine_t::process_output ()
             _encoder->load_msg (&_tx_msg);
             unsigned char *bufptr = _outpos + _outsize;
             const size_t n =
-              _encoder->encode (&bufptr, _options.out_batch_size - _outsize);
+              _encoder->encode (&bufptr, _out_batch_size - _outsize);
             zmq_assert (n > 0);
             if (_outpos == NULL)
                 _outpos = bufptr;
@@ -920,8 +987,7 @@ void zmq::asio_engine_t::process_output ()
     //  This copy is necessary because encoder buffer may be invalidated before
     //  async write completes. The copy is performed here (for async-only path)
     //  or in start_async_write() (for speculative_write fallback path).
-    const size_t out_batch_size =
-      static_cast<size_t> (_options.out_batch_size);
+    const size_t out_batch_size = _out_batch_size;
     const size_t target =
       _outsize > out_batch_size ? _outsize : out_batch_size;
     if (_write_buffer.capacity () < target)

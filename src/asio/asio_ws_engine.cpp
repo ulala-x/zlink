@@ -452,7 +452,8 @@ void zmq::asio_ws_engine_t::on_read_complete (
         //  Create encoder/decoder for v3.1
         _encoder = new (std::nothrow) v2_encoder_t (_options.out_batch_size);
         alloc_assert (_encoder);
-        _decoder = new (std::nothrow) v2_decoder_t (_options.in_batch_size, _options.maxmsgsize, true);
+        _decoder = new (std::nothrow)
+          v2_decoder_t (_options.in_batch_size, _options.maxmsgsize, true);
         alloc_assert (_decoder);
 
         //  Create NULL mechanism (no authentication for now)

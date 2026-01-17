@@ -271,11 +271,11 @@ bool zmq::asio_zmtp_engine_t::handshake_v1_0_unversioned ()
         return false;
     }
 
-    _encoder = new (std::nothrow) v1_encoder_t (_options.out_batch_size);
+    _encoder = new (std::nothrow) v1_encoder_t (_out_batch_size);
     alloc_assert (_encoder);
 
     _decoder = new (std::nothrow)
-      v1_decoder_t (_options.in_batch_size, _options.maxmsgsize);
+      v1_decoder_t (_in_batch_size, _options.maxmsgsize);
     alloc_assert (_decoder);
 
     const size_t header_size =
@@ -316,11 +316,11 @@ bool zmq::asio_zmtp_engine_t::handshake_v1_0 ()
         return false;
     }
 
-    _encoder = new (std::nothrow) v1_encoder_t (_options.out_batch_size);
+    _encoder = new (std::nothrow) v1_encoder_t (_out_batch_size);
     alloc_assert (_encoder);
 
     _decoder = new (std::nothrow)
-      v1_decoder_t (_options.in_batch_size, _options.maxmsgsize);
+      v1_decoder_t (_in_batch_size, _options.maxmsgsize);
     alloc_assert (_decoder);
 
     return true;
@@ -335,11 +335,11 @@ bool zmq::asio_zmtp_engine_t::handshake_v2_0 ()
         return false;
     }
 
-    _encoder = new (std::nothrow) v2_encoder_t (_options.out_batch_size);
+    _encoder = new (std::nothrow) v2_encoder_t (_out_batch_size);
     alloc_assert (_encoder);
 
     _decoder = new (std::nothrow)
-      v2_decoder_t (_options.in_batch_size, _options.maxmsgsize, true);
+      v2_decoder_t (_in_batch_size, _options.maxmsgsize, true);
     alloc_assert (_decoder);
 
     return true;
@@ -401,11 +401,11 @@ bool zmq::asio_zmtp_engine_t::handshake_v3_0 ()
 {
     ZMTP_ENGINE_DBG ("handshake_v3_0");
 
-    _encoder = new (std::nothrow) v2_encoder_t (_options.out_batch_size);
+    _encoder = new (std::nothrow) v2_encoder_t (_out_batch_size);
     alloc_assert (_encoder);
 
     _decoder = new (std::nothrow)
-      v2_decoder_t (_options.in_batch_size, _options.maxmsgsize, true);
+      v2_decoder_t (_in_batch_size, _options.maxmsgsize, true);
     alloc_assert (_decoder);
 
     return zmq::asio_zmtp_engine_t::handshake_v3_x (true);
@@ -415,11 +415,11 @@ bool zmq::asio_zmtp_engine_t::handshake_v3_1 ()
 {
     ZMTP_ENGINE_DBG ("handshake_v3_1");
 
-    _encoder = new (std::nothrow) v3_1_encoder_t (_options.out_batch_size);
+    _encoder = new (std::nothrow) v3_1_encoder_t (_out_batch_size);
     alloc_assert (_encoder);
 
     _decoder = new (std::nothrow)
-      v2_decoder_t (_options.in_batch_size, _options.maxmsgsize, true);
+      v2_decoder_t (_in_batch_size, _options.maxmsgsize, true);
     alloc_assert (_decoder);
 
     return zmq::asio_zmtp_engine_t::handshake_v3_x (false);

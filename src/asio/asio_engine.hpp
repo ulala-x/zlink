@@ -132,6 +132,9 @@ class asio_engine_t : public i_engine
     socket_base_t *socket () { return _socket; }
 
     const options_t _options;
+    //  Effective batch sizes (may be overridden per transport).
+    size_t _in_batch_size;
+    size_t _out_batch_size;
 
     //  Buffers for async I/O
     unsigned char *_inpos;

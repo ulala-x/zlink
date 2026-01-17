@@ -15,6 +15,8 @@
 - Full-size sweep results in `02_tcp_batch_size_full_size_sweep.md`.
 - Added IPC/INPROC full-size sweeps; IPC benefits from 64 KB batching, INPROC impact is mixed.
 - Results recorded in `03_ipc_inproc_batch_size_full_size_sweep.md`.
+- Added transport-specific batch override envs to isolate IPC gains from TCP regressions.
+- Verification recorded in `04_transport_specific_batch_override.md`.
 
 ## Next
 
