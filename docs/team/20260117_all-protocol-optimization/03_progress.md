@@ -396,3 +396,46 @@ BENCH_MSG_COUNT=20000 BENCH_TRANSPORTS=tcp BENCH_MSG_SIZES=262144 \
 
 - 장시간/다회 실행 시 ROUTER 계열은 개선 또는 동급 수준.
 - DEALER_ROUTER는 여전히 ~-10% 수준 유지.
+
+## Phase 13: IO thread tuning (BENCH_IO_THREADS)
+
+### Goal
+
+- tcp 262144에서 zlink 상대 성능 개선 가능성 확인.
+
+### Harness Change
+
+- `BENCH_IO_THREADS` 환경변수로 `ZMQ_IO_THREADS` 설정 지원 추가.
+
+### Bench (msg_count=20000, runs=5, tcp 262144)
+
+```
+BENCH_IO_THREADS=2 BENCH_MSG_COUNT=20000 BENCH_TRANSPORTS=tcp \
+  BENCH_MSG_SIZES=262144 \
+  ./benchwithzmq/run_comparison.py PUBSUB --runs 5 --refresh-libzmq --build-dir build/bin
+BENCH_IO_THREADS=2 BENCH_MSG_COUNT=20000 BENCH_TRANSPORTS=tcp \
+  BENCH_MSG_SIZES=262144 \
+  ./benchwithzmq/run_comparison.py DEALER_ROUTER --runs 5 --refresh-libzmq --build-dir build/bin
+BENCH_IO_THREADS=2 BENCH_MSG_COUNT=20000 BENCH_TRANSPORTS=tcp \
+  BENCH_MSG_SIZES=262144 \
+  ./benchwithzmq/run_comparison.py ROUTER_ROUTER --runs 5 --refresh-libzmq --build-dir build/bin
+BENCH_IO_THREADS=2 BENCH_MSG_COUNT=20000 BENCH_TRANSPORTS=tcp \
+  BENCH_MSG_SIZES=262144 \
+  ./benchwithzmq/run_comparison.py ROUTER_ROUTER_POLL --runs 5 --refresh-libzmq --build-dir build/bin
+```
+
+### Results (Diff %, tcp 262144)
+
+- PUBSUB: +21.02% throughput
+- DEALER_ROUTER: +29.73% throughput
+- ROUTER_ROUTER: +23.86% throughput
+- ROUTER_ROUTER_POLL: +32.32% throughput
+
+### 4-thread Check (DEALER_ROUTER)
+
+- BENCH_IO_THREADS=4: +22.09% throughput
+
+### Status
+
+- IO thread 증가 시 zlink가 tcp 262144에서 크게 개선됨.
+- default 변경 여부는 추가 검토 필요.

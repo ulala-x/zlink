@@ -42,3 +42,5 @@
   (30009/34013 vs 12010/12020).
 - msg_count=20000, runs=5 재측정 시 tcp 262144에서
   ROUTER/ROUTER_POLL은 동급 또는 소폭 우위, DEALER_ROUTER는 ~-10%.
+- BENCH_IO_THREADS=2 적용 시 tcp 262144에서 모든 패턴이
+  zlink 우위로 전환(+20~+32% throughput).
