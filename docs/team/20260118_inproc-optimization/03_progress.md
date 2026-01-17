@@ -989,3 +989,61 @@ ROUTER_ROUTER
 
 - 기본값 OFF (호환성 유지).
 - 벤치/로컬 성능 튜닝 목적.
+
+## Phase 34: native 최적화 빌드 full sweep (inproc, 6 sizes)
+
+### Goal
+
+- `-march=native` 빌드에서 전 사이즈/패턴 목표치 확인.
+
+### Bench
+
+```
+BENCH_TRANSPORTS=inproc BENCH_MSG_SIZES=64,256,1024,65536,131072,262144 \
+  ./benchwithzmq/run_comparison.py PAIR --runs 3 --refresh-libzmq --build-dir build-native/bin
+BENCH_TRANSPORTS=inproc BENCH_MSG_SIZES=64,256,1024,65536,131072,262144 \
+  ./benchwithzmq/run_comparison.py PUBSUB --runs 3 --refresh-libzmq --build-dir build-native/bin
+BENCH_TRANSPORTS=inproc BENCH_MSG_SIZES=64,256,1024,65536,131072,262144 \
+  ./benchwithzmq/run_comparison.py DEALER_DEALER --runs 3 --refresh-libzmq --build-dir build-native/bin
+BENCH_TRANSPORTS=inproc BENCH_MSG_SIZES=64,256,1024,65536,131072,262144 \
+  ./benchwithzmq/run_comparison.py DEALER_ROUTER --runs 3 --refresh-libzmq --build-dir build-native/bin
+BENCH_TRANSPORTS=inproc BENCH_MSG_SIZES=64,256,1024,65536,131072,262144 \
+  ./benchwithzmq/run_comparison.py ROUTER_ROUTER --runs 3 --refresh-libzmq --build-dir build-native/bin
+BENCH_MSG_COUNT=2000 BENCH_LAT_COUNT=200 BENCH_TRANSPORTS=inproc \
+  BENCH_MSG_SIZES=64,256,1024,65536,131072,262144 \
+  ./benchwithzmq/run_comparison.py ROUTER_ROUTER_POLL --runs 3 --refresh-libzmq --build-dir build-native/bin
+```
+
+### Results (throughput, inproc, 3-run avg)
+
+```
+PAIR
+64B +19.26%  256B +11.35%  1024B -3.06%
+64K +6.28%   128K +2.38%   256K -1.69%
+
+PUBSUB
+64B +24.34%  256B +0.71%   1024B +14.29%
+64K +4.68%   128K +3.51%   256K +0.01%
+
+DEALER_DEALER
+64B +3.37%   256B +2.24%   1024B +1.89%
+64K +9.15%   128K +10.49%  256K +5.18%
+
+DEALER_ROUTER
+64B +1.26%   256B +2.26%   1024B -1.66%
+64K +5.93%   128K +8.05%   256K +3.88%
+
+ROUTER_ROUTER
+64B +17.00%  256B +12.28%  1024B -6.21%
+64K +9.25%   128K +4.53%   256K -7.11%
+
+ROUTER_ROUTER_POLL (msg_count=2000)
+64B -11.38%  256B -11.55%  1024B -7.58%
+64K +4.48%   128K +5.43%   256K -2.04%
+```
+
+### Status
+
+- `-march=native` 기준 대부분 사이즈/패턴 90%+ 달성.
+- ROUTER_ROUTER_POLL은 msg_count 축소 환경에서 64B/256B가 90% 미달.
+- small-size poll은 기본 msg_count 재검증 필요.

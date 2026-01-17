@@ -132,6 +132,12 @@
 - `ENABLE_NATIVE_OPTIMIZATIONS=ON`으로 `-march=native`를 Release에 적용 가능.
 - 기본값 OFF로 호환성 유지, 벤치/로컬 튜닝 시 활용.
 
+### native 최적화 full sweep (Phase 34)
+
+- `-march=native` + inproc 6 sizes 기준 대부분 90%+ 달성.
+- ROUTER_ROUTER_POLL은 msg_count=2000 조건에서 64B/256B가 90% 미달.
+- small-size poll은 기본 msg_count 재측정 필요.
+
 ### 최신 5회 평균 (Phase 9 이후, 10K messages, 64B)
 
 | Pattern | zlink | libzmq-ref | Gap | 달성률 |
