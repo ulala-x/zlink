@@ -21,3 +21,9 @@
 - WSL 환경으로 perf/flamegraph 제한.
 - 필요 시 strace 중심 비교.
 - PAIR tcp 65536B latency가 음수로 출력되는 이상치 확인.
+
+## tcp large-size syscall hint
+
+- PUBSUB tcp 262144 (msg_count=2000)에서 zlink는 sendto/recvfrom 호출 수가
+  libzmq 대비 2~3배 높음.
+- syscall per message 증가가 tcp large-size 저하의 주요 후보.

@@ -79,3 +79,31 @@ BENCH_TRANSPORTS=inproc,tcp,ipc BENCH_MSG_SIZES=64,256,1024,65536,131072,262144 
 
 - baseline 수집 완료 (1-run).
 - 저하 후보: tcp/large 및 ipc/large 일부 구간, ROUTER_ROUTER 256K.
+
+## Phase 5: tcp large-size syscall 비교 (PUBSUB 262144)
+
+### Goal
+
+- tcp 262144 저하 원인 힌트 확보.
+
+### Bench
+
+```
+BENCH_MSG_COUNT=2000 strace -f -c ./build/bin/comp_zlink_pubsub zlink tcp 262144
+BENCH_MSG_COUNT=2000 LD_LIBRARY_PATH=benchwithzmq/libzmq/libzmq_dist/lib \\
+  strace -f -c ./build/bin/comp_std_zmq_pubsub libzmq tcp 262144
+```
+
+### Results (strace -f -c 요약)
+
+- zlink throughput 1041.42, latency 960.23 us
+  - futex 672, poll 3003, sendto 15010, recvfrom 16013,
+    epoll_wait 16050, read 5415 (1390 errors), write 4020
+- libzmq throughput 2166.82, latency 461.51 us
+  - epoll_wait 7022, poll 9364, futex 409, sendto 6011,
+    recvfrom 6019, read 4015, write 4012
+
+### Status
+
+- zlink는 sendto/recvfrom 호출 수가 2~3배 높음.
+- tcp large-size에서 syscall per message 증가 가능성 확인.
