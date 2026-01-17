@@ -12,6 +12,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <functional>
+#include <vector>
 
 namespace zmq
 {
@@ -85,6 +86,19 @@ class i_asio_transport
                                    std::size_t buffer_size,
                                    completion_handler_t handler) = 0;
 
+    //  Start async vectored write operation.
+    //  Writes the provided buffer sequence without copying.
+    //  Returns true if the transport accepted the vectored write request.
+    //  Transports that don't support vectored writes should return false.
+    virtual bool async_writev (
+      const std::vector<boost::asio::const_buffer> &buffers,
+      completion_handler_t handler)
+    {
+        LIBZMQ_UNUSED (buffers);
+        LIBZMQ_UNUSED (handler);
+        return false;
+    }
+
     //  Synchronous write operation for speculative writes.
     //
     //  Attempts to write up to len bytes from data buffer synchronously.
@@ -111,6 +125,7 @@ class i_asio_transport
     //  Indicates whether the transport supports speculative synchronous writes.
     //  Transports can opt out to force async write paths (e.g., IPC stability).
     virtual bool supports_speculative_write () const { return true; }
+    virtual bool supports_async_writev () const { return false; }
 
     //  Check if this transport requires a handshake phase.
     //  TCP: false, SSL: true, WebSocket: true

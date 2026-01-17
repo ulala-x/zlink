@@ -254,6 +254,45 @@ void ipc_transport_t::async_write_some (
     }
 }
 
+bool ipc_transport_t::async_writev (
+  const std::vector<boost::asio::const_buffer> &buffers,
+  completion_handler_t handler)
+{
+    if (buffers.empty ()) {
+        if (handler)
+            handler (boost::system::error_code (), 0);
+        return true;
+    }
+
+    if (ipc_stats_enabled ()) {
+        ipc_stats_maybe_register ();
+        ++ipc_async_write_calls;
+    }
+
+    if (_socket) {
+        if (ipc_stats_enabled ()) {
+            boost::asio::async_write (
+              *_socket, buffers,
+              [handler](const boost::system::error_code &ec,
+                        std::size_t bytes) {
+                  if (ec)
+                      ++ipc_async_write_errors;
+                  else
+                      ipc_async_write_bytes += bytes;
+                  if (handler)
+                      handler (ec, bytes);
+              });
+        } else {
+            boost::asio::async_write (*_socket, buffers, handler);
+        }
+        return true;
+    }
+
+    if (handler)
+        handler (boost::asio::error::bad_descriptor, 0);
+    return true;
+}
+
 std::size_t ipc_transport_t::write_some (const std::uint8_t *data,
                                          std::size_t len)
 {

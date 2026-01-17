@@ -110,7 +110,7 @@ def build_cache_key(num_runs):
         "debug": "1" if os.environ.get("BENCH_DEBUG") else "0",
         "io_threads": env_or_default("BENCH_IO_THREADS"),
         "msg_count": env_or_default("BENCH_MSG_COUNT"),
-        "no_taskset": "1" if os.environ.get("BENCH_NO_TASKSET") else "0",
+        "use_taskset": "1" if os.environ.get("BENCH_USE_TASKSET") else "0",
         "rcvbuf": env_or_default("BENCH_RCVBUF"),
         "runs": str(num_runs),
         "sizes": sizes,
@@ -141,10 +141,10 @@ def run_single_test(binary_name, lib_name, transport, size):
         if IS_WINDOWS:
             cmd = [binary_path, lib_name, transport, str(size)]
         else:
-            if os.environ.get("BENCH_NO_TASKSET"):
-                cmd = [binary_path, lib_name, transport, str(size)]
-            else:
+            if os.environ.get("BENCH_USE_TASKSET"):
                 cmd = ["taskset", "-c", "1", binary_path, lib_name, transport, str(size)]
+            else:
+                cmd = [binary_path, lib_name, transport, str(size)]
         result = subprocess.run(cmd, env=env, capture_output=True, text=True, timeout=60)
         if result.returncode != 0:
             return []

@@ -316,6 +316,74 @@ void tcp_transport_t::async_write_some (const unsigned char *buffer,
     }
 }
 
+bool tcp_transport_t::async_writev (
+  const std::vector<boost::asio::const_buffer> &buffers,
+  completion_handler_t handler)
+{
+    if (buffers.empty ()) {
+        if (handler)
+            handler (boost::system::error_code (), 0);
+        return true;
+    }
+
+    if (tcp_stats_enabled ()) {
+        tcp_stats_maybe_register ();
+        ++tcp_async_write_calls;
+    }
+
+    if (_socket) {
+        const std::size_t max_transfer = tcp_max_transfer_size ();
+        std::size_t total_size = 0;
+        for (std::vector<boost::asio::const_buffer>::const_iterator it =
+               buffers.begin ();
+             it != buffers.end (); ++it) {
+            total_size += boost::asio::buffer_size (*it);
+        }
+
+        if (tcp_stats_enabled ()) {
+            if (max_transfer > 0) {
+                transfer_all_with_max_t completion (total_size, max_transfer);
+                boost::asio::async_write (
+                  *_socket, buffers, completion,
+                  [handler](const boost::system::error_code &ec,
+                            std::size_t bytes) {
+                      if (ec)
+                          ++tcp_async_write_errors;
+                      else
+                          tcp_async_write_bytes += bytes;
+                      if (handler)
+                          handler (ec, bytes);
+                  });
+            } else {
+                boost::asio::async_write (
+                  *_socket, buffers,
+                  [handler](const boost::system::error_code &ec,
+                            std::size_t bytes) {
+                      if (ec)
+                          ++tcp_async_write_errors;
+                      else
+                          tcp_async_write_bytes += bytes;
+                      if (handler)
+                          handler (ec, bytes);
+                  });
+            }
+        } else {
+            if (max_transfer > 0) {
+                transfer_all_with_max_t completion (total_size, max_transfer);
+                boost::asio::async_write (
+                  *_socket, buffers, completion, handler);
+            } else {
+                boost::asio::async_write (*_socket, buffers, handler);
+            }
+        }
+        return true;
+    }
+
+    if (handler)
+        handler (boost::asio::error::bad_descriptor, 0);
+    return true;
+}
+
 std::size_t tcp_transport_t::write_some (const std::uint8_t *data,
                                          std::size_t len)
 {

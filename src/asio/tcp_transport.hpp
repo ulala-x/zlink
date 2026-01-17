@@ -40,11 +40,15 @@ class tcp_transport_t : public i_asio_transport
     void async_write_some (const unsigned char *buffer,
                            std::size_t buffer_size,
                            completion_handler_t handler) ZMQ_OVERRIDE;
+    bool async_writev (
+      const std::vector<boost::asio::const_buffer> &buffers,
+      completion_handler_t handler) ZMQ_OVERRIDE;
 
     std::size_t write_some (const std::uint8_t *data,
                             std::size_t len) ZMQ_OVERRIDE;
 
     bool supports_speculative_write () const ZMQ_OVERRIDE;
+    bool supports_async_writev () const ZMQ_OVERRIDE { return true; }
 
     const char *name () const ZMQ_OVERRIDE { return "tcp"; }
 

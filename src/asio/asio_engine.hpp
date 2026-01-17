@@ -134,7 +134,22 @@ class asio_engine_t : public i_engine
     const options_t _options;
     //  Effective batch sizes (may be overridden per transport).
     size_t _in_batch_size;
-    size_t _out_batch_size;
+    size_t _out_batch_size_small;
+    size_t _out_batch_size_large;
+    size_t _active_out_batch_size;
+    size_t _out_writev_threshold;
+    enum encoder_kind_t
+    {
+        encoder_unknown,
+        encoder_v1,
+        encoder_v2,
+        encoder_v3_1
+    };
+
+    void set_encoder_kind (encoder_kind_t kind_) { _encoder_kind = kind_; }
+    size_t compute_header_size (const msg_t *msg_) const;
+    void select_output_encoder (size_t msg_size_);
+    void reset_encoders (i_encoder *small_, i_encoder *large_);
 
     //  Buffers for async I/O
     unsigned char *_inpos;
@@ -146,6 +161,12 @@ class asio_engine_t : public i_engine
     unsigned char *_outpos;
     size_t _outsize;
     i_encoder *_encoder;
+    i_encoder *_encoder_small;
+    i_encoder *_encoder_large;
+    encoder_kind_t _encoder_kind;
+    bool _out_is_vector;
+    std::vector<boost::asio::const_buffer> _out_buffers;
+    std::vector<unsigned char> _out_header_buffer;
 
     mechanism_t *_mechanism;
 
