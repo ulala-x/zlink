@@ -506,6 +506,32 @@ BENCH_IO_THREADS=2 BENCH_TRANSPORTS=inproc,tcp,ipc \
 - tcp 구간은 전반적으로 개선 유지.
 - 잔여 음수 구간은 ipc 131072B 중심으로 집중됨.
 
+## Phase 18: Unpinned IO thread sweep (1~4)
+
+### Goal
+
+- CPU 고정 해제 상태에서 IO thread 스윕을 통해 변동성/경향 확인.
+
+### Harness Change
+
+- `BENCH_NO_TASKSET=1`일 때 taskset 핀 해제.
+
+### Bench
+
+```
+BENCH_NO_TASKSET=1 BENCH_IO_THREADS=<1|2|3|4> \
+  BENCH_TRANSPORTS=tcp,ipc BENCH_MSG_SIZES=64,1024,262144 \
+  ./benchwithzmq/run_comparison.py <PATTERN> --runs 3 --refresh-libzmq --build-dir build/bin
+```
+
+### Results
+
+- 상세 테이블: `docs/team/20260117_all-protocol-optimization/08_unpinned_iothreads_sweep.md`
+- 요약:
+  - tcp 64B는 +5~+8% 수준으로 양호
+  - tcp 1024/262144는 모든 IO thread에서 음수 경향
+  - ipc는 IO thread>=2에서 중/대형 구간이 개선되는 경향
+
 ## Phase 17: IO thread=2 개선 원인 가설 정리
 
 ### Observation

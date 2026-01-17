@@ -62,6 +62,11 @@
 - DEALER_ROUTER: ipc 131072B (-18.02%).
 - ROUTER_ROUTER: ipc 131072B (-19.47%).
 
+## Unpinned IO_THREADS Sweep Notes
+
+- CPU 핀 해제 시 tcp 1024/262144 구간은 IO thread=1~4 모두 음수 경향.
+- ipc는 IO thread>=2에서 중/대형 구간 개선이 뚜렷함.
+
 ## IO thread scaling note
 
 - zlink은 IO thread 1개에서 syscall/락 오버헤드가 병목이 되는 경향이 있어
