@@ -754,3 +754,27 @@ BENCH_NO_TASKSET=1 BENCH_IO_THREADS=2 BENCH_TRANSPORTS=tcp \
 - 상세 테이블: `docs/team/20260117_all-protocol-optimization/15_tcp_max_transfer_full_tcp_matrix.md`
 - 262144B는 -11%~-15%로 기존 대비 개선.
 - 256B~1024B는 여전히 -15%~ -20%대로 잔존.
+
+## Phase 26: TCP max transfer + IO thread 3/4
+
+### Goal
+
+- IO thread 증가가 tcp 1024/262144 개선에 추가 효과가 있는지 확인.
+
+### Bench
+
+```
+BENCH_NO_TASKSET=1 BENCH_IO_THREADS=3 BENCH_TRANSPORTS=tcp \
+  BENCH_MSG_SIZES=1024,262144 ZMQ_ASIO_TCP_MAX_TRANSFER=262144 \
+  ./benchwithzmq/run_comparison.py ALL --runs=3 --refresh-libzmq --build-dir build/bin
+
+BENCH_NO_TASKSET=1 BENCH_IO_THREADS=4 BENCH_TRANSPORTS=tcp \
+  BENCH_MSG_SIZES=1024,262144 ZMQ_ASIO_TCP_MAX_TRANSFER=262144 \
+  ./benchwithzmq/run_comparison.py ALL --runs=3 --refresh-libzmq --build-dir build/bin
+```
+
+### Results
+
+- 상세 테이블: `docs/team/20260117_all-protocol-optimization/16_tcp_max_transfer_iothreads_3_4.md`
+- 262144B는 -5%~-13% 수준으로 추가 완화.
+- 1024B는 여전히 -13%~-18% 수준 잔존.
