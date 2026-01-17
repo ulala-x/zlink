@@ -13,6 +13,8 @@
 - Added full-size tcp sweep for PUBSUB/ROUTER_ROUTER/ROUTER_ROUTER_POLL; 64 KB batching helps <=1024B but regresses 64KB+.
 - Findings captured in `01_tcp_batch_size_override_test.md`.
 - Full-size sweep results in `02_tcp_batch_size_full_size_sweep.md`.
+- Added IPC/INPROC full-size sweeps; IPC benefits from 64 KB batching, INPROC impact is mixed.
+- Results recorded in `03_ipc_inproc_batch_size_full_size_sweep.md`.
 
 ## Next
 
