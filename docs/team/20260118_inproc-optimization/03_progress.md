@@ -685,3 +685,35 @@ libzmq: write 506, getpid 633, poll 119, read 7
 
 - syscall 종류/횟수는 큰 차이 없음.
 - zlink는 non-blocking read(EAGAIN) 비중이 높음.
+
+## Phase 25: non-blocking poll 복귀 실험 (Rollback)
+
+### Goal
+
+- read(EAGAIN) 비중을 줄이기 위해 `wait(0)` 경로 복귀 시 성능 영향 확인.
+
+### Actions
+
+1. `mailbox_t::recv(timeout=0)`에서 `wait(0)` 사용하도록 변경.
+2. 저하 패턴 5회 평균 재측정.
+
+### Bench (5-run avg, inproc)
+
+```
+size=1024, msg_count=10000
+DEALER_ROUTER:      zlink 1,803,164.24  libzmq 2,512,581.46  (71.77%)
+
+size=65536, msg_count=2000
+DEALER_DEALER:      zlink 138,760.16  libzmq 193,938.62  (71.55%)
+
+size=131072, msg_count=2000
+DEALER_DEALER:      zlink 91,392.91  libzmq 145,037.43  (63.01%)
+ROUTER_ROUTER:      zlink 93,804.98  libzmq 96,531.65  (97.18%)
+
+size=262144, msg_count=2000
+PUBSUB:             zlink 50,975.47  libzmq 70,242.44  (72.57%)
+```
+
+### Status
+
+- 저하 패턴 개선 없음, 일부 악화 → `recv_failable` 경로로 롤백.

@@ -70,6 +70,11 @@
 - strace -c 기준 zlink는 read(EAGAIN) 비중이 높고 libzmq는 poll 비중이 높음.
 - 총 syscall 규모는 유사하여 user-space 경로 차이 가능성 유지.
 
+### non-blocking wait(0) 복귀 실험 (Phase 25)
+
+- `wait(0)` 복귀 후 저하 패턴 개선 없음, 일부 악화.
+- `recv_failable` 경로 유지 결정.
+
 ### 최신 5회 평균 (Phase 9 이후, 10K messages, 64B)
 
 | Pattern | zlink | libzmq-ref | Gap | 달성률 |
