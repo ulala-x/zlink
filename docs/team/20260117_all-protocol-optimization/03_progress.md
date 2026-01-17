@@ -282,3 +282,10 @@ BENCH_SNDBUF=4194304 BENCH_RCVBUF=4194304 BENCH_MSG_COUNT=2000 \
 
 - 큰 버퍼는 ROUTER 계열은 개선되지만 PUBSUB이 악화됨.
 - 전체 패턴 공통 최적화로는 부적합, 원인 추가 분석 필요.
+
+### Zlink-only Buffer Check (manual, 3x avg)
+
+- zlink에만 4MB 적용, libzmq는 기본값 유지 시 상대 성능 악화
+  - PUBSUB: -17.86% throughput
+  - ROUTER_ROUTER: -18.50% throughput
+  - ROUTER_ROUTER_POLL: -12.57% throughput

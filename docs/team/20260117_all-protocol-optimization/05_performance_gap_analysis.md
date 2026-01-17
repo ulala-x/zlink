@@ -27,6 +27,7 @@
   tcp 262144 throughput 개선은 제한적(ROUTER_ROUTER -10% 내외 유지).
 - BENCH_SNDBUF/RCVBUF 4MB는 ROUTER 계열 개선 효과가 있으나
   PUBSUB throughput이 악화되어 전면 적용은 보류.
+- zlink만 4MB 적용 시 상대 throughput도 악화(12~18% 수준).
 
 ## tcp large-size syscall hint
 
