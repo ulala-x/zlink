@@ -24,6 +24,7 @@
 #endif
 
 #include <sstream>
+#include <cstdlib>
 
 // Debug logging for ASIO engine - enable with -DZMQ_ASIO_DEBUG=1
 #if defined(ZMQ_ASIO_DEBUG)
@@ -80,6 +81,16 @@ static std::string get_peer_address (zmq::fd_t s_)
 #endif
 
     return peer_address;
+}
+
+static bool asio_allow_read_during_backpressure ()
+{
+    static int enabled = -1;
+    if (enabled == -1) {
+        const char *env = std::getenv ("ZMQ_ASIO_READ_DURING_BACKPRESSURE");
+        enabled = (env && *env && *env != '0') ? 1 : 0;
+    }
+    return enabled == 1;
 }
 
 zmq::asio_engine_t::asio_engine_t (
@@ -331,6 +342,8 @@ void zmq::asio_engine_t::start_async_read ()
     //  True Proactor Pattern: We no longer check _input_stopped here.
     //  Async reads continue even during backpressure, with data being buffered
     //  in _pending_buffers. This eliminates unnecessary recvfrom() EAGAIN calls.
+    if (_input_stopped && !asio_allow_read_during_backpressure ())
+        return;
     if (_read_pending || _io_error)
         return;
 
@@ -532,10 +545,10 @@ void zmq::asio_engine_t::on_read_complete (const boost::system::error_code &ec,
         ENGINE_DBG ("on_read_complete: buffered %zu bytes (total pending: %zu)",
                     bytes_transferred, _total_pending_bytes);
 
-        //  CRITICAL: Continue async read even during backpressure.
-        //  This is the key to True Proactor pattern - we always have a
-        //  pending read, so when data arrives it's immediately buffered.
-        start_async_read ();
+        //  Continue async read even during backpressure unless disabled.
+        //  This keeps a pending read so data is buffered immediately.
+        if (asio_allow_read_during_backpressure ())
+            start_async_read ();
         return;
     }
 

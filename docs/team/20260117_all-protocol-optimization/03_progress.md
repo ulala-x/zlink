@@ -632,3 +632,66 @@ BENCH_NO_TASKSET=1 BENCH_IO_THREADS=2 BENCH_TRANSPORTS=inproc,tcp,ipc \
 - 상세 테이블: `docs/team/20260117_all-protocol-optimization/11_unpinned_io_threads2_full_matrix_cache_key.md`
 - tcp 256B 이상은 패턴 대부분 -15%~-22% 수준으로 여전히 음수.
 - ipc 중/대형은 대체로 우위 유지, inproc은 혼합(소폭 음/양).
+
+## Phase 22: TCP stats 계측 + backpressure read 토글
+
+### Goal
+
+- zlink tcp의 read/write 호출 패턴을 계측하고 syscall 증가 원인 후보 정리.
+
+### Change
+
+- `ZMQ_ASIO_TCP_STATS=1`일 때 async_read/async_write/write_some 통계 출력 추가.
+- `ZMQ_ASIO_READ_DURING_BACKPRESSURE` 토글 추가 (기본 1).
+  - 0일 때 `_input_stopped` 상태에서 추가 async_read 재개를 막음.
+
+### Bench
+
+```
+BENCH_NO_TASKSET=1 BENCH_IO_THREADS=2 ZMQ_ASIO_TCP_STATS=1 \
+  LD_LIBRARY_PATH=build/lib ./build/bin/comp_zlink_pubsub zlink tcp 1024
+
+BENCH_NO_TASKSET=1 BENCH_IO_THREADS=2 BENCH_MSG_COUNT=2000 \
+  ZMQ_ASIO_TCP_STATS=1 LD_LIBRARY_PATH=build/lib \
+  ./build/bin/comp_zlink_pubsub zlink tcp 262144
+
+BENCH_NO_TASKSET=1 BENCH_IO_THREADS=2 BENCH_MSG_COUNT=2000 \
+  ZMQ_ASIO_TCP_STATS=1 ZMQ_ASIO_TCP_SYNC_WRITE=1 LD_LIBRARY_PATH=build/lib \
+  ./build/bin/comp_zlink_pubsub zlink tcp 262144
+```
+
+### Results
+
+- 상세 테이블: `docs/team/20260117_all-protocol-optimization/12_tcp_stats_pubsub.md`
+- 262144B에서 async_write 호출 수는 메시지당 약 3회 수준.
+- sendto/recvfrom은 여전히 높아 async_write 내부 분할이 원인 후보.
+
+### Note
+
+- `ZMQ_ASIO_READ_DURING_BACKPRESSURE=0`은 PUBSUB 262144 구간에서
+  통계/throughput 변화가 거의 없음 (backpressure 미발생 추정).
+
+## Phase 23: SNDBUF/RCVBUF 4MB strace 재확인
+
+### Goal
+
+- socket buffer 상향이 syscall 감소에 영향을 주는지 확인.
+
+### Bench
+
+```
+BENCH_MSG_COUNT=2000 BENCH_IO_THREADS=2 BENCH_SNDBUF=4194304 \
+  BENCH_RCVBUF=4194304 LD_LIBRARY_PATH=build/lib \
+  strace -f -c -o /tmp/strace_pubsub_zlink_unpinned_262144_4mb.txt \
+  ./build/bin/comp_zlink_pubsub zlink tcp 262144
+
+BENCH_MSG_COUNT=2000 BENCH_IO_THREADS=2 BENCH_SNDBUF=4194304 \
+  BENCH_RCVBUF=4194304 LD_LIBRARY_PATH=benchwithzmq/libzmq/libzmq_dist/lib \
+  strace -f -c -o /tmp/strace_pubsub_libzmq_unpinned_262144_4mb.txt \
+  ./build/bin/comp_std_zmq_pubsub libzmq tcp 262144
+```
+
+### Results
+
+- 상세 테이블: `docs/team/20260117_all-protocol-optimization/13_unpinned_strace_pubsub_sndbuf.md`
+- sendto/recvfrom 호출 수는 버퍼 상향에도 큰 변화 없음.

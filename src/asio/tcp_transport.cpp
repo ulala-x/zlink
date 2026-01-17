@@ -7,12 +7,30 @@
 
 #include "asio_debug.hpp"
 #include "../address.hpp"
+#include <atomic>
 #include <cstdlib>
+#include <cstdio>
 
 namespace zmq
 {
 namespace
 {
+std::atomic<uint64_t> tcp_async_read_calls (0);
+std::atomic<uint64_t> tcp_async_read_bytes (0);
+std::atomic<uint64_t> tcp_async_read_errors (0);
+std::atomic<uint64_t> tcp_read_some_calls (0);
+std::atomic<uint64_t> tcp_read_some_bytes (0);
+std::atomic<uint64_t> tcp_read_some_eagain (0);
+std::atomic<uint64_t> tcp_read_some_errors (0);
+std::atomic<uint64_t> tcp_async_write_calls (0);
+std::atomic<uint64_t> tcp_async_write_bytes (0);
+std::atomic<uint64_t> tcp_async_write_errors (0);
+std::atomic<uint64_t> tcp_write_some_calls (0);
+std::atomic<uint64_t> tcp_write_some_bytes (0);
+std::atomic<uint64_t> tcp_write_some_eagain (0);
+std::atomic<uint64_t> tcp_write_some_errors (0);
+std::atomic<bool> tcp_stats_registered (false);
+
 boost::asio::ip::tcp protocol_for_fd (fd_t fd_)
 {
     sockaddr_storage ss;
@@ -30,6 +48,50 @@ bool tcp_allow_sync_write ()
         enabled = (env && *env && *env != '0') ? 1 : 0;
     }
     return enabled == 1;
+}
+
+bool tcp_stats_enabled ()
+{
+    static int enabled = -1;
+    if (enabled == -1) {
+        const char *env = std::getenv ("ZMQ_ASIO_TCP_STATS");
+        enabled = (env && *env && *env != '0') ? 1 : 0;
+    }
+    return enabled == 1;
+}
+
+void tcp_stats_dump ()
+{
+    std::fprintf (stderr,
+                  "[ASIO_TCP_STATS] async_read calls=%llu bytes=%llu errors=%llu\n"
+                  "[ASIO_TCP_STATS] read_some calls=%llu bytes=%llu eagain=%llu "
+                  "errors=%llu\n"
+                  "[ASIO_TCP_STATS] async_write calls=%llu bytes=%llu errors=%llu\n"
+                  "[ASIO_TCP_STATS] write_some calls=%llu bytes=%llu eagain=%llu errors=%llu\n",
+                  static_cast<unsigned long long> (tcp_async_read_calls.load ()),
+                  static_cast<unsigned long long> (tcp_async_read_bytes.load ()),
+                  static_cast<unsigned long long> (tcp_async_read_errors.load ()),
+                  static_cast<unsigned long long> (tcp_read_some_calls.load ()),
+                  static_cast<unsigned long long> (tcp_read_some_bytes.load ()),
+                  static_cast<unsigned long long> (tcp_read_some_eagain.load ()),
+                  static_cast<unsigned long long> (tcp_read_some_errors.load ()),
+                  static_cast<unsigned long long> (tcp_async_write_calls.load ()),
+                  static_cast<unsigned long long> (tcp_async_write_bytes.load ()),
+                  static_cast<unsigned long long> (tcp_async_write_errors.load ()),
+                  static_cast<unsigned long long> (tcp_write_some_calls.load ()),
+                  static_cast<unsigned long long> (tcp_write_some_bytes.load ()),
+                  static_cast<unsigned long long> (tcp_write_some_eagain.load ()),
+                  static_cast<unsigned long long> (tcp_write_some_errors.load ()));
+}
+
+void tcp_stats_maybe_register ()
+{
+    if (!tcp_stats_enabled ())
+        return;
+    bool expected = false;
+    if (tcp_stats_registered.compare_exchange_strong (expected, true)) {
+        std::atexit (tcp_stats_dump);
+    }
 }
 }
 
@@ -81,9 +143,28 @@ void tcp_transport_t::async_read_some (unsigned char *buffer,
                                        std::size_t buffer_size,
                                        completion_handler_t handler)
 {
+    if (tcp_stats_enabled ()) {
+        tcp_stats_maybe_register ();
+        ++tcp_async_read_calls;
+    }
+
     if (_socket) {
-        _socket->async_read_some (boost::asio::buffer (buffer, buffer_size),
-                                  handler);
+        if (tcp_stats_enabled ()) {
+            _socket->async_read_some (
+              boost::asio::buffer (buffer, buffer_size),
+              [handler](const boost::system::error_code &ec,
+                        std::size_t bytes) {
+                  if (ec)
+                      ++tcp_async_read_errors;
+                  else
+                      tcp_async_read_bytes += bytes;
+                  if (handler)
+                      handler (ec, bytes);
+              });
+        } else {
+            _socket->async_read_some (boost::asio::buffer (buffer, buffer_size),
+                                      handler);
+        }
     } else if (handler) {
         handler (boost::asio::error::bad_descriptor, 0);
     }
@@ -101,6 +182,11 @@ std::size_t tcp_transport_t::read_some (std::uint8_t *buffer, std::size_t len)
         return 0;
     }
 
+    if (tcp_stats_enabled ()) {
+        tcp_stats_maybe_register ();
+        ++tcp_read_some_calls;
+    }
+
     boost::system::error_code ec;
     const std::size_t bytes_read =
       _socket->read_some (boost::asio::buffer (buffer, len), ec);
@@ -109,6 +195,8 @@ std::size_t tcp_transport_t::read_some (std::uint8_t *buffer, std::size_t len)
         if (ec == boost::asio::error::would_block
             || ec == boost::asio::error::try_again) {
             errno = EAGAIN;
+            if (tcp_stats_enabled ())
+                ++tcp_read_some_eagain;
             return 0;
         }
         if (ec == boost::asio::error::eof
@@ -122,10 +210,14 @@ std::size_t tcp_transport_t::read_some (std::uint8_t *buffer, std::size_t len)
         } else {
             errno = EIO;
         }
+        if (tcp_stats_enabled ())
+            ++tcp_read_some_errors;
         return 0;
     }
 
     errno = 0;
+    if (tcp_stats_enabled ())
+        tcp_read_some_bytes += bytes_read;
     return bytes_read;
 }
 
@@ -133,9 +225,28 @@ void tcp_transport_t::async_write_some (const unsigned char *buffer,
                                         std::size_t buffer_size,
                                         completion_handler_t handler)
 {
+    if (tcp_stats_enabled ()) {
+        tcp_stats_maybe_register ();
+        ++tcp_async_write_calls;
+    }
+
     if (_socket) {
-        boost::asio::async_write (
-          *_socket, boost::asio::buffer (buffer, buffer_size), handler);
+        if (tcp_stats_enabled ()) {
+            boost::asio::async_write (
+              *_socket, boost::asio::buffer (buffer, buffer_size),
+              [handler](const boost::system::error_code &ec,
+                        std::size_t bytes) {
+                  if (ec)
+                      ++tcp_async_write_errors;
+                  else
+                      tcp_async_write_bytes += bytes;
+                  if (handler)
+                      handler (ec, bytes);
+              });
+        } else {
+            boost::asio::async_write (
+              *_socket, boost::asio::buffer (buffer, buffer_size), handler);
+        }
     } else if (handler) {
         handler (boost::asio::error::bad_descriptor, 0);
     }
@@ -156,6 +267,11 @@ std::size_t tcp_transport_t::write_some (const std::uint8_t *data,
         return 0;
     }
 
+    if (tcp_stats_enabled ()) {
+        tcp_stats_maybe_register ();
+        ++tcp_write_some_calls;
+    }
+
     //  Perform synchronous write_some on TCP socket
     bytes_written =
       _socket->write_some (boost::asio::buffer (data, len), ec);
@@ -165,6 +281,8 @@ std::size_t tcp_transport_t::write_some (const std::uint8_t *data,
         if (ec == boost::asio::error::would_block
             || ec == boost::asio::error::try_again) {
             errno = EAGAIN;
+            if (tcp_stats_enabled ())
+                ++tcp_write_some_eagain;
             return 0;
         }
 
@@ -179,10 +297,14 @@ std::size_t tcp_transport_t::write_some (const std::uint8_t *data,
         } else {
             errno = EIO;
         }
+        if (tcp_stats_enabled ())
+            ++tcp_write_some_errors;
         return 0;
     }
 
     errno = 0;
+    if (tcp_stats_enabled ())
+        tcp_write_some_bytes += bytes_written;
     return bytes_written;
 }
 

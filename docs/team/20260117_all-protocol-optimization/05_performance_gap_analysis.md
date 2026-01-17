@@ -108,3 +108,11 @@
 
 - zlink은 IO thread 1개에서 syscall/락 오버헤드가 병목이 되는 경향이 있어
   IO thread=2에서 개선 폭이 크게 나타난 것으로 추정됨.
+
+## TCP syscall investigation notes
+
+- `ZMQ_ASIO_TCP_STATS` 기준 262144B에서 async_write 호출 수는
+  메시지당 ~3회 수준 (sendto/recvfrom 과다와는 별개).
+- SNDBUF/RCVBUF 4MB 상향에도 sendto/recvfrom 호출 수는 큰 변화 없음.
+- async_write 내부 분할(Boost.Asio write loop)이 syscall 증가의
+  주요 후보로 추정됨.
