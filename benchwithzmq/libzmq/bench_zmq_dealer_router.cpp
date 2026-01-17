@@ -4,14 +4,19 @@
 #include <vector>
 #include <cstring>
 
+#ifndef ZMQ_ROUTING_ID
+#define ZMQ_ROUTING_ID ZMQ_IDENTITY
+#endif
+
 void run_dealer_router(const std::string& transport, size_t msg_size, int msg_count, const std::string& lib_name) {
     if (!transport_available(transport)) return;
     void *ctx = zmq_ctx_new();
+    apply_bench_ctx_options(ctx);
     void *router = zmq_socket(ctx, ZMQ_ROUTER);
     void *dealer = zmq_socket(ctx, ZMQ_DEALER);
 
     // Set Routing ID for Dealer
-    zmq_setsockopt(dealer, ZMQ_IDENTITY, "CLIENT", 6);
+    zmq_setsockopt(dealer, ZMQ_ROUTING_ID, "CLIENT", 6);
 
     int hwm = 0;
     zmq_setsockopt(router, ZMQ_SNDHWM, &hwm, sizeof(hwm));

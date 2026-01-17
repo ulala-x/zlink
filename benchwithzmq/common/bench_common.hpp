@@ -91,6 +91,12 @@ inline int parse_env_int(const char *name_) {
     return val > 0 ? val : -1;
 }
 
+inline void apply_bench_ctx_options(void *ctx_) {
+    const int io_threads = parse_env_int("BENCH_IO_THREADS");
+    if (io_threads > 0)
+        zmq_ctx_set(ctx_, ZMQ_IO_THREADS, io_threads);
+}
+
 inline void apply_bench_socket_buffers(void *socket_) {
     const int sndbuf = parse_env_int("BENCH_SNDBUF");
     if (sndbuf > 0)
