@@ -71,6 +71,15 @@ Reduce the tcp 1024B gap without regressing 262144B when `ZMQ_ASIO_TCP_MAX_TRANS
 | 262144B | Throughput | 0.03 M/s | 0.02 M/s | -24.59% |
 | 262144B | Latency | 37.09 us | 49.18 us | -32.60% (inv) |
 
+### 256 KB (`ZMQ_ASIO_IN_BATCH_SIZE=262144`, `ZMQ_ASIO_OUT_BATCH_SIZE=262144`)
+
+| Size | Metric | libzmq | zlink | Diff |
+| --- | --- | --- | --- | --- |
+| 1024B | Throughput | 1.12 M/s | 1.66 M/s | +47.99% |
+| 1024B | Latency | 0.79 us | 0.60 us | +24.05% (inv) |
+| 262144B | Throughput | 0.03 M/s | 0.02 M/s | -26.15% |
+| 262144B | Latency | 37.09 us | 50.22 us | -35.40% (inv) |
+
 ### 64 KB out only (`ZMQ_ASIO_OUT_BATCH_SIZE=65536`)
 
 | Size | Metric | libzmq | zlink | Diff |
@@ -112,7 +121,7 @@ Reduce the tcp 1024B gap without regressing 262144B when `ZMQ_ASIO_TCP_MAX_TRANS
 ## Observations
 
 - Larger batch sizes strongly improve 1024B throughput for all patterns.
-- 262144B throughput regresses as batch size grows; 16 KB is the least harmful, 64 KB is the worst.
+- 262144B throughput regresses as batch size grows; 16 KB is the least harmful, 64 KB and 256 KB are the worst.
 - Single-sided overrides (in-only or out-only) do not improve 1024B, so the gain appears to come from combined batching.
 
 ## Commands

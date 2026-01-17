@@ -9,6 +9,7 @@
   - `ZMQ_ASIO_IN_BATCH_SIZE`
   - `ZMQ_ASIO_OUT_BATCH_SIZE`
 - Ran tcp batch-size sweeps with `ZMQ_ASIO_TCP_MAX_TRANSFER=262144` at `BENCH_IO_THREADS=2` (unpinned).
+- Verified that 256 KB batch sizes amplify 1024B gains but worsen 262144B.
 - Findings captured in `01_tcp_batch_size_override_test.md`.
 
 ## Next
