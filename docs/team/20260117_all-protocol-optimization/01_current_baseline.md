@@ -49,6 +49,8 @@ BENCH_TRANSPORTS=inproc,tcp,ipc BENCH_MSG_SIZES=64,256,1024,65536,131072,262144 
 | 262144B | Throughput |   0.01 M/s |   0.01 M/s |   -0.42% |
 | | Latency |    27.94 us |    38.56 us |  -38.01% (inv) |
 
+Note: tcp 65536B latency는 1-run 측정에서 음수로 기록되어 이상치로 판단됨.
+
 ### ipc
 
 | Size | Metric | Standard libzmq | zlink | Diff (%) |
