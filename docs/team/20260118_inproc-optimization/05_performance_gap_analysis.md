@@ -60,6 +60,11 @@
 - large-size 일부 개선(ROUTER_ROUTER 128K 95.1%, DEALER_DEALER 64K 78.6%),
   하지만 64B DEALER_ROUTER 87.9%로 회귀 → 롤백.
 
+### msg_count 민감도 (Phase 23)
+
+- size=131072 DEALER_DEALER는 msg_count 500/1000/2000 모두 60~78%로 유지.
+- low ratio가 msg_count 편차만으로 설명되기 어렵다고 판단.
+
 ### 최신 5회 평균 (Phase 9 이후, 10K messages, 64B)
 
 | Pattern | zlink | libzmq-ref | Gap | 달성률 |

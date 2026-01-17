@@ -641,3 +641,25 @@ DEALER_ROUTER:      zlink 4,752,032.52  libzmq 5,404,692.60  (87.92%)
 
 - 일부 large-size 개선(ROUTER_ROUTER 128K) 있었으나,
   64B DEALER_ROUTER 90% 미달로 회귀 → 변경 롤백.
+
+## Phase 23: DEALER_DEALER 128K msg_count 영향 확인
+
+### Goal
+
+- low ratio가 msg_count 편차 때문인지 확인.
+
+### Actions
+
+1. size=131072, msg_count=500/1000/2000으로 3회 평균 측정.
+
+### Bench (3-run avg, inproc)
+
+```
+msg_count=500  DEALER_DEALER: zlink 93,718.24  libzmq 132,467.33  (70.75%)
+msg_count=1000 DEALER_DEALER: zlink 90,326.71  libzmq 115,230.67  (78.39%)
+msg_count=2000 DEALER_DEALER: zlink 90,491.21  libzmq 143,182.59  (63.20%)
+```
+
+### Status
+
+- msg_count 변화와 무관하게 60~78% 구간 유지.
