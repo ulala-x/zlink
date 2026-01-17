@@ -973,3 +973,19 @@ ROUTER_ROUTER
 
 - `-march=native` 적용 시 large-size gap 대부분 해소.
 - 차이는 코드보다는 컴파일 플래그/ISA 최적화 영향 가능성 큼.
+
+## Phase 33: native 최적화 CMake 옵션 추가
+
+### Goal
+
+- large-size 개선을 위한 빌드 옵션 제공.
+
+### Actions
+
+1. `ENABLE_NATIVE_OPTIMIZATIONS` 옵션 추가.
+2. Release 빌드에서 `-march=native`를 선택적으로 적용.
+
+### Notes
+
+- 기본값 OFF (호환성 유지).
+- 벤치/로컬 성능 튜닝 목적.

@@ -127,6 +127,11 @@
 - ROUTER_ROUTER는 64K/128K 개선, 256K는 여전히 -5.7%.
 - 코드 변경보다 컴파일 플래그/ISA 최적화 영향이 큼.
 
+### native 최적화 옵션 추가 (Phase 33)
+
+- `ENABLE_NATIVE_OPTIMIZATIONS=ON`으로 `-march=native`를 Release에 적용 가능.
+- 기본값 OFF로 호환성 유지, 벤치/로컬 튜닝 시 활용.
+
 ### 최신 5회 평균 (Phase 9 이후, 10K messages, 64B)
 
 | Pattern | zlink | libzmq-ref | Gap | 달성률 |
