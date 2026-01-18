@@ -1,0 +1,48 @@
+# ASIO Large Writev Path 계획
+
+## 배경
+
+- 브랜치: `feature/asio-large-writev`
+- 목표: ASIO를 유지하면서 64KB+ 대용량 성능 개선
+- 현재 상태: allocator/PMR + mimalloc은 소/중형 개선은 있었지만, 대형 구간(특히 latency, inproc 대형 throughput)은 여전히 회귀
+
+## 현재 베이스라인 요약 (공유된 결과 기준)
+
+- 64B/256B/1024B: tcp/ipc는 throughput 개선 경향, inproc은 큰 폭 개선
+- 64KB+: throughput은 혼재, tcp/ipc에서 latency 회귀가 빈번
+- inproc 대형 throughput은 지속적으로 회귀
+- 위 경향은 PAIR/PUBSUB/DEALER/ROUTER 계열 전반에 공통
+
+## 가설
+
+- 대형 회귀의 주 원인은 ASIO write 경로
+  - 대형 payload가 여러 async completion으로 분할됨
+  - encoder 배치/헤더 처리로 추가 복사가 발생
+  - 헤더+바디가 같은 버퍼로 합쳐지며 zero-copy가 거의 타지 않음
+
+## 제안 변경안 (ASIO 유지 전제)
+
+- 대형 메시지 전용 fast path 추가
+  - 작은 헤더 버퍼 + 바디 버퍼를 분리 구성
+  - scatter/gather async write로 한 번에 전송
+  - 대형 바디를 encoder 배치 버퍼에 복사하지 않음
+- 임계값(예: 64KB+)을 기준으로 분기하고 테스트로 튜닝
+
+## 범위 (예정)
+
+- ZMTP ASIO 엔진의 write 경로만 변경
+- 프로토콜/와이어 포맷 변경 없음
+- allocator 변경 없음
+
+## 리스크/주의사항
+
+- 단일 메시지가 단일 write 체인/완료로 유지되도록 보장
+- async 전송 중 바디 버퍼 수명 보장
+- 소형 메시지 throughput 회귀 방지
+
+## 다음 단계
+
+1) 대형 메시지 header+body scatter/gather async write 경로 구현
+2) 대형 경로 사용 여부를 확인할 로그/지표 추가
+3) 64KB/128KB/256KB 재측정 (tcp/ipc/inproc)
+4) baseline 대비 throughput/latency 비교
