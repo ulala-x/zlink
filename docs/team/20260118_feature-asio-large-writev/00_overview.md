@@ -27,6 +27,7 @@
   - scatter/gather async write로 한 번에 전송
   - 대형 바디를 encoder 배치 버퍼에 복사하지 않음
 - 임계값(예: 64KB+)을 기준으로 분기하고 테스트로 튜닝
+- 대상 범위는 TCP로 한정하고, TLS/WSS는 별도 분석 대상으로 유지
 
 ## 범위 (예정)
 
@@ -39,10 +40,13 @@
 - 단일 메시지가 단일 write 체인/완료로 유지되도록 보장
 - async 전송 중 바디 버퍼 수명 보장
 - 소형 메시지 throughput 회귀 방지
+- TLS/WSS는 암호화 계층에서 재버퍼링이 발생할 수 있어 기대 효과가 낮을 수 있음
+- async_write의 transfer_all 처리 시 분할 전송/에러 처리 경로를 명확히 해야 함
 
 ## 다음 단계
 
 1) 대형 메시지 header+body scatter/gather async write 경로 구현
 2) 대형 경로 사용 여부를 확인할 로그/지표 추가
 3) 64KB/128KB/256KB 재측정 (tcp/ipc/inproc)
-4) baseline 대비 throughput/latency 비교
+4) large-path 사용률/비율 로깅 추가
+5) baseline 대비 throughput/latency 비교
