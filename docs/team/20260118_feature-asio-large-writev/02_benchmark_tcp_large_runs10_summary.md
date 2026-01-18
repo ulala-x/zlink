@@ -18,6 +18,7 @@
   - `docs/team/20260118_feature-asio-large-writev/14_benchmark_tcp_large_runs10_recv_burst.txt`
   - `docs/team/20260118_feature-asio-large-writev/15_benchmark_tcp_large_runs10_pause_read_on_backpressure.txt`
   - `docs/team/20260118_feature-asio-large-writev/16_benchmark_tcp_large_runs10_recv_resize.txt`
+  - `docs/team/20260118_feature-asio-large-writev/17_benchmark_tcp_large_runs10_in_batch_64k.txt`
 
 ## 결과 요약
 
@@ -37,6 +38,7 @@
 - recv burst(추가 read_some 최대 4회)는 throughput 개선폭 확대, latency 회귀는 유지
 - backpressure 시 read 중단은 일부 패턴 throughput 하락(예: PUBSUB 256KB)로 불리
 - decoder buffer resize(libzmq 방식)는 latency 개선 없이 256KB throughput 혼재
+- in_batch_size tcp=64KB는 throughput 개선 일부 있으나 latency 악화는 유지
 
 ## 판단
 

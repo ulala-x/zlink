@@ -24,6 +24,8 @@
 #include "../ip.hpp"
 #include "../likely.hpp"
 #include "../wire.hpp"
+#include <cstring>
+#include <cstdlib>
 
 #ifndef ZMQ_HAVE_WINDOWS
 #include <unistd.h>
@@ -39,6 +41,55 @@
 #else
 #define ZMTP_ENGINE_DBG(fmt, ...)
 #endif
+
+namespace
+{
+const char *scheme_from_endpoint (const std::string &endpoint_)
+{
+    if (endpoint_.compare (0, 6, "tcp://") == 0)
+        return "tcp";
+    if (endpoint_.compare (0, 6, "ipc://") == 0)
+        return "ipc";
+    if (endpoint_.compare (0, 9, "inproc://") == 0)
+        return "inproc";
+    return NULL;
+}
+
+const char *select_transport (const zmq::endpoint_uri_pair_t &pair_)
+{
+    const char *scheme = scheme_from_endpoint (pair_.local);
+    if (scheme)
+        return scheme;
+    return scheme_from_endpoint (pair_.remote);
+}
+
+size_t read_env_batch (const char *name_, size_t fallback_)
+{
+    const char *env = std::getenv (name_);
+    if (!env || !*env)
+        return fallback_;
+    char *end = NULL;
+    const unsigned long value = std::strtoul (env, &end, 10);
+    if (end == env || value == 0)
+        return fallback_;
+    return static_cast<size_t> (value);
+}
+
+size_t select_in_batch_size (const zmq::endpoint_uri_pair_t &pair_,
+                             size_t fallback_)
+{
+    const char *scheme = select_transport (pair_);
+    if (!scheme)
+        return fallback_;
+    if (strcmp (scheme, "tcp") == 0)
+        return read_env_batch ("ZMQ_ASIO_IN_BATCH_SIZE_TCP", fallback_);
+    if (strcmp (scheme, "ipc") == 0)
+        return read_env_batch ("ZMQ_ASIO_IN_BATCH_SIZE_IPC", fallback_);
+    if (strcmp (scheme, "inproc") == 0)
+        return read_env_batch ("ZMQ_ASIO_IN_BATCH_SIZE_INPROC", fallback_);
+    return fallback_;
+}
+}
 
 zmq::asio_zmtp_engine_t::asio_zmtp_engine_t (
   fd_t fd_,
@@ -274,8 +325,10 @@ bool zmq::asio_zmtp_engine_t::handshake_v1_0_unversioned ()
     _encoder = new (std::nothrow) v1_encoder_t (_options.out_batch_size);
     alloc_assert (_encoder);
 
+    const size_t in_batch_size =
+      select_in_batch_size (_endpoint_uri_pair, _options.in_batch_size);
     _decoder = new (std::nothrow)
-      v1_decoder_t (_options.in_batch_size, _options.maxmsgsize);
+      v1_decoder_t (in_batch_size, _options.maxmsgsize);
     alloc_assert (_decoder);
 
     const size_t header_size =
@@ -319,8 +372,10 @@ bool zmq::asio_zmtp_engine_t::handshake_v1_0 ()
     _encoder = new (std::nothrow) v1_encoder_t (_options.out_batch_size);
     alloc_assert (_encoder);
 
+    const size_t in_batch_size =
+      select_in_batch_size (_endpoint_uri_pair, _options.in_batch_size);
     _decoder = new (std::nothrow)
-      v1_decoder_t (_options.in_batch_size, _options.maxmsgsize);
+      v1_decoder_t (in_batch_size, _options.maxmsgsize);
     alloc_assert (_decoder);
 
     return true;
@@ -338,8 +393,10 @@ bool zmq::asio_zmtp_engine_t::handshake_v2_0 ()
     _encoder = new (std::nothrow) v2_encoder_t (_options.out_batch_size);
     alloc_assert (_encoder);
 
+    const size_t in_batch_size =
+      select_in_batch_size (_endpoint_uri_pair, _options.in_batch_size);
     _decoder = new (std::nothrow)
-      v2_decoder_t (_options.in_batch_size, _options.maxmsgsize, true);
+      v2_decoder_t (in_batch_size, _options.maxmsgsize, true);
     alloc_assert (_decoder);
 
     return true;
@@ -404,8 +461,10 @@ bool zmq::asio_zmtp_engine_t::handshake_v3_0 ()
     _encoder = new (std::nothrow) v2_encoder_t (_options.out_batch_size);
     alloc_assert (_encoder);
 
+    const size_t in_batch_size =
+      select_in_batch_size (_endpoint_uri_pair, _options.in_batch_size);
     _decoder = new (std::nothrow)
-      v2_decoder_t (_options.in_batch_size, _options.maxmsgsize, true);
+      v2_decoder_t (in_batch_size, _options.maxmsgsize, true);
     alloc_assert (_decoder);
 
     return zmq::asio_zmtp_engine_t::handshake_v3_x (true);
@@ -418,8 +477,10 @@ bool zmq::asio_zmtp_engine_t::handshake_v3_1 ()
     _encoder = new (std::nothrow) v3_1_encoder_t (_options.out_batch_size);
     alloc_assert (_encoder);
 
+    const size_t in_batch_size =
+      select_in_batch_size (_endpoint_uri_pair, _options.in_batch_size);
     _decoder = new (std::nothrow)
-      v2_decoder_t (_options.in_batch_size, _options.maxmsgsize, true);
+      v2_decoder_t (in_batch_size, _options.maxmsgsize, true);
     alloc_assert (_decoder);
 
     return zmq::asio_zmtp_engine_t::handshake_v3_x (false);
