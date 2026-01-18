@@ -50,3 +50,8 @@
 3) 64KB/128KB/256KB 재측정 (tcp/ipc/inproc)
 4) large-path 사용률/비율 로깅 추가
 5) baseline 대비 throughput/latency 비교
+
+## 벤치마크 로그
+
+- `docs/team/20260118_feature-asio-large-writev/01_benchmark_tcp_large_runs10.txt`
+- `docs/team/20260118_feature-asio-large-writev/02_benchmark_tcp_large_runs10_summary.md`
