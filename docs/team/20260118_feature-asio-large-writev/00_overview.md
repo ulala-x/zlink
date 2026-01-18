@@ -70,6 +70,7 @@
 - `docs/team/20260118_feature-asio-large-writev/15_benchmark_tcp_large_runs10_pause_read_on_backpressure.txt`
 - `docs/team/20260118_feature-asio-large-writev/16_benchmark_tcp_large_runs10_recv_resize.txt`
 - `docs/team/20260118_feature-asio-large-writev/17_benchmark_tcp_large_runs10_in_batch_64k.txt`
+- `docs/team/20260118_feature-asio-large-writev/18_benchmark_tcp_large_runs10_in_batch_32k.txt`
 
 ## 진행 현황 (2026-01-19)
 
