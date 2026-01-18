@@ -14,6 +14,7 @@
   - `docs/team/20260118_feature-asio-large-writev/10_benchmark_tcp_large_runs10_async_write_some.txt`
   - `docs/team/20260118_feature-asio-large-writev/11_benchmark_tcp_large_runs10_header32.txt`
   - `docs/team/20260118_feature-asio-large-writev/12_benchmark_tcp_large_runs10_threshold512k.txt`
+  - `docs/team/20260118_feature-asio-large-writev/13_benchmark_tcp_large_runs10_sync_on_async_write_some.txt`
 
 ## 결과 요약
 
@@ -29,6 +30,7 @@
 - async_write_some 전환은 throughput 개선 폭을 키웠으나, latency는 여전히 큰 폭의 음수 diff
 - header buffer 축소(64B→32B)는 latency 개선에 유의미한 영향이 없었음
 - large path 비활성에 가까운 임계값(512KB)에서도 latency 회귀가 유지됨
+- sync write 강제(ZMQ_ASIO_TCP_SYNC_WRITE=1)도 latency 회귀 개선 효과는 없음
 
 ## 판단
 
