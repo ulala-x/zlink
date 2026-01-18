@@ -629,9 +629,7 @@ void zmq::asio_engine_t::on_read_complete (const boost::system::error_code &ec,
         ENGINE_DBG ("on_read_complete: buffered %zu bytes (total pending: %zu)",
                     bytes_transferred, _total_pending_bytes);
 
-        //  CRITICAL: Continue async read even during backpressure.
-        //  This is the key to True Proactor pattern - we always have a
-        //  pending read, so when data arrives it's immediately buffered.
+        //  Continue reading even during backpressure (buffering path).
         start_async_read ();
         return;
     }
@@ -692,9 +690,7 @@ void zmq::asio_engine_t::on_read_complete (const boost::system::error_code &ec,
         return;
     }
 
-    //  True Proactor Pattern: Always continue reading.
-    //  If backpressure was triggered during process_input(), data will be
-    //  buffered in the next on_read_complete() call.
+    //  Always continue reading.
     start_async_read ();
 }
 
@@ -827,6 +823,9 @@ bool zmq::asio_engine_t::process_input ()
             ENGINE_DBG ("process_input: copied %zu bytes from external input "
                         "buffer to decoder buffer",
                         decode_size);
+        } else if (_decoder) {
+            // Match libzmq behavior: shrink decoder buffer to actual bytes read.
+            _decoder->resize_buffer (decode_size);
         }
 
         ENGINE_DBG ("process_input: decode loop decode_size=%zu", decode_size);

@@ -16,6 +16,8 @@
   - `docs/team/20260118_feature-asio-large-writev/12_benchmark_tcp_large_runs10_threshold512k.txt`
   - `docs/team/20260118_feature-asio-large-writev/13_benchmark_tcp_large_runs10_sync_on_async_write_some.txt`
   - `docs/team/20260118_feature-asio-large-writev/14_benchmark_tcp_large_runs10_recv_burst.txt`
+  - `docs/team/20260118_feature-asio-large-writev/15_benchmark_tcp_large_runs10_pause_read_on_backpressure.txt`
+  - `docs/team/20260118_feature-asio-large-writev/16_benchmark_tcp_large_runs10_recv_resize.txt`
 
 ## 결과 요약
 
@@ -33,6 +35,8 @@
 - large path 비활성에 가까운 임계값(512KB)에서도 latency 회귀가 유지됨
 - sync write 강제(ZMQ_ASIO_TCP_SYNC_WRITE=1)도 latency 회귀 개선 효과는 없음
 - recv burst(추가 read_some 최대 4회)는 throughput 개선폭 확대, latency 회귀는 유지
+- backpressure 시 read 중단은 일부 패턴 throughput 하락(예: PUBSUB 256KB)로 불리
+- decoder buffer resize(libzmq 방식)는 latency 개선 없이 256KB throughput 혼재
 
 ## 판단
 
