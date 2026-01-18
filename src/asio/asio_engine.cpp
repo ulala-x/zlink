@@ -23,7 +23,14 @@
 #include <unistd.h>
 #endif
 
+#include <cstring>
 #include <sstream>
+
+namespace
+{
+const size_t large_msg_threshold = 64 * 1024;
+const size_t large_header_buffer_size = 64;
+}
 
 // Debug logging for ASIO engine - enable with -DZMQ_ASIO_DEBUG=1
 #if defined(ZMQ_ASIO_DEBUG)
@@ -112,6 +119,11 @@ zmq::asio_engine_t::asio_engine_t (
     _transport (std::move (transport_)),
     _current_timer_id (-1),
     _read_buffer (read_buffer_size),
+    _large_write_pending (false),
+    _large_write_inflight (false),
+    _large_header (large_header_buffer_size),
+    _large_body (NULL),
+    _large_body_size (0),
     _total_pending_bytes (0),
     _fd (fd_),
     _plugged (false),
@@ -431,6 +443,11 @@ void zmq::asio_engine_t::start_async_write ()
 
     ENGINE_DBG ("start_async_write: outsize=%zu", _outsize);
 
+    if (_large_write_pending) {
+        start_large_async_write ();
+        return;
+    }
+
     //  If there is already data prepared in _outpos/_outsize (from speculative_write
     //  fallback or partial write), copy it to _write_buffer for async operation.
     //  This is necessary because encoder buffer may be invalidated before async
@@ -461,6 +478,11 @@ void zmq::asio_engine_t::start_async_write ()
         //  No data prepared, try to get from encoder via process_output
         process_output ();
 
+        if (_large_write_pending) {
+            start_large_async_write ();
+            return;
+        }
+
         if (_write_buffer.empty ()) {
             _output_stopped = true;
             return;
@@ -476,6 +498,48 @@ void zmq::asio_engine_t::start_async_write ()
               on_write_complete (ec, bytes);
           });
     }
+}
+
+void zmq::asio_engine_t::start_large_async_write ()
+{
+    zmq_assert (!_write_pending);
+    zmq_assert (_large_write_pending);
+    zmq_assert (_transport);
+
+    tcp_transport_t *tcp_transport =
+      dynamic_cast<tcp_transport_t *> (_transport.get ());
+    if (!tcp_transport) {
+        _large_write_pending = false;
+        start_async_write ();
+        return;
+    }
+
+    _write_pending = true;
+    _large_write_inflight = true;
+
+    tcp_transport->async_write_two_buffers (
+      &_large_header[0], _large_header.size (), _large_body, _large_body_size,
+      [this] (const boost::system::error_code &ec, std::size_t bytes) {
+          on_write_complete (ec, bytes);
+      });
+}
+
+void zmq::asio_engine_t::finalize_large_write ()
+{
+    if (!_large_write_inflight)
+        return;
+
+    if (_encoder) {
+        unsigned char *dummy = NULL;
+        _encoder->encode (&dummy, 0);
+    }
+
+    _large_write_inflight = false;
+    _large_write_pending = false;
+    _large_body = NULL;
+    _large_body_size = 0;
+    _large_header.clear ();
+    _large_header.resize (large_header_buffer_size);
 }
 
 void zmq::asio_engine_t::on_read_complete (const boost::system::error_code &ec,
@@ -599,6 +663,8 @@ void zmq::asio_engine_t::on_write_complete (const boost::system::error_code &ec,
         return;
     }
 
+    finalize_large_write ();
+
     _write_buffer.clear ();
 
     //  If still handshaking and there's nothing more to write, just return
@@ -711,6 +777,9 @@ bool zmq::asio_engine_t::prepare_output_buffer ()
 {
     ENGINE_DBG ("prepare_output_buffer: outsize=%zu", _outsize);
 
+    if (_large_write_pending)
+        return true;
+
     //  If we already have data prepared, return true.
     if (_outsize > 0)
         return true;
@@ -724,6 +793,25 @@ bool zmq::asio_engine_t::prepare_output_buffer ()
 
     _outpos = NULL;
     _outsize = _encoder->encode (&_outpos, 0);
+
+    if (_outsize == 0) {
+        if ((this->*_next_msg) (&_tx_msg) == -1) {
+            if (errno == ECONNRESET)
+                return false;
+        } else if (prepare_large_write (_tx_msg)) {
+            ENGINE_DBG ("prepare_output_buffer: large write prepared");
+            return true;
+        } else {
+            _encoder->load_msg (&_tx_msg);
+            unsigned char *bufptr = _outpos + _outsize;
+            const size_t n =
+              _encoder->encode (&bufptr, _options.out_batch_size - _outsize);
+            zmq_assert (n > 0);
+            if (_outpos == NULL)
+                _outpos = bufptr;
+            _outsize += n;
+        }
+    }
 
     while (_outsize < static_cast<size_t> (_options.out_batch_size)) {
         if ((this->*_next_msg) (&_tx_msg) == -1) {
@@ -764,6 +852,12 @@ void zmq::asio_engine_t::speculative_write ()
     if (!prepare_output_buffer ()) {
         _output_stopped = true;
         ENGINE_DBG ("speculative_write: no data to send, output_stopped=true");
+        return;
+    }
+
+    if (_large_write_pending) {
+        ENGINE_DBG ("speculative_write: large write pending, async path");
+        start_async_write ();
         return;
     }
 
@@ -867,40 +961,14 @@ void zmq::asio_engine_t::process_output ()
     //  sets _outpos/_outsize to point directly to encoder buffer. The copy here
     //  is only for the async-only path (not via speculative_write).
 
-    //  If write buffer is empty, try to read new data from the encoder.
     if (_outsize == 0) {
-        //  Even when we stop as soon as there is no data to send,
-        //  there may be a pending async_write.
-        if (unlikely (_encoder == NULL)) {
-            zmq_assert (_handshaking);
-            return;
-        }
-
-        _outpos = NULL;
-        _outsize = _encoder->encode (&_outpos, 0);
-
-        while (_outsize < static_cast<size_t> (_options.out_batch_size)) {
-            if ((this->*_next_msg) (&_tx_msg) == -1) {
-                if (errno == ECONNRESET)
-                    return;
-                else
-                    break;
-            }
-            _encoder->load_msg (&_tx_msg);
-            unsigned char *bufptr = _outpos + _outsize;
-            const size_t n =
-              _encoder->encode (&bufptr, _options.out_batch_size - _outsize);
-            zmq_assert (n > 0);
-            if (_outpos == NULL)
-                _outpos = bufptr;
-            _outsize += n;
-        }
-
-        //  If there is no data to send, mark output as stopped.
-        if (_outsize == 0) {
+        if (!prepare_output_buffer ()) {
             _output_stopped = true;
             return;
         }
+
+        if (_large_write_pending)
+            return;
     }
 
     //  Copy data to write buffer for async write operation.
@@ -1132,6 +1200,45 @@ bool zmq::asio_engine_t::restart_input_internal ()
         return true;
 
     start_async_read ();
+    return true;
+}
+
+bool zmq::asio_engine_t::prepare_large_write (msg_t &msg_)
+{
+    if (!_transport || _handshaking)
+        return false;
+
+    if (_transport->is_encrypted () || strcmp (_transport->name (), "tcp") != 0)
+        return false;
+
+    if (msg_.size () < large_msg_threshold)
+        return false;
+
+    zmq_assert (_encoder);
+
+    if (_large_header.size () < large_header_buffer_size)
+        _large_header.resize (large_header_buffer_size);
+
+    _encoder->load_msg (&msg_);
+
+    unsigned char *header_buf = &_large_header[0];
+    unsigned char *header_ptr = header_buf;
+    const size_t header_size =
+      _encoder->encode (&header_ptr, _large_header.size ());
+    zmq_assert (header_size > 0);
+
+    unsigned char *body_ptr = NULL;
+    const size_t body_size = _encoder->encode (&body_ptr, 0);
+    zmq_assert (body_ptr != NULL);
+    zmq_assert (body_size > 0);
+
+    _large_header.resize (header_size);
+    _large_body = body_ptr;
+    _large_body_size = body_size;
+    _large_write_pending = true;
+    _outpos = NULL;
+    _outsize = 0;
+
     return true;
 }
 

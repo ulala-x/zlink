@@ -7,6 +7,7 @@
 
 #include "asio_debug.hpp"
 #include "../address.hpp"
+#include <boost/array.hpp>
 #include <cstdlib>
 
 namespace zmq
@@ -136,6 +137,22 @@ void tcp_transport_t::async_write_some (const unsigned char *buffer,
     if (_socket) {
         boost::asio::async_write (
           *_socket, boost::asio::buffer (buffer, buffer_size), handler);
+    } else if (handler) {
+        handler (boost::asio::error::bad_descriptor, 0);
+    }
+}
+
+void tcp_transport_t::async_write_two_buffers (const unsigned char *header,
+                                               std::size_t header_size,
+                                               const unsigned char *body,
+                                               std::size_t body_size,
+                                               completion_handler_t handler)
+{
+    if (_socket) {
+        boost::array<boost::asio::const_buffer, 2> buffers;
+        buffers[0] = boost::asio::buffer (header, header_size);
+        buffers[1] = boost::asio::buffer (body, body_size);
+        boost::asio::async_write (*_socket, buffers, handler);
     } else if (handler) {
         handler (boost::asio::error::bad_descriptor, 0);
     }

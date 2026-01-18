@@ -205,6 +205,16 @@ class asio_engine_t : public i_engine
     //  Fill output buffer and start async write
     void process_output ();
 
+    //  Prepare large-message scatter/gather write (TCP only).
+    //  Returns true if a large write is prepared.
+    bool prepare_large_write (msg_t &msg_);
+
+    //  Start async write for large-message path.
+    void start_large_async_write ();
+
+    //  Finalize encoder state after large-message async write completes.
+    void finalize_large_write ();
+
     //  Internal implementation of restart_input
     bool restart_input_internal ();
 
@@ -241,6 +251,13 @@ class asio_engine_t : public i_engine
 
     //  Internal write buffer for async operations
     std::vector<unsigned char> _write_buffer;
+
+    //  Large-message async write state (TCP only)
+    bool _large_write_pending;
+    bool _large_write_inflight;
+    std::vector<unsigned char> _large_header;
+    const unsigned char *_large_body;
+    size_t _large_body_size;
 
     //  True Proactor Pattern: Pending buffers for backpressure handling.
     //  When _input_stopped is true, incoming data is stored here instead of

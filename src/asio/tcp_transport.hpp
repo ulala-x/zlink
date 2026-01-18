@@ -41,6 +41,12 @@ class tcp_transport_t : public i_asio_transport
                            std::size_t buffer_size,
                            completion_handler_t handler) ZMQ_OVERRIDE;
 
+    void async_write_two_buffers (const unsigned char *header,
+                                  std::size_t header_size,
+                                  const unsigned char *body,
+                                  std::size_t body_size,
+                                  completion_handler_t handler);
+
     std::size_t write_some (const std::uint8_t *data,
                             std::size_t len) ZMQ_OVERRIDE;
 
