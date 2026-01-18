@@ -1,0 +1,362 @@
+
+## PATTERN: PAIR
+  > Benchmarking libzmq for PAIR...
+    Testing tcp | 1024B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing tcp | 8192B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing inproc | 1024B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing inproc | 8192B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing ipc | 1024B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing ipc | 8192B: 1 2 3 4 5 6 7 8 9 10 Done
+  > Benchmarking zlink for PAIR...
+    Testing tcp | 1024B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing tcp | 8192B: 1 2 3 4 5 6 7 8 9 10 (failures=10) Done
+    Testing inproc | 1024B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing inproc | 8192B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing ipc | 1024B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing ipc | 8192B: 1 2 3 4 5 6 7 8 9 10 (failures=10) Done
+
+### Transport: tcp
+| Size | Metric | Standard libzmq | zlink | Diff (%) |
+|------|--------|-----------------|-------|----------|
+| 1024B | Throughput |   0.99 M/s |   1.00 M/s |   +1.10% |
+| | Latency |    31.52 us |    33.85 us |   -7.38% (inv) |
+| 8192B | Throughput |   0.18 M/s |   0.00 M/s | -100.00% |
+| | Latency |    42.98 us |     0.00 us | +100.00% (inv) |
+
+### Transport: inproc
+| Size | Metric | Standard libzmq | zlink | Diff (%) |
+|------|--------|-----------------|-------|----------|
+| 1024B | Throughput |   2.04 M/s |   2.05 M/s |   +0.77% |
+| | Latency |     0.10 us |     0.11 us |  -10.00% (inv) |
+| 8192B | Throughput |   0.74 M/s |   0.78 M/s |   +5.49% |
+| | Latency |     0.18 us |     0.19 us |   -5.56% (inv) |
+
+### Transport: ipc
+| Size | Metric | Standard libzmq | zlink | Diff (%) |
+|------|--------|-----------------|-------|----------|
+| 1024B | Throughput |   1.07 M/s |   1.05 M/s |   -2.27% |
+| | Latency |    29.73 us |    29.54 us |   +0.66% (inv) |
+| 8192B | Throughput |   0.21 M/s |   0.00 M/s | -100.00% |
+| | Latency |    33.86 us |     0.00 us | +100.00% (inv) |
+
+## PATTERN: PUBSUB
+  > Benchmarking libzmq for PUBSUB...
+    Testing tcp | 1024B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing tcp | 8192B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing inproc | 1024B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing inproc | 8192B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing ipc | 1024B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing ipc | 8192B: 1 2 3 4 5 6 7 8 9 10 Done
+  > Benchmarking zlink for PUBSUB...
+    Testing tcp | 1024B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing tcp | 8192B: 1 2 3 4 5 6 7 8 9 10 (failures=10) Done
+    Testing inproc | 1024B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing inproc | 8192B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing ipc | 1024B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing ipc | 8192B: 1 2 3 4 5 6 7 8 9 10 (failures=10) Done
+
+### Transport: tcp
+| Size | Metric | Standard libzmq | zlink | Diff (%) |
+|------|--------|-----------------|-------|----------|
+| 1024B | Throughput |   0.99 M/s |   1.07 M/s |   +7.15% |
+| | Latency |     1.00 us |     0.94 us |   +6.50% (inv) |
+| 8192B | Throughput |   0.19 M/s |   0.00 M/s | -100.00% |
+| | Latency |     5.37 us |     0.00 us | +100.00% (inv) |
+
+### Transport: inproc
+| Size | Metric | Standard libzmq | zlink | Diff (%) |
+|------|--------|-----------------|-------|----------|
+| 1024B | Throughput |   1.92 M/s |   1.98 M/s |   +3.01% |
+| | Latency |     0.52 us |     0.51 us |   +1.92% (inv) |
+| 8192B | Throughput |   0.64 M/s |   0.65 M/s |   +2.18% |
+| | Latency |     1.56 us |     1.53 us |   +1.92% (inv) |
+
+### Transport: ipc
+| Size | Metric | Standard libzmq | zlink | Diff (%) |
+|------|--------|-----------------|-------|----------|
+| 1024B | Throughput |   1.06 M/s |   1.08 M/s |   +2.01% |
+| | Latency |     0.94 us |     0.93 us |   +2.12% (inv) |
+| 8192B | Throughput |   0.21 M/s |   0.00 M/s | -100.00% |
+| | Latency |     4.69 us |     0.00 us | +100.00% (inv) |
+
+## PATTERN: DEALER_DEALER
+  > Benchmarking libzmq for DEALER_DEALER...
+    Testing tcp | 1024B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing tcp | 8192B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing inproc | 1024B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing inproc | 8192B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing ipc | 1024B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing ipc | 8192B: 1 2 3 4 5 6 7 8 9 10 Done
+  > Benchmarking zlink for DEALER_DEALER...
+    Testing tcp | 1024B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing tcp | 8192B: 1 2 3 4 5 6 7 8 9 10 (failures=10) Done
+    Testing inproc | 1024B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing inproc | 8192B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing ipc | 1024B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing ipc | 8192B: 1 2 3 4 5 6 7 8 9 10 (failures=10) Done
+
+### Transport: tcp
+| Size | Metric | Standard libzmq | zlink | Diff (%) |
+|------|--------|-----------------|-------|----------|
+| 1024B | Throughput |   1.00 M/s |   1.02 M/s |   +2.33% |
+| | Latency |    31.92 us |    32.47 us |   -1.72% (inv) |
+| 8192B | Throughput |   0.18 M/s |   0.00 M/s | -100.00% |
+| | Latency |    36.56 us |     0.00 us | +100.00% (inv) |
+
+### Transport: inproc
+| Size | Metric | Standard libzmq | zlink | Diff (%) |
+|------|--------|-----------------|-------|----------|
+| 1024B | Throughput |   2.01 M/s |   2.04 M/s |   +1.39% |
+| | Latency |     0.11 us |     0.11 us |   +0.00% (inv) |
+| 8192B | Throughput |   0.72 M/s |   0.69 M/s |   -4.79% |
+| | Latency |     0.18 us |     0.17 us |   +2.78% (inv) |
+
+### Transport: ipc
+| Size | Metric | Standard libzmq | zlink | Diff (%) |
+|------|--------|-----------------|-------|----------|
+| 1024B | Throughput |   1.08 M/s |   1.08 M/s |   -0.22% |
+| | Latency |    29.73 us |    29.36 us |   +1.24% (inv) |
+| 8192B | Throughput |   0.21 M/s |   0.00 M/s | -100.00% |
+| | Latency |    33.62 us |     0.00 us | +100.00% (inv) |
+
+## PATTERN: DEALER_ROUTER
+  > Benchmarking libzmq for DEALER_ROUTER...
+    Testing tcp | 1024B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing tcp | 8192B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing inproc | 1024B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing inproc | 8192B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing ipc | 1024B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing ipc | 8192B: 1 2 3 4 5 6 7 8 9 10 Done
+  > Benchmarking zlink for DEALER_ROUTER...
+    Testing tcp | 1024B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing tcp | 8192B: 1 2 3 4 5 6 7 8 9 10 (failures=10) Done
+    Testing inproc | 1024B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing inproc | 8192B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing ipc | 1024B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing ipc | 8192B: 1 2 3 4 5 6 7 8 9 10 (failures=10) Done
+
+### Transport: tcp
+| Size | Metric | Standard libzmq | zlink | Diff (%) |
+|------|--------|-----------------|-------|----------|
+| 1024B | Throughput |   0.99 M/s |   1.06 M/s |   +7.12% |
+| | Latency |    38.77 us |    41.97 us |   -8.27% (inv) |
+| 8192B | Throughput |   0.18 M/s |   0.00 M/s | -100.00% |
+| | Latency |    51.98 us |     0.00 us | +100.00% (inv) |
+
+### Transport: inproc
+| Size | Metric | Standard libzmq | zlink | Diff (%) |
+|------|--------|-----------------|-------|----------|
+| 1024B | Throughput |   1.77 M/s |   1.75 M/s |   -0.61% |
+| | Latency |     0.13 us |     0.14 us |   -7.69% (inv) |
+| 8192B | Throughput |   0.54 M/s |   0.61 M/s |  +12.53% |
+| | Latency |     0.19 us |     0.21 us |  -10.53% (inv) |
+
+### Transport: ipc
+| Size | Metric | Standard libzmq | zlink | Diff (%) |
+|------|--------|-----------------|-------|----------|
+| 1024B | Throughput |   1.05 M/s |   1.10 M/s |   +4.61% |
+| | Latency |    46.33 us |    54.89 us |  -18.50% (inv) |
+| 8192B | Throughput |   0.21 M/s |   0.00 M/s | -100.00% |
+| | Latency |    49.52 us |     0.00 us | +100.00% (inv) |
+
+## PATTERN: ROUTER_ROUTER
+  > Benchmarking libzmq for ROUTER_ROUTER...
+    Testing tcp | 1024B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing tcp | 8192B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing inproc | 1024B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing inproc | 8192B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing ipc | 1024B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing ipc | 8192B: 1 2 3 4 5 6 7 8 9 10 Done
+  > Benchmarking zlink for ROUTER_ROUTER...
+    Testing tcp | 1024B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing tcp | 8192B: 1 2 3 4 5 6 7 8 9 10 (failures=10) Done
+    Testing inproc | 1024B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing inproc | 8192B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing ipc | 1024B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing ipc | 8192B: 1 2 3 4 5 6 7 8 9 10 (failures=10) Done
+
+### Transport: tcp
+| Size | Metric | Standard libzmq | zlink | Diff (%) |
+|------|--------|-----------------|-------|----------|
+| 1024B | Throughput |   0.95 M/s |   1.05 M/s |  +10.18% |
+| | Latency |    17.03 us |    18.00 us |   -5.69% (inv) |
+| 8192B | Throughput |   0.18 M/s |   0.00 M/s | -100.00% |
+| | Latency |    21.09 us |     0.00 us | +100.00% (inv) |
+
+### Transport: inproc
+| Size | Metric | Standard libzmq | zlink | Diff (%) |
+|------|--------|-----------------|-------|----------|
+| 1024B | Throughput |   1.69 M/s |   1.67 M/s |   -1.52% |
+| | Latency |     0.19 us |     0.20 us |   -5.26% (inv) |
+| 8192B | Throughput |   0.55 M/s |   0.56 M/s |   +2.01% |
+| | Latency |     0.27 us |     0.27 us |   +0.00% (inv) |
+
+### Transport: ipc
+| Size | Metric | Standard libzmq | zlink | Diff (%) |
+|------|--------|-----------------|-------|----------|
+| 1024B | Throughput |   1.05 M/s |   1.09 M/s |   +4.08% |
+| | Latency |    15.97 us |    16.66 us |   -4.29% (inv) |
+| 8192B | Throughput |   0.21 M/s |   0.00 M/s | -100.00% |
+| | Latency |    18.57 us |     0.00 us | +100.00% (inv) |
+
+## PATTERN: ROUTER_ROUTER_POLL
+  > Benchmarking libzmq for ROUTER_ROUTER_POLL...
+    Testing tcp | 1024B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing tcp | 8192B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing inproc | 1024B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing inproc | 8192B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing ipc | 1024B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing ipc | 8192B: 1 2 3 4 5 6 7 8 9 10 Done
+  > Benchmarking zlink for ROUTER_ROUTER_POLL...
+    Testing tcp | 1024B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing tcp | 8192B: 1 2 3 4 5 6 7 8 9 10 (failures=10) Done
+    Testing inproc | 1024B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing inproc | 8192B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing ipc | 1024B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing ipc | 8192B: 1 2 3 4 5 6 7 8 9 10 (failures=10) Done
+
+### Transport: tcp
+| Size | Metric | Standard libzmq | zlink | Diff (%) |
+|------|--------|-----------------|-------|----------|
+| 1024B | Throughput |   0.96 M/s |   1.06 M/s |   +9.65% |
+| | Latency |    17.38 us |    17.57 us |   -1.06% (inv) |
+| 8192B | Throughput |   0.18 M/s |   0.00 M/s | -100.00% |
+| | Latency |    20.87 us |     0.00 us | +100.00% (inv) |
+
+### Transport: inproc
+| Size | Metric | Standard libzmq | zlink | Diff (%) |
+|------|--------|-----------------|-------|----------|
+| 1024B | Throughput |   1.67 M/s |   1.65 M/s |   -0.92% |
+| | Latency |     0.59 us |     0.53 us |  +11.02% (inv) |
+| 8192B | Throughput |   0.54 M/s |   0.56 M/s |   +2.22% |
+| | Latency |     0.66 us |     0.59 us |  +10.61% (inv) |
+
+### Transport: ipc
+| Size | Metric | Standard libzmq | zlink | Diff (%) |
+|------|--------|-----------------|-------|----------|
+| 1024B | Throughput |   1.05 M/s |   1.09 M/s |   +3.19% |
+| | Latency |    15.72 us |    16.75 us |   -6.52% (inv) |
+| 8192B | Throughput |   0.21 M/s |   0.00 M/s | -100.00% |
+| | Latency |    19.92 us |     0.00 us | +100.00% (inv) |
+
+## Failures
+- PAIR zlink tcp 8192B: no_data
+- PAIR zlink tcp 8192B: no_data
+- PAIR zlink tcp 8192B: no_data
+- PAIR zlink tcp 8192B: no_data
+- PAIR zlink tcp 8192B: no_data
+- PAIR zlink tcp 8192B: no_data
+- PAIR zlink tcp 8192B: no_data
+- PAIR zlink tcp 8192B: no_data
+- PAIR zlink tcp 8192B: no_data
+- PAIR zlink tcp 8192B: no_data
+- PAIR zlink ipc 8192B: no_data
+- PAIR zlink ipc 8192B: no_data
+- PAIR zlink ipc 8192B: no_data
+- PAIR zlink ipc 8192B: no_data
+- PAIR zlink ipc 8192B: no_data
+- PAIR zlink ipc 8192B: no_data
+- PAIR zlink ipc 8192B: no_data
+- PAIR zlink ipc 8192B: no_data
+- PAIR zlink ipc 8192B: no_data
+- PAIR zlink ipc 8192B: no_data
+- PUBSUB zlink tcp 8192B: no_data
+- PUBSUB zlink tcp 8192B: no_data
+- PUBSUB zlink tcp 8192B: no_data
+- PUBSUB zlink tcp 8192B: no_data
+- PUBSUB zlink tcp 8192B: no_data
+- PUBSUB zlink tcp 8192B: no_data
+- PUBSUB zlink tcp 8192B: no_data
+- PUBSUB zlink tcp 8192B: no_data
+- PUBSUB zlink tcp 8192B: no_data
+- PUBSUB zlink tcp 8192B: no_data
+- PUBSUB zlink ipc 8192B: no_data
+- PUBSUB zlink ipc 8192B: no_data
+- PUBSUB zlink ipc 8192B: no_data
+- PUBSUB zlink ipc 8192B: no_data
+- PUBSUB zlink ipc 8192B: no_data
+- PUBSUB zlink ipc 8192B: no_data
+- PUBSUB zlink ipc 8192B: no_data
+- PUBSUB zlink ipc 8192B: no_data
+- PUBSUB zlink ipc 8192B: no_data
+- PUBSUB zlink ipc 8192B: no_data
+- DEALER_DEALER zlink tcp 8192B: no_data
+- DEALER_DEALER zlink tcp 8192B: no_data
+- DEALER_DEALER zlink tcp 8192B: no_data
+- DEALER_DEALER zlink tcp 8192B: no_data
+- DEALER_DEALER zlink tcp 8192B: no_data
+- DEALER_DEALER zlink tcp 8192B: no_data
+- DEALER_DEALER zlink tcp 8192B: no_data
+- DEALER_DEALER zlink tcp 8192B: no_data
+- DEALER_DEALER zlink tcp 8192B: no_data
+- DEALER_DEALER zlink tcp 8192B: no_data
+- DEALER_DEALER zlink ipc 8192B: no_data
+- DEALER_DEALER zlink ipc 8192B: no_data
+- DEALER_DEALER zlink ipc 8192B: no_data
+- DEALER_DEALER zlink ipc 8192B: no_data
+- DEALER_DEALER zlink ipc 8192B: no_data
+- DEALER_DEALER zlink ipc 8192B: no_data
+- DEALER_DEALER zlink ipc 8192B: no_data
+- DEALER_DEALER zlink ipc 8192B: no_data
+- DEALER_DEALER zlink ipc 8192B: no_data
+- DEALER_DEALER zlink ipc 8192B: no_data
+- DEALER_ROUTER zlink tcp 8192B: no_data
+- DEALER_ROUTER zlink tcp 8192B: no_data
+- DEALER_ROUTER zlink tcp 8192B: no_data
+- DEALER_ROUTER zlink tcp 8192B: no_data
+- DEALER_ROUTER zlink tcp 8192B: no_data
+- DEALER_ROUTER zlink tcp 8192B: no_data
+- DEALER_ROUTER zlink tcp 8192B: no_data
+- DEALER_ROUTER zlink tcp 8192B: no_data
+- DEALER_ROUTER zlink tcp 8192B: no_data
+- DEALER_ROUTER zlink tcp 8192B: no_data
+- DEALER_ROUTER zlink ipc 8192B: no_data
+- DEALER_ROUTER zlink ipc 8192B: no_data
+- DEALER_ROUTER zlink ipc 8192B: no_data
+- DEALER_ROUTER zlink ipc 8192B: no_data
+- DEALER_ROUTER zlink ipc 8192B: no_data
+- DEALER_ROUTER zlink ipc 8192B: no_data
+- DEALER_ROUTER zlink ipc 8192B: no_data
+- DEALER_ROUTER zlink ipc 8192B: no_data
+- DEALER_ROUTER zlink ipc 8192B: no_data
+- DEALER_ROUTER zlink ipc 8192B: no_data
+- ROUTER_ROUTER zlink tcp 8192B: no_data
+- ROUTER_ROUTER zlink tcp 8192B: no_data
+- ROUTER_ROUTER zlink tcp 8192B: no_data
+- ROUTER_ROUTER zlink tcp 8192B: no_data
+- ROUTER_ROUTER zlink tcp 8192B: no_data
+- ROUTER_ROUTER zlink tcp 8192B: no_data
+- ROUTER_ROUTER zlink tcp 8192B: no_data
+- ROUTER_ROUTER zlink tcp 8192B: no_data
+- ROUTER_ROUTER zlink tcp 8192B: no_data
+- ROUTER_ROUTER zlink tcp 8192B: no_data
+- ROUTER_ROUTER zlink ipc 8192B: no_data
+- ROUTER_ROUTER zlink ipc 8192B: no_data
+- ROUTER_ROUTER zlink ipc 8192B: no_data
+- ROUTER_ROUTER zlink ipc 8192B: no_data
+- ROUTER_ROUTER zlink ipc 8192B: no_data
+- ROUTER_ROUTER zlink ipc 8192B: no_data
+- ROUTER_ROUTER zlink ipc 8192B: no_data
+- ROUTER_ROUTER zlink ipc 8192B: no_data
+- ROUTER_ROUTER zlink ipc 8192B: no_data
+- ROUTER_ROUTER zlink ipc 8192B: no_data
+- ROUTER_ROUTER_POLL zlink tcp 8192B: no_data
+- ROUTER_ROUTER_POLL zlink tcp 8192B: no_data
+- ROUTER_ROUTER_POLL zlink tcp 8192B: no_data
+- ROUTER_ROUTER_POLL zlink tcp 8192B: no_data
+- ROUTER_ROUTER_POLL zlink tcp 8192B: no_data
+- ROUTER_ROUTER_POLL zlink tcp 8192B: no_data
+- ROUTER_ROUTER_POLL zlink tcp 8192B: no_data
+- ROUTER_ROUTER_POLL zlink tcp 8192B: no_data
+- ROUTER_ROUTER_POLL zlink tcp 8192B: no_data
+- ROUTER_ROUTER_POLL zlink tcp 8192B: no_data
+- ROUTER_ROUTER_POLL zlink ipc 8192B: no_data
+- ROUTER_ROUTER_POLL zlink ipc 8192B: no_data
+- ROUTER_ROUTER_POLL zlink ipc 8192B: no_data
+- ROUTER_ROUTER_POLL zlink ipc 8192B: no_data
+- ROUTER_ROUTER_POLL zlink ipc 8192B: no_data
+- ROUTER_ROUTER_POLL zlink ipc 8192B: no_data
+- ROUTER_ROUTER_POLL zlink ipc 8192B: no_data
+- ROUTER_ROUTER_POLL zlink ipc 8192B: no_data
+- ROUTER_ROUTER_POLL zlink ipc 8192B: no_data
+- ROUTER_ROUTER_POLL zlink ipc 8192B: no_data

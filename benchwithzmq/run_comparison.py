@@ -189,11 +189,7 @@ def collect_data(binary_name, lib_name, pattern_name, num_runs):
                     metrics_raw[m].append(r['value'])
             
             for m, vals in metrics_raw.items():
-                if len(vals) >= 3:
-                    sorted_v = sorted(vals)
-                    avg = statistics.mean(sorted_v[1:-1]) # Drop min/max
-                else:
-                    avg = statistics.mean(vals) if vals else 0
+                avg = statistics.median(vals) if vals else 0
                 final_stats[f"{tr}|{sz}|{m}"] = avg
             if failed_runs:
                 print(f"(failures={failed_runs}) ", end="", flush=True)
