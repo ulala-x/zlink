@@ -12,6 +12,7 @@
   - `docs/team/20260118_feature-asio-large-writev/06_benchmark_tcp_large_runs10_sync_default.txt`
   - `docs/team/20260118_feature-asio-large-writev/09_benchmark_tcp_large_runs10_no_sync_loop_full.txt`
   - `docs/team/20260118_feature-asio-large-writev/10_benchmark_tcp_large_runs10_async_write_some.txt`
+  - `docs/team/20260118_feature-asio-large-writev/11_benchmark_tcp_large_runs10_header32.txt`
 
 ## 결과 요약
 
@@ -25,6 +26,7 @@
 - 임계값 128KB 상향 및 sync 경로 강화는 latency 회귀를 해소하지 못함
 - sync loop 제거 시도에서도 latency 회귀는 지속됨 (throughput은 일부 개선)
 - async_write_some 전환은 throughput 개선 폭을 키웠으나, latency는 여전히 큰 폭의 음수 diff
+- header buffer 축소(64B→32B)는 latency 개선에 유의미한 영향이 없었음
 
 ## 판단
 

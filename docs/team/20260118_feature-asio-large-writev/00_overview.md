@@ -63,6 +63,7 @@
 - `docs/team/20260118_feature-asio-large-writev/08_benchmark_tcp_large_runs10_no_sync_loop_full.txt` (중단)
 - `docs/team/20260118_feature-asio-large-writev/09_benchmark_tcp_large_runs10_no_sync_loop_full.txt`
 - `docs/team/20260118_feature-asio-large-writev/10_benchmark_tcp_large_runs10_async_write_some.txt`
+- `docs/team/20260118_feature-asio-large-writev/11_benchmark_tcp_large_runs10_header32.txt`
 
 ## 진행 현황 (2026-01-19)
 

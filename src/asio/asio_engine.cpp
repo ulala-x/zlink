@@ -29,7 +29,7 @@
 namespace
 {
 const size_t large_msg_threshold = 64 * 1024;
-const size_t large_header_buffer_size = 64;
+const size_t large_header_buffer_size = 32;
 }
 
 // Debug logging for ASIO engine - enable with -DZMQ_ASIO_DEBUG=1
