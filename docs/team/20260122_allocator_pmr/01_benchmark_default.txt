@@ -1,0 +1,988 @@
+Cleaning build directory: /home/ulalax/project/ulalax/zlink/build/bench
+-- The C compiler identification is GNU 13.3.0
+-- The CXX compiler identification is GNU 13.3.0
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /usr/bin/cc - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/c++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+-- Found Threads: TRUE  
+-- Detected ZMQ Version - 4.3.5
+-- Found PkgConfig: /usr/bin/pkg-config (found version "1.8.1") 
+-- Performing Test COMPILER_SUPPORTS_CXX20
+-- Performing Test COMPILER_SUPPORTS_CXX20 - Success
+-- Using C++20 standard
+-- Performing Test COMPILER_SUPPORTS_C11
+-- Performing Test COMPILER_SUPPORTS_C11 - Success
+-- Performing Test CXX_HAS_TAUT_WARNING
+-- Performing Test CXX_HAS_TAUT_WARNING - Success
+-- Performing Test CC_HAS_TAUT_WARNING
+-- Performing Test CC_HAS_TAUT_WARNING - Success
+-- ASIO headers found: /home/ulalax/project/ulalax/zlink/external/boost
+-- Using ASIO as mandatory I/O backend
+-- Found OpenSSL: /usr/lib/x86_64-linux-gnu/libcrypto.so (found version "3.0.13")  
+-- OpenSSL found: 3.0.13
+-- Beast headers found - WebSocket support enabled
+-- WSS (Secure WebSocket) enabled with TLS
+-- Not building draft classes and methods (zlink: forced OFF)
+-- TLS transport enabled
+-- WebSocket transport enabled
+-- Secure WebSocket transport enabled
+-- Checking for module 'libbsd'
+--   Package 'libbsd', required by 'virtual:world', not found
+-- Looking for strlcpy
+-- Looking for strlcpy - found
+-- Using polling method in I/O threads: asio
+-- Using polling method in zmq_poll(er)_* API: poll
+-- Looking for pselect
+-- Looking for pselect - found
+-- Using 64 bytes alignment for lock-free data structures
+-- Looking for posix_memalign
+-- Looking for posix_memalign - found
+-- Looking for include file windows.h
+-- Looking for include file windows.h - not found
+-- Looking for include file condition_variable
+-- Looking for include file condition_variable - found
+-- Using condition_variable_t implementation: stl11
+-- Looking for include file ifaddrs.h
+-- Looking for include file ifaddrs.h - found
+-- Looking for include file sys/uio.h
+-- Looking for include file sys/uio.h - found
+-- Looking for include file sys/eventfd.h
+-- Looking for include file sys/eventfd.h - found
+-- Checking whether EFD_CLOEXEC is supported
+-- Performing Test ZMQ_HAVE_EVENTFD_CLOEXEC
+-- Performing Test ZMQ_HAVE_EVENTFD_CLOEXEC - Success
+-- Looking for if_nametoindex
+-- Looking for if_nametoindex - found
+-- Looking for SO_PEERCRED
+-- Looking for SO_PEERCRED - found
+-- Looking for LOCAL_PEERCRED
+-- Looking for LOCAL_PEERCRED - not found
+-- Looking for SO_BUSY_POLL
+-- Looking for SO_BUSY_POLL - found
+-- Looking for clock_gettime
+-- Looking for clock_gettime - found
+-- Looking for fork
+-- Looking for fork - found
+-- Looking for gethrtime
+-- Looking for gethrtime - not found
+-- Looking for mkdtemp
+-- Looking for mkdtemp - found
+-- Looking for accept4
+-- Looking for accept4 - found
+-- Looking for strnlen
+-- Looking for strnlen - found
+-- Performing Test HAVE_FLAG_-Wall
+-- Performing Test HAVE_FLAG_-Wall - Failed
+-- Performing Test HAVE_FLAG_-Wextra
+-- Performing Test HAVE_FLAG_-Wextra - Failed
+-- Performing Test HAVE_FLAG_-Wno-long-long
+-- Performing Test HAVE_FLAG_-Wno-long-long - Failed
+-- Performing Test HAVE_FLAG_-Wno-uninitialized
+-- Performing Test HAVE_FLAG_-Wno-uninitialized - Failed
+-- Performing Test HAVE_FLAG_-pedantic
+-- Performing Test HAVE_FLAG_-pedantic - Failed
+-- Checking whether noexcept is supported
+-- Performing Test ZMQ_HAVE_NOEXCEPT
+-- Performing Test ZMQ_HAVE_NOEXCEPT - Success
+-- Checking pthread_setname signature
+-- Performing Test ZMQ_HAVE_PTHREAD_SETNAME_1
+-- Performing Test ZMQ_HAVE_PTHREAD_SETNAME_1 - Failed
+-- Performing Test ZMQ_HAVE_PTHREAD_SETNAME_2
+-- Performing Test ZMQ_HAVE_PTHREAD_SETNAME_2 - Success
+-- Performing Test ZMQ_HAVE_PTHREAD_SETNAME_3
+-- Performing Test ZMQ_HAVE_PTHREAD_SETNAME_3 - Failed
+-- Performing Test ZMQ_HAVE_PTHREAD_SET_NAME
+-- Performing Test ZMQ_HAVE_PTHREAD_SET_NAME - Failed
+-- Checking pthread_setaffinity signature
+-- Performing Test ZMQ_HAVE_PTHREAD_SET_AFFINITY
+-- Performing Test ZMQ_HAVE_PTHREAD_SET_AFFINITY - Success
+-- Checking whether SOCK_CLOEXEC is supported
+-- Performing Test ZMQ_HAVE_SOCK_CLOEXEC
+-- Performing Test ZMQ_HAVE_SOCK_CLOEXEC - Success
+-- Checking whether O_CLOEXEC is supported
+-- Performing Test ZMQ_HAVE_O_CLOEXEC
+-- Performing Test ZMQ_HAVE_O_CLOEXEC - Failed
+-- Checking whether SO_BINDTODEVICE is supported
+-- Performing Test ZMQ_HAVE_SO_BINDTODEVICE
+-- Performing Test ZMQ_HAVE_SO_BINDTODEVICE - Failed
+-- Checking whether SO_KEEPALIVE is supported
+-- Performing Test ZMQ_HAVE_SO_KEEPALIVE
+-- Performing Test ZMQ_HAVE_SO_KEEPALIVE - Success
+-- Checking whether SO_PRIORITY is supported
+-- Performing Test ZMQ_HAVE_SO_PRIORITY
+-- Performing Test ZMQ_HAVE_SO_PRIORITY - Failed
+-- Checking whether TCP_KEEPCNT is supported
+-- Performing Test ZMQ_HAVE_TCP_KEEPCNT
+-- Performing Test ZMQ_HAVE_TCP_KEEPCNT - Success
+-- Checking whether TCP_KEEPIDLE is supported
+-- Performing Test ZMQ_HAVE_TCP_KEEPIDLE
+-- Performing Test ZMQ_HAVE_TCP_KEEPIDLE - Success
+-- Checking whether TCP_KEEPINTVL is supported
+-- Performing Test ZMQ_HAVE_TCP_KEEPINTVL
+-- Performing Test ZMQ_HAVE_TCP_KEEPINTVL - Success
+-- Checking whether TCP_KEEPALIVE is supported
+-- Performing Test ZMQ_HAVE_TCP_KEEPALIVE
+-- Performing Test ZMQ_HAVE_TCP_KEEPALIVE - Failed
+-- Checking whether getrandom is supported
+-- Performing Test ZMQ_HAVE_GETRANDOM
+-- Performing Test ZMQ_HAVE_GETRANDOM - Success
+-- Found standard libzmq for comparison: /home/ulalax/project/ulalax/zlink/benchwithzmq/libzmq/libzmq_dist/lib/libzmq.so;/home/ulalax/project/ulalax/zlink/benchwithzmq/libzmq/libzmq_dist/lib/libzmq.so.5;/home/ulalax/project/ulalax/zlink/benchwithzmq/libzmq/libzmq_dist/lib/libzmq.so.5.2.5
+-- Configuring done (7.1s)
+-- Generating done (0.1s)
+-- Build files have been written to: /home/ulalax/project/ulalax/zlink/build/bench
+[  0%] Building CXX object CMakeFiles/objects.dir/src/asio/asio_poller.cpp.o
+[  1%] Building CXX object CMakeFiles/objects.dir/src/asio/asio_tcp_listener.cpp.o
+[  1%] Building CXX object CMakeFiles/objects.dir/src/asio/asio_tcp_connecter.cpp.o
+[  2%] Building CXX object CMakeFiles/objects.dir/src/asio/asio_ipc_connecter.cpp.o
+[  2%] Building CXX object CMakeFiles/objects.dir/src/asio/asio_ipc_listener.cpp.o
+[  3%] Building CXX object CMakeFiles/objects.dir/src/asio/asio_engine.cpp.o
+[  3%] Building CXX object CMakeFiles/objects.dir/src/asio/asio_zmtp_engine.cpp.o
+[  3%] Building CXX object CMakeFiles/objects.dir/src/asio/tcp_transport.cpp.o
+[  4%] Building CXX object CMakeFiles/objects.dir/src/asio/ipc_transport.cpp.o
+[  4%] Building CXX object CMakeFiles/objects.dir/src/asio/ssl_transport.cpp.o
+[  5%] Building CXX object CMakeFiles/objects.dir/src/asio/ssl_context_helper.cpp.o
+[  5%] Building CXX object CMakeFiles/objects.dir/src/asio/asio_tls_connecter.cpp.o
+[  5%] Building CXX object CMakeFiles/objects.dir/src/asio/asio_tls_listener.cpp.o
+[  6%] Building CXX object CMakeFiles/objects.dir/src/asio/ws_transport.cpp.o
+[  6%] Building CXX object CMakeFiles/objects.dir/src/asio/wss_transport.cpp.o
+[  7%] Building CXX object CMakeFiles/objects.dir/src/ws_address.cpp.o
+[  7%] Building CXX object CMakeFiles/objects.dir/src/asio/asio_ws_listener.cpp.o
+[  8%] Building CXX object CMakeFiles/objects.dir/src/asio/asio_ws_connecter.cpp.o
+[  8%] Building CXX object CMakeFiles/objects.dir/src/asio/asio_ws_engine.cpp.o
+[  8%] Building CXX object CMakeFiles/objects.dir/src/wss_address.cpp.o
+[  9%] Building CXX object CMakeFiles/objects.dir/src/precompiled.cpp.o
+[  9%] Building CXX object CMakeFiles/objects.dir/src/allocator.cpp.o
+[ 10%] Building CXX object CMakeFiles/objects.dir/src/address.cpp.o
+[ 10%] Building CXX object CMakeFiles/objects.dir/src/clock.cpp.o
+[ 10%] Building CXX object CMakeFiles/objects.dir/src/ctx.cpp.o
+[ 11%] Building CXX object CMakeFiles/objects.dir/src/dealer.cpp.o
+[ 11%] Building CXX object CMakeFiles/objects.dir/src/dist.cpp.o
+[ 12%] Building CXX object CMakeFiles/objects.dir/src/endpoint.cpp.o
+[ 12%] Building CXX object CMakeFiles/objects.dir/src/err.cpp.o
+[ 12%] Building CXX object CMakeFiles/objects.dir/src/fq.cpp.o
+[ 13%] Building CXX object CMakeFiles/objects.dir/src/io_object.cpp.o
+[ 13%] Building CXX object CMakeFiles/objects.dir/src/io_thread.cpp.o
+[ 14%] Building CXX object CMakeFiles/objects.dir/src/ip.cpp.o
+[ 14%] Building CXX object CMakeFiles/objects.dir/src/ipc_address.cpp.o
+[ 15%] Building CXX object CMakeFiles/objects.dir/src/lb.cpp.o
+[ 15%] Building CXX object CMakeFiles/objects.dir/src/mailbox.cpp.o
+[ 15%] Building CXX object CMakeFiles/objects.dir/src/mailbox_safe.cpp.o
+[ 16%] Building CXX object CMakeFiles/objects.dir/src/mechanism.cpp.o
+[ 16%] Building CXX object CMakeFiles/objects.dir/src/mechanism_base.cpp.o
+[ 17%] Building CXX object CMakeFiles/objects.dir/src/metadata.cpp.o
+[ 17%] Building CXX object CMakeFiles/objects.dir/src/msg.cpp.o
+[ 17%] Building CXX object CMakeFiles/objects.dir/src/mtrie.cpp.o
+[ 18%] Building CXX object CMakeFiles/objects.dir/src/object.cpp.o
+[ 18%] Building CXX object CMakeFiles/objects.dir/src/options.cpp.o
+[ 19%] Building CXX object CMakeFiles/objects.dir/src/own.cpp.o
+[ 19%] Building CXX object CMakeFiles/objects.dir/src/null_mechanism.cpp.o
+[ 19%] Building CXX object CMakeFiles/objects.dir/src/pair.cpp.o
+[ 20%] Building CXX object CMakeFiles/objects.dir/src/pipe.cpp.o
+[ 20%] Building CXX object CMakeFiles/objects.dir/src/plain_client.cpp.o
+[ 21%] Building CXX object CMakeFiles/objects.dir/src/plain_server.cpp.o
+[ 21%] Building CXX object CMakeFiles/objects.dir/src/poller_base.cpp.o
+[ 22%] Building CXX object CMakeFiles/objects.dir/src/polling_util.cpp.o
+[ 22%] Building CXX object CMakeFiles/objects.dir/src/proxy.cpp.o
+[ 22%] Building CXX object CMakeFiles/objects.dir/src/pub.cpp.o
+[ 23%] Building CXX object CMakeFiles/objects.dir/src/random.cpp.o
+[ 23%] Building CXX object CMakeFiles/objects.dir/src/reaper.cpp.o
+[ 24%] Building CXX object CMakeFiles/objects.dir/src/router.cpp.o
+[ 24%] Building CXX object CMakeFiles/objects.dir/src/session_base.cpp.o
+[ 24%] Building CXX object CMakeFiles/objects.dir/src/signaler.cpp.o
+[ 25%] Building CXX object CMakeFiles/objects.dir/src/socket_base.cpp.o
+[ 25%] Building CXX object CMakeFiles/objects.dir/src/sub.cpp.o
+[ 26%] Building CXX object CMakeFiles/objects.dir/src/tcp.cpp.o
+[ 26%] Building CXX object CMakeFiles/objects.dir/src/tcp_address.cpp.o
+[ 27%] Building CXX object CMakeFiles/objects.dir/src/thread.cpp.o
+[ 27%] Building CXX object CMakeFiles/objects.dir/src/trie.cpp.o
+[ 27%] Building CXX object CMakeFiles/objects.dir/src/radix_tree.cpp.o
+[ 28%] Building CXX object CMakeFiles/objects.dir/src/v1_decoder.cpp.o
+[ 28%] Building CXX object CMakeFiles/objects.dir/src/v1_encoder.cpp.o
+[ 29%] Building CXX object CMakeFiles/objects.dir/src/v2_decoder.cpp.o
+[ 29%] Building CXX object CMakeFiles/objects.dir/src/v2_encoder.cpp.o
+[ 29%] Building CXX object CMakeFiles/objects.dir/src/v3_1_encoder.cpp.o
+[ 30%] Building CXX object CMakeFiles/objects.dir/src/xpub.cpp.o
+[ 30%] Building CXX object CMakeFiles/objects.dir/src/xsub.cpp.o
+[ 31%] Building CXX object CMakeFiles/objects.dir/src/zmq.cpp.o
+[ 31%] Building CXX object CMakeFiles/objects.dir/src/zmq_utils.cpp.o
+[ 31%] Building CXX object CMakeFiles/objects.dir/src/decoder_allocators.cpp.o
+[ 32%] Building CXX object CMakeFiles/objects.dir/src/socket_poller.cpp.o
+[ 32%] Building CXX object CMakeFiles/objects.dir/src/timers.cpp.o
+[ 33%] Building CXX object CMakeFiles/objects.dir/src/ip_resolver.cpp.o
+[ 33%] Building CXX object CMakeFiles/objects.dir/src/zap_client.cpp.o
+[ 33%] Built target objects
+[ 34%] Linking CXX shared library lib/libzmq.so
+[ 34%] Built target libzmq
+[ 34%] Linking CXX static library lib/libzmq.a
+[ 34%] Built target libzmq-static
+[ 34%] Building C object tests/CMakeFiles/unity.dir/__/external/unity/unity.c.o
+[ 35%] Linking C static library ../lib/libunity.a
+[ 35%] Built target unity
+[ 36%] Building CXX object tests/CMakeFiles/testutil-static.dir/testutil.cpp.o
+[ 36%] Building CXX object tests/CMakeFiles/testutil-static.dir/testutil_monitoring.cpp.o
+[ 37%] Building CXX object tests/CMakeFiles/testutil-static.dir/testutil_security.cpp.o
+[ 37%] Building CXX object tests/CMakeFiles/testutil-static.dir/testutil_unity.cpp.o
+[ 38%] Linking CXX static library ../lib/libtestutil-static.a
+[ 38%] Built target testutil-static
+[ 39%] Building CXX object tests/CMakeFiles/testutil.dir/testutil.cpp.o
+[ 39%] Building CXX object tests/CMakeFiles/testutil.dir/testutil_monitoring.cpp.o
+[ 40%] Building CXX object tests/CMakeFiles/testutil.dir/testutil_security.cpp.o
+[ 40%] Building CXX object tests/CMakeFiles/testutil.dir/testutil_unity.cpp.o
+[ 40%] Linking CXX static library ../lib/libtestutil.a
+[ 40%] Built target testutil
+[ 40%] Building CXX object tests/CMakeFiles/test_ancillaries.dir/test_ancillaries.cpp.o
+[ 41%] Linking CXX executable ../bin/test_ancillaries
+[ 41%] Built target test_ancillaries
+[ 41%] Building CXX object tests/CMakeFiles/test_system.dir/test_system.cpp.o
+[ 42%] Linking CXX executable ../bin/test_system
+[ 42%] Built target test_system
+[ 42%] Building CXX object tests/CMakeFiles/test_pair_inproc.dir/test_pair_inproc.cpp.o
+[ 43%] Linking CXX executable ../bin/test_pair_inproc
+[ 43%] Built target test_pair_inproc
+[ 44%] Building CXX object tests/CMakeFiles/test_pair_tcp.dir/test_pair_tcp.cpp.o
+[ 44%] Linking CXX executable ../bin/test_pair_tcp
+[ 44%] Built target test_pair_tcp
+[ 45%] Building CXX object tests/CMakeFiles/test_hwm_pubsub.dir/test_hwm_pubsub.cpp.o
+[ 45%] Linking CXX executable ../bin/test_hwm_pubsub
+[ 45%] Built target test_hwm_pubsub
+[ 45%] Building CXX object tests/CMakeFiles/test_sub_forward.dir/test_sub_forward.cpp.o
+[ 46%] Linking CXX executable ../bin/test_sub_forward
+[ 46%] Built target test_sub_forward
+[ 46%] Building CXX object tests/CMakeFiles/test_msg_flags.dir/test_msg_flags.cpp.o
+[ 47%] Linking CXX executable ../bin/test_msg_flags
+[ 47%] Built target test_msg_flags
+[ 48%] Building CXX object tests/CMakeFiles/test_msg_ffn.dir/test_msg_ffn.cpp.o
+[ 48%] Linking CXX executable ../bin/test_msg_ffn
+[ 48%] Built target test_msg_ffn
+[ 48%] Building CXX object tests/CMakeFiles/test_connect_resolve.dir/test_connect_resolve.cpp.o
+[ 49%] Linking CXX executable ../bin/test_connect_resolve
+[ 49%] Built target test_connect_resolve
+[ 50%] Building CXX object tests/CMakeFiles/test_immediate.dir/test_immediate.cpp.o
+[ 50%] Linking CXX executable ../bin/test_immediate
+[ 50%] Built target test_immediate
+[ 50%] Building CXX object tests/CMakeFiles/test_last_endpoint.dir/test_last_endpoint.cpp.o
+[ 50%] Linking CXX executable ../bin/test_last_endpoint
+[ 50%] Built target test_last_endpoint
+[ 50%] Building CXX object tests/CMakeFiles/test_router_mandatory.dir/test_router_mandatory.cpp.o
+[ 51%] Linking CXX executable ../bin/test_router_mandatory
+[ 51%] Built target test_router_mandatory
+[ 52%] Building CXX object tests/CMakeFiles/test_probe_router.dir/test_probe_router.cpp.o
+[ 52%] Linking CXX executable ../bin/test_probe_router
+[ 52%] Built target test_probe_router
+[ 52%] Building CXX object tests/CMakeFiles/test_disconnect_inproc.dir/test_disconnect_inproc.cpp.o
+[ 53%] Linking CXX executable ../bin/test_disconnect_inproc
+[ 53%] Built target test_disconnect_inproc
+[ 54%] Building CXX object tests/CMakeFiles/test_ctx_options.dir/test_ctx_options.cpp.o
+[ 54%] Linking CXX executable ../bin/test_ctx_options
+[ 54%] Built target test_ctx_options
+[ 55%] Building CXX object tests/CMakeFiles/test_ctx_destroy.dir/test_ctx_destroy.cpp.o
+[ 55%] Linking CXX executable ../bin/test_ctx_destroy
+[ 55%] Built target test_ctx_destroy
+[ 56%] Building CXX object tests/CMakeFiles/test_spec_router.dir/test_spec_router.cpp.o
+[ 56%] Linking CXX executable ../bin/test_spec_router
+[ 56%] Built target test_spec_router
+[ 56%] Building CXX object tests/CMakeFiles/test_issue_566.dir/test_issue_566.cpp.o
+[ 57%] Linking CXX executable ../bin/test_issue_566
+[ 57%] Built target test_issue_566
+[ 58%] Building CXX object tests/CMakeFiles/test_shutdown_stress.dir/test_shutdown_stress.cpp.o
+[ 58%] Linking CXX executable ../bin/test_shutdown_stress
+[ 58%] Built target test_shutdown_stress
+[ 58%] Building CXX object tests/CMakeFiles/test_timeo.dir/test_timeo.cpp.o
+[ 58%] Linking CXX executable ../bin/test_timeo
+[ 58%] Built target test_timeo
+[ 59%] Building CXX object tests/CMakeFiles/test_many_sockets.dir/test_many_sockets.cpp.o
+[ 59%] Linking CXX executable ../bin/test_many_sockets
+[ 59%] Built target test_many_sockets
+[ 59%] Building CXX object tests/CMakeFiles/test_diffserv.dir/test_diffserv.cpp.o
+[ 60%] Linking CXX executable ../bin/test_diffserv
+[ 60%] Built target test_diffserv
+[ 60%] Building CXX object tests/CMakeFiles/test_connect_rid.dir/test_connect_rid.cpp.o
+[ 60%] Linking CXX executable ../bin/test_connect_rid
+[ 60%] Built target test_connect_rid
+[ 61%] Building CXX object tests/CMakeFiles/test_xpub_nodrop.dir/test_xpub_nodrop.cpp.o
+[ 61%] Linking CXX executable ../bin/test_xpub_nodrop
+[ 61%] Built target test_xpub_nodrop
+[ 61%] Building CXX object tests/CMakeFiles/test_pub_invert_matching.dir/test_pub_invert_matching.cpp.o
+[ 62%] Linking CXX executable ../bin/test_pub_invert_matching
+[ 62%] Built target test_pub_invert_matching
+[ 63%] Building CXX object tests/CMakeFiles/test_heartbeats.dir/test_heartbeats.cpp.o
+[ 63%] Linking CXX executable ../bin/test_heartbeats
+[ 63%] Built target test_heartbeats
+[ 64%] Building CXX object tests/CMakeFiles/test_bind_src_address.dir/test_bind_src_address.cpp.o
+[ 64%] Linking CXX executable ../bin/test_bind_src_address
+[ 64%] Built target test_bind_src_address
+[ 65%] Building CXX object tests/CMakeFiles/test_capabilities.dir/test_capabilities.cpp.o
+[ 65%] Linking CXX executable ../bin/test_capabilities
+[ 65%] Built target test_capabilities
+[ 66%] Building CXX object tests/CMakeFiles/test_router_handover.dir/test_router_handover.cpp.o
+[ 66%] Linking CXX executable ../bin/test_router_handover
+[ 66%] Built target test_router_handover
+[ 67%] Building CXX object tests/CMakeFiles/test_xpub_manual.dir/test_xpub_manual.cpp.o
+[ 67%] Linking CXX executable ../bin/test_xpub_manual
+[ 67%] Built target test_xpub_manual
+[ 67%] Building CXX object tests/CMakeFiles/test_xpub_topic.dir/test_xpub_topic.cpp.o
+[ 68%] Linking CXX executable ../bin/test_xpub_topic
+[ 68%] Built target test_xpub_topic
+[ 68%] Building CXX object tests/CMakeFiles/test_xpub_welcome_msg.dir/test_xpub_welcome_msg.cpp.o
+[ 68%] Linking CXX executable ../bin/test_xpub_welcome_msg
+[ 68%] Built target test_xpub_welcome_msg
+[ 68%] Building CXX object tests/CMakeFiles/test_xpub_verbose.dir/test_xpub_verbose.cpp.o
+[ 69%] Linking CXX executable ../bin/test_xpub_verbose
+[ 69%] Built target test_xpub_verbose
+[ 69%] Building CXX object tests/CMakeFiles/test_bind_after_connect_tcp.dir/test_bind_after_connect_tcp.cpp.o
+[ 70%] Linking CXX executable ../bin/test_bind_after_connect_tcp
+[ 70%] Built target test_bind_after_connect_tcp
+[ 71%] Building CXX object tests/CMakeFiles/test_socket_null.dir/test_socket_null.cpp.o
+[ 71%] Linking CXX executable ../bin/test_socket_null
+[ 71%] Built target test_socket_null
+[ 71%] Building CXX object tests/CMakeFiles/test_reconnect_ivl.dir/test_reconnect_ivl.cpp.o
+[ 71%] Linking CXX executable ../bin/test_reconnect_ivl
+[ 71%] Built target test_reconnect_ivl
+[ 72%] Building CXX object tests/CMakeFiles/test_reconnect_options.dir/test_reconnect_options.cpp.o
+[ 72%] Linking CXX executable ../bin/test_reconnect_options
+[ 72%] Built target test_reconnect_options
+[ 73%] Building CXX object tests/CMakeFiles/test_mock_pub_sub.dir/test_mock_pub_sub.cpp.o
+[ 73%] Linking CXX executable ../bin/test_mock_pub_sub
+[ 73%] Built target test_mock_pub_sub
+[ 73%] Building CXX object tests/CMakeFiles/test_pubsub_filter_xpub.dir/test_pubsub_filter_xpub.cpp.o
+[ 74%] Linking CXX executable ../bin/test_pubsub_filter_xpub
+[ 74%] Built target test_pubsub_filter_xpub
+[ 74%] Building CXX object tests/CMakeFiles/test_router_multiple_dealers.dir/test_router_multiple_dealers.cpp.o
+[ 74%] Linking CXX executable ../bin/test_router_multiple_dealers
+[ 74%] Built target test_router_multiple_dealers
+[ 75%] Building CXX object tests/CMakeFiles/test_transport_matrix.dir/test_transport_matrix.cpp.o
+[ 75%] Linking CXX executable ../bin/test_transport_matrix
+[ 75%] Built target test_transport_matrix
+[ 75%] Building CXX object tests/CMakeFiles/test_connect_null_fuzzer.dir/test_connect_null_fuzzer.cpp.o
+[ 76%] Linking CXX executable ../bin/test_connect_null_fuzzer
+[ 76%] Built target test_connect_null_fuzzer
+[ 76%] Building CXX object tests/CMakeFiles/test_bind_null_fuzzer.dir/test_bind_null_fuzzer.cpp.o
+[ 76%] Linking CXX executable ../bin/test_bind_null_fuzzer
+[ 76%] Built target test_bind_null_fuzzer
+[ 76%] Building CXX object tests/CMakeFiles/test_connect_fuzzer.dir/test_connect_fuzzer.cpp.o
+[ 77%] Linking CXX executable ../bin/test_connect_fuzzer
+[ 77%] Built target test_connect_fuzzer
+[ 77%] Building CXX object tests/CMakeFiles/test_bind_fuzzer.dir/test_bind_fuzzer.cpp.o
+[ 78%] Linking CXX executable ../bin/test_bind_fuzzer
+[ 78%] Built target test_bind_fuzzer
+[ 78%] Building CXX object tests/CMakeFiles/test_ipc_wildcard.dir/test_ipc_wildcard.cpp.o
+[ 79%] Linking CXX executable ../bin/test_ipc_wildcard
+[ 79%] Built target test_ipc_wildcard
+[ 79%] Building CXX object tests/CMakeFiles/test_pair_ipc.dir/test_pair_ipc.cpp.o
+[ 79%] Linking CXX executable ../bin/test_pair_ipc
+[ 79%] Built target test_pair_ipc
+[ 79%] Building CXX object tests/CMakeFiles/test_proxy.dir/test_proxy.cpp.o
+[ 80%] Linking CXX executable ../bin/test_proxy
+[ 80%] Built target test_proxy
+[ 80%] Building CXX object tests/CMakeFiles/test_getsockopt_memset.dir/test_getsockopt_memset.cpp.o
+[ 80%] Linking CXX executable ../bin/test_getsockopt_memset
+[ 80%] Built target test_getsockopt_memset
+[ 80%] Building CXX object tests/CMakeFiles/test_router_mandatory_hwm.dir/test_router_mandatory_hwm.cpp.o
+[ 81%] Linking CXX executable ../bin/test_router_mandatory_hwm
+[ 81%] Built target test_router_mandatory_hwm
+[ 82%] Building CXX object tests/CMakeFiles/test_abstract_ipc.dir/test_abstract_ipc.cpp.o
+[ 82%] Linking CXX executable ../bin/test_abstract_ipc
+[ 82%] Built target test_abstract_ipc
+[ 82%] Building CXX object tests/CMakeFiles/test_asio_poller.dir/test_asio_poller.cpp.o
+[ 82%] Linking CXX executable ../bin/test_asio_poller
+[ 82%] Built target test_asio_poller
+[ 82%] Building CXX object tests/CMakeFiles/test_asio_connect.dir/test_asio_connect.cpp.o
+[ 83%] Linking CXX executable ../bin/test_asio_connect
+[ 83%] Built target test_asio_connect
+[ 84%] Building CXX object tests/CMakeFiles/test_asio_tcp.dir/test_asio_tcp.cpp.o
+[ 84%] Linking CXX executable ../bin/test_asio_tcp
+[ 84%] Built target test_asio_tcp
+[ 85%] Building CXX object tests/CMakeFiles/test_asio_ssl.dir/test_asio_ssl.cpp.o
+[ 85%] Linking CXX executable ../bin/test_asio_ssl
+[ 85%] Built target test_asio_ssl
+[ 86%] Building CXX object tests/CMakeFiles/test_asio_ws.dir/test_asio_ws.cpp.o
+[ 86%] Linking CXX executable ../bin/test_asio_ws
+[ 86%] Built target test_asio_ws
+[ 86%] Building CXX object unittests/CMakeFiles/unittest_ypipe.dir/unittest_ypipe.cpp.o
+[ 87%] Linking CXX executable ../bin/unittest_ypipe
+[ 87%] Built target unittest_ypipe
+[ 88%] Building CXX object unittests/CMakeFiles/unittest_poller.dir/unittest_poller.cpp.o
+[ 88%] Linking CXX executable ../bin/unittest_poller
+[ 88%] Built target unittest_poller
+[ 89%] Building CXX object unittests/CMakeFiles/unittest_mtrie.dir/unittest_mtrie.cpp.o
+[ 89%] Linking CXX executable ../bin/unittest_mtrie
+[ 89%] Built target unittest_mtrie
+[ 89%] Building CXX object unittests/CMakeFiles/unittest_ip_resolver.dir/unittest_ip_resolver.cpp.o
+[ 89%] Linking CXX executable ../bin/unittest_ip_resolver
+[ 89%] Built target unittest_ip_resolver
+[ 89%] Building CXX object unittests/CMakeFiles/unittest_radix_tree.dir/unittest_radix_tree.cpp.o
+[ 90%] Linking CXX executable ../bin/unittest_radix_tree
+[ 90%] Built target unittest_radix_tree
+[ 90%] Building CXX object benchwithzmq/CMakeFiles/comp_std_zmq_pair.dir/libzmq/bench_zmq_pair.cpp.o
+[ 91%] Linking CXX executable ../bin/comp_std_zmq_pair
+[ 91%] Built target comp_std_zmq_pair
+[ 91%] Building CXX object benchwithzmq/CMakeFiles/comp_std_zmq_pubsub.dir/libzmq/bench_zmq_pubsub.cpp.o
+[ 92%] Linking CXX executable ../bin/comp_std_zmq_pubsub
+[ 92%] Built target comp_std_zmq_pubsub
+[ 93%] Building CXX object benchwithzmq/CMakeFiles/comp_std_zmq_dealer_dealer.dir/libzmq/bench_zmq_dealer_dealer.cpp.o
+[ 93%] Linking CXX executable ../bin/comp_std_zmq_dealer_dealer
+[ 93%] Built target comp_std_zmq_dealer_dealer
+[ 94%] Building CXX object benchwithzmq/CMakeFiles/comp_std_zmq_dealer_router.dir/libzmq/bench_zmq_dealer_router.cpp.o
+[ 94%] Linking CXX executable ../bin/comp_std_zmq_dealer_router
+[ 94%] Built target comp_std_zmq_dealer_router
+[ 94%] Building CXX object benchwithzmq/CMakeFiles/comp_std_zmq_router_router.dir/libzmq/bench_zmq_router_router.cpp.o
+[ 94%] Linking CXX executable ../bin/comp_std_zmq_router_router
+[ 94%] Built target comp_std_zmq_router_router
+[ 95%] Building CXX object benchwithzmq/CMakeFiles/comp_std_zmq_router_router_poll.dir/libzmq/bench_zmq_router_router_poll.cpp.o
+[ 95%] Linking CXX executable ../bin/comp_std_zmq_router_router_poll
+[ 95%] Built target comp_std_zmq_router_router_poll
+[ 95%] Building CXX object benchwithzmq/CMakeFiles/comp_zlink_pair.dir/zlink/bench_zlink_pair.cpp.o
+[ 96%] Linking CXX executable ../bin/comp_zlink_pair
+[ 96%] Built target comp_zlink_pair
+[ 96%] Building CXX object benchwithzmq/CMakeFiles/comp_zlink_pubsub.dir/zlink/bench_zlink_pubsub.cpp.o
+[ 97%] Linking CXX executable ../bin/comp_zlink_pubsub
+[ 97%] Built target comp_zlink_pubsub
+[ 98%] Building CXX object benchwithzmq/CMakeFiles/comp_zlink_dealer_dealer.dir/zlink/bench_zlink_dealer_dealer.cpp.o
+[ 98%] Linking CXX executable ../bin/comp_zlink_dealer_dealer
+[ 98%] Built target comp_zlink_dealer_dealer
+[ 99%] Building CXX object benchwithzmq/CMakeFiles/comp_zlink_dealer_router.dir/zlink/bench_zlink_dealer_router.cpp.o
+[ 99%] Linking CXX executable ../bin/comp_zlink_dealer_router
+[ 99%] Built target comp_zlink_dealer_router
+[ 99%] Building CXX object benchwithzmq/CMakeFiles/comp_zlink_router_router.dir/zlink/bench_zlink_router_router.cpp.o
+[ 99%] Linking CXX executable ../bin/comp_zlink_router_router
+[ 99%] Built target comp_zlink_router_router
+[100%] Building CXX object benchwithzmq/CMakeFiles/comp_zlink_router_router_poll.dir/zlink/bench_zlink_router_router_poll.cpp.o
+[100%] Linking CXX executable ../bin/comp_zlink_router_router_poll
+[100%] Built target comp_zlink_router_router_poll
+
+## PATTERN: PAIR
+  > Benchmarking libzmq for PAIR...
+    Testing tcp | 64B: 1 2 3 Done
+    Testing tcp | 256B: 1 2 3 Done
+    Testing tcp | 1024B: 1 2 3 Done
+    Testing tcp | 65536B: 1 2 3 Done
+    Testing tcp | 131072B: 1 2 3 Done
+    Testing tcp | 262144B: 1 2 3 Done
+    Testing inproc | 64B: 1 2 3 Done
+    Testing inproc | 256B: 1 2 3 Done
+    Testing inproc | 1024B: 1 2 3 Done
+    Testing inproc | 65536B: 1 2 3 Done
+    Testing inproc | 131072B: 1 2 3 Done
+    Testing inproc | 262144B: 1 2 3 Done
+    Testing ipc | 64B: 1 2 3 Done
+    Testing ipc | 256B: 1 2 3 Done
+    Testing ipc | 1024B: 1 2 3 Done
+    Testing ipc | 65536B: 1 2 3 Done
+    Testing ipc | 131072B: 1 2 3 Done
+    Testing ipc | 262144B: 1 2 3 Done
+  > Benchmarking zlink for PAIR...
+    Testing tcp | 64B: 1 2 3 Done
+    Testing tcp | 256B: 1 2 3 Done
+    Testing tcp | 1024B: 1 2 3 Done
+    Testing tcp | 65536B: 1 2 3 Done
+    Testing tcp | 131072B: 1 2 3 Done
+    Testing tcp | 262144B: 1 2 3 Done
+    Testing inproc | 64B: 1 2 3 Done
+    Testing inproc | 256B: 1 2 3 Done
+    Testing inproc | 1024B: 1 2 3 Done
+    Testing inproc | 65536B: 1 2 3 Done
+    Testing inproc | 131072B: 1 2 3 Done
+    Testing inproc | 262144B: 1 2 3 Done
+    Testing ipc | 64B: 1 2 3 Done
+    Testing ipc | 256B: 1 2 3 Done
+    Testing ipc | 1024B: 1 2 3 Done
+    Testing ipc | 65536B: 1 2 3 Done
+    Testing ipc | 131072B: 1 2 3 Done
+    Testing ipc | 262144B: 1 2 3 Done
+
+### Transport: tcp
+| Size | Metric | Standard libzmq | zlink | Diff (%) |
+|------|--------|-----------------|-------|----------|
+| 64B | Throughput |   4.59 M/s |   4.46 M/s |   -2.75% |
+| | Latency |     5.06 us |     5.18 us |   -2.37% (inv) |
+| 256B | Throughput |   2.59 M/s |   2.55 M/s |   -1.55% |
+| | Latency |     5.06 us |     5.49 us |   -8.50% (inv) |
+| 1024B | Throughput |   0.93 M/s |   0.92 M/s |   -1.10% |
+| | Latency |     5.13 us |     5.39 us |   -5.07% (inv) |
+| 65536B | Throughput |   0.03 M/s |   0.03 M/s |  +13.24% |
+| | Latency |    12.51 us |    13.71 us |   -9.59% (inv) |
+| 131072B | Throughput |   0.02 M/s |   0.02 M/s |   +0.19% |
+| | Latency |    18.62 us |    22.27 us |  -19.60% (inv) |
+| 262144B | Throughput |   0.01 M/s |   0.01 M/s |  -11.71% |
+| | Latency |    30.11 us |    39.11 us |  -29.89% (inv) |
+
+### Transport: inproc
+| Size | Metric | Standard libzmq | zlink | Diff (%) |
+|------|--------|-----------------|-------|----------|
+| 64B | Throughput |   6.91 M/s |   6.87 M/s |   -0.63% |
+| | Latency |     0.08 us |     0.10 us |  -25.00% (inv) |
+| 256B | Throughput |   5.08 M/s |   5.09 M/s |   +0.11% |
+| | Latency |     0.08 us |     0.10 us |  -25.00% (inv) |
+| 1024B | Throughput |   2.93 M/s |   3.07 M/s |   +5.00% |
+| | Latency |     0.10 us |     0.11 us |  -10.00% (inv) |
+| 65536B | Throughput |   0.15 M/s |   0.16 M/s |   +6.45% |
+| | Latency |     2.07 us |     2.03 us |   +1.93% (inv) |
+| 131072B | Throughput |   0.10 M/s |   0.11 M/s |   +1.80% |
+| | Latency |     3.58 us |     3.59 us |   -0.28% (inv) |
+| 262144B | Throughput |   0.07 M/s |   0.06 M/s |   -0.52% |
+| | Latency |     6.91 us |     7.10 us |   -2.75% (inv) |
+
+### Transport: ipc
+| Size | Metric | Standard libzmq | zlink | Diff (%) |
+|------|--------|-----------------|-------|----------|
+| 64B | Throughput |   4.76 M/s |   4.46 M/s |   -6.46% |
+| | Latency |     4.53 us |     4.65 us |   -2.65% (inv) |
+| 256B | Throughput |   2.70 M/s |   2.60 M/s |   -3.59% |
+| | Latency |     4.65 us |     4.81 us |   -3.44% (inv) |
+| 1024B | Throughput |   1.02 M/s |   1.04 M/s |   +2.34% |
+| | Latency |     4.61 us |     4.83 us |   -4.77% (inv) |
+| 65536B | Throughput |   0.03 M/s |   0.03 M/s |   +3.99% |
+| | Latency |    12.28 us |    13.48 us |   -9.77% (inv) |
+| 131072B | Throughput |   0.02 M/s |   0.02 M/s |   +8.94% |
+| | Latency |    18.68 us |    21.42 us |  -14.67% (inv) |
+| 262144B | Throughput |   0.01 M/s |   0.01 M/s |  -10.28% |
+| | Latency |    30.68 us |    38.51 us |  -25.52% (inv) |
+
+## PATTERN: PUBSUB
+  > Benchmarking libzmq for PUBSUB...
+    Testing tcp | 64B: 1 2 3 Done
+    Testing tcp | 256B: 1 2 3 Done
+    Testing tcp | 1024B: 1 2 3 Done
+    Testing tcp | 65536B: 1 2 3 Done
+    Testing tcp | 131072B: 1 2 3 Done
+    Testing tcp | 262144B: 1 2 3 Done
+    Testing inproc | 64B: 1 2 3 Done
+    Testing inproc | 256B: 1 2 3 Done
+    Testing inproc | 1024B: 1 2 3 Done
+    Testing inproc | 65536B: 1 2 3 Done
+    Testing inproc | 131072B: 1 2 3 Done
+    Testing inproc | 262144B: 1 2 3 Done
+    Testing ipc | 64B: 1 2 3 Done
+    Testing ipc | 256B: 1 2 3 Done
+    Testing ipc | 1024B: 1 2 3 Done
+    Testing ipc | 65536B: 1 2 3 Done
+    Testing ipc | 131072B: 1 2 3 Done
+    Testing ipc | 262144B: 1 2 3 Done
+  > Benchmarking zlink for PUBSUB...
+    Testing tcp | 64B: 1 2 3 Done
+    Testing tcp | 256B: 1 2 3 Done
+    Testing tcp | 1024B: 1 2 3 Done
+    Testing tcp | 65536B: 1 2 3 Done
+    Testing tcp | 131072B: 1 2 3 Done
+    Testing tcp | 262144B: 1 2 3 Done
+    Testing inproc | 64B: 1 2 3 Done
+    Testing inproc | 256B: 1 2 3 Done
+    Testing inproc | 1024B: 1 2 3 Done
+    Testing inproc | 65536B: 1 2 3 Done
+    Testing inproc | 131072B: 1 2 3 Done
+    Testing inproc | 262144B: 1 2 3 Done
+    Testing ipc | 64B: 1 2 3 Done
+    Testing ipc | 256B: 1 2 3 Done
+    Testing ipc | 1024B: 1 2 3 Done
+    Testing ipc | 65536B: 1 2 3 Done
+    Testing ipc | 131072B: 1 2 3 Done
+    Testing ipc | 262144B: 1 2 3 Done
+
+### Transport: tcp
+| Size | Metric | Standard libzmq | zlink | Diff (%) |
+|------|--------|-----------------|-------|----------|
+| 64B | Throughput |   4.20 M/s |   4.05 M/s |   -3.57% |
+| | Latency |     0.24 us |     0.25 us |   -4.17% (inv) |
+| 256B | Throughput |   2.45 M/s |   2.33 M/s |   -4.60% |
+| | Latency |     0.41 us |     0.43 us |   -4.88% (inv) |
+| 1024B | Throughput |   0.92 M/s |   0.89 M/s |   -3.01% |
+| | Latency |     1.09 us |     1.13 us |   -3.67% (inv) |
+| 65536B | Throughput |   0.03 M/s |   0.03 M/s |   +8.86% |
+| | Latency |    33.71 us |    30.96 us |   +8.16% (inv) |
+| 131072B | Throughput |   0.02 M/s |   0.02 M/s |   -4.07% |
+| | Latency |    55.54 us |    59.34 us |   -6.84% (inv) |
+| 262144B | Throughput |   0.01 M/s |   0.01 M/s |   -8.53% |
+| | Latency |    96.24 us |   105.21 us |   -9.32% (inv) |
+
+### Transport: inproc
+| Size | Metric | Standard libzmq | zlink | Diff (%) |
+|------|--------|-----------------|-------|----------|
+| 64B | Throughput |   5.82 M/s |   5.56 M/s |   -4.52% |
+| | Latency |     0.17 us |     0.18 us |   -5.88% (inv) |
+| 256B | Throughput |   4.63 M/s |   4.49 M/s |   -3.00% |
+| | Latency |     0.22 us |     0.22 us |   +0.00% (inv) |
+| 1024B | Throughput |   2.84 M/s |   2.92 M/s |   +2.99% |
+| | Latency |     0.35 us |     0.34 us |   +2.86% (inv) |
+| 65536B | Throughput |   0.15 M/s |   0.16 M/s |   +2.30% |
+| | Latency |     6.51 us |     6.36 us |   +2.30% (inv) |
+| 131072B | Throughput |   0.10 M/s |   0.11 M/s |   +8.47% |
+| | Latency |     9.80 us |     9.03 us |   +7.86% (inv) |
+| 262144B | Throughput |   0.06 M/s |   0.07 M/s |   +3.74% |
+| | Latency |    15.65 us |    15.09 us |   +3.58% (inv) |
+
+### Transport: ipc
+| Size | Metric | Standard libzmq | zlink | Diff (%) |
+|------|--------|-----------------|-------|----------|
+| 64B | Throughput |   4.32 M/s |   4.09 M/s |   -5.24% |
+| | Latency |     0.23 us |     0.24 us |   -4.35% (inv) |
+| 256B | Throughput |   2.68 M/s |   2.51 M/s |   -6.51% |
+| | Latency |     0.37 us |     0.40 us |   -8.11% (inv) |
+| 1024B | Throughput |   1.01 M/s |   0.96 M/s |   -4.68% |
+| | Latency |     0.99 us |     1.04 us |   -5.05% (inv) |
+| 65536B | Throughput |   0.03 M/s |   0.03 M/s |   +3.45% |
+| | Latency |    30.90 us |    29.87 us |   +3.33% (inv) |
+| 131072B | Throughput |   0.02 M/s |   0.02 M/s |   +7.72% |
+| | Latency |    61.19 us |    56.80 us |   +7.17% (inv) |
+| 262144B | Throughput |   0.01 M/s |   0.01 M/s |  -11.13% |
+| | Latency |    95.36 us |   107.31 us |  -12.53% (inv) |
+
+## PATTERN: DEALER_DEALER
+  > Benchmarking libzmq for DEALER_DEALER...
+    Testing tcp | 64B: 1 2 3 Done
+    Testing tcp | 256B: 1 2 3 Done
+    Testing tcp | 1024B: 1 2 3 Done
+    Testing tcp | 65536B: 1 2 3 Done
+    Testing tcp | 131072B: 1 2 3 Done
+    Testing tcp | 262144B: 1 2 3 Done
+    Testing inproc | 64B: 1 2 3 Done
+    Testing inproc | 256B: 1 2 3 Done
+    Testing inproc | 1024B: 1 2 3 Done
+    Testing inproc | 65536B: 1 2 3 Done
+    Testing inproc | 131072B: 1 2 3 Done
+    Testing inproc | 262144B: 1 2 3 Done
+    Testing ipc | 64B: 1 2 3 Done
+    Testing ipc | 256B: 1 2 3 Done
+    Testing ipc | 1024B: 1 2 3 Done
+    Testing ipc | 65536B: 1 2 3 Done
+    Testing ipc | 131072B: 1 2 3 Done
+    Testing ipc | 262144B: 1 2 3 Done
+  > Benchmarking zlink for DEALER_DEALER...
+    Testing tcp | 64B: 1 2 3 Done
+    Testing tcp | 256B: 1 2 3 Done
+    Testing tcp | 1024B: 1 2 3 Done
+    Testing tcp | 65536B: 1 2 3 Done
+    Testing tcp | 131072B: 1 2 3 Done
+    Testing tcp | 262144B: 1 2 3 Done
+    Testing inproc | 64B: 1 2 3 Done
+    Testing inproc | 256B: 1 2 3 Done
+    Testing inproc | 1024B: 1 2 3 Done
+    Testing inproc | 65536B: 1 2 3 Done
+    Testing inproc | 131072B: 1 2 3 Done
+    Testing inproc | 262144B: 1 2 3 Done
+    Testing ipc | 64B: 1 2 3 Done
+    Testing ipc | 256B: 1 2 3 Done
+    Testing ipc | 1024B: 1 2 3 Done
+    Testing ipc | 65536B: 1 2 3 Done
+    Testing ipc | 131072B: 1 2 3 Done
+    Testing ipc | 262144B: 1 2 3 Done
+
+### Transport: tcp
+| Size | Metric | Standard libzmq | zlink | Diff (%) |
+|------|--------|-----------------|-------|----------|
+| 64B | Throughput |   4.59 M/s |   4.24 M/s |   -7.52% |
+| | Latency |     5.03 us |     5.31 us |   -5.57% (inv) |
+| 256B | Throughput |   2.58 M/s |   2.51 M/s |   -2.92% |
+| | Latency |     5.06 us |     5.31 us |   -4.94% (inv) |
+| 1024B | Throughput |   0.93 M/s |   0.88 M/s |   -4.73% |
+| | Latency |     5.18 us |     5.43 us |   -4.83% (inv) |
+| 65536B | Throughput |   0.03 M/s |   0.03 M/s |   +6.05% |
+| | Latency |    12.60 us |    13.76 us |   -9.21% (inv) |
+| 131072B | Throughput |   0.02 M/s |   0.02 M/s |  -14.70% |
+| | Latency |    18.45 us |    22.20 us |  -20.33% (inv) |
+| 262144B | Throughput |   0.01 M/s |   0.01 M/s |   -3.60% |
+| | Latency |    30.37 us |    38.55 us |  -26.93% (inv) |
+
+### Transport: inproc
+| Size | Metric | Standard libzmq | zlink | Diff (%) |
+|------|--------|-----------------|-------|----------|
+| 64B | Throughput |   6.83 M/s |   6.34 M/s |   -7.15% |
+| | Latency |     0.08 us |     0.08 us |   +0.00% (inv) |
+| 256B | Throughput |   5.29 M/s |   5.24 M/s |   -1.05% |
+| | Latency |     0.08 us |     0.10 us |  -25.00% (inv) |
+| 1024B | Throughput |   2.97 M/s |   2.78 M/s |   -6.22% |
+| | Latency |     0.11 us |     0.12 us |   -9.09% (inv) |
+| 65536B | Throughput |   0.15 M/s |   0.16 M/s |   +8.06% |
+| | Latency |     1.99 us |     2.02 us |   -1.51% (inv) |
+| 131072B | Throughput |   0.10 M/s |   0.11 M/s |   +7.83% |
+| | Latency |     3.61 us |     3.69 us |   -2.22% (inv) |
+| 262144B | Throughput |   0.06 M/s |   0.07 M/s |   +4.93% |
+| | Latency |     7.02 us |     7.16 us |   -1.99% (inv) |
+
+### Transport: ipc
+| Size | Metric | Standard libzmq | zlink | Diff (%) |
+|------|--------|-----------------|-------|----------|
+| 64B | Throughput |   4.69 M/s |   4.27 M/s |   -8.93% |
+| | Latency |     4.56 us |     4.69 us |   -2.85% (inv) |
+| 256B | Throughput |   2.82 M/s |   2.68 M/s |   -4.99% |
+| | Latency |     4.55 us |     4.83 us |   -6.15% (inv) |
+| 1024B | Throughput |   1.03 M/s |   1.02 M/s |   -0.72% |
+| | Latency |     4.54 us |     4.94 us |   -8.81% (inv) |
+| 65536B | Throughput |   0.03 M/s |   0.03 M/s |   -2.78% |
+| | Latency |    12.27 us |    13.37 us |   -8.96% (inv) |
+| 131072B | Throughput |   0.02 M/s |   0.02 M/s |   -7.41% |
+| | Latency |    18.69 us |    21.47 us |  -14.87% (inv) |
+| 262144B | Throughput |   0.01 M/s |   0.01 M/s |  -11.87% |
+| | Latency |    30.32 us |    37.75 us |  -24.51% (inv) |
+
+## PATTERN: DEALER_ROUTER
+  > Benchmarking libzmq for DEALER_ROUTER...
+    Testing tcp | 64B: 1 2 3 Done
+    Testing tcp | 256B: 1 2 3 Done
+    Testing tcp | 1024B: 1 2 3 Done
+    Testing tcp | 65536B: 1 2 3 Done
+    Testing tcp | 131072B: 1 2 3 Done
+    Testing tcp | 262144B: 1 2 3 Done
+    Testing inproc | 64B: 1 2 3 Done
+    Testing inproc | 256B: 1 2 3 Done
+    Testing inproc | 1024B: 1 2 3 Done
+    Testing inproc | 65536B: 1 2 3 Done
+    Testing inproc | 131072B: 1 2 3 Done
+    Testing inproc | 262144B: 1 2 3 Done
+    Testing ipc | 64B: 1 2 3 Done
+    Testing ipc | 256B: 1 2 3 Done
+    Testing ipc | 1024B: 1 2 3 Done
+    Testing ipc | 65536B: 1 2 3 Done
+    Testing ipc | 131072B: 1 2 3 Done
+    Testing ipc | 262144B: 1 2 3 Done
+  > Benchmarking zlink for DEALER_ROUTER...
+    Testing tcp | 64B: 1 2 3 Done
+    Testing tcp | 256B: 1 2 3 Done
+    Testing tcp | 1024B: 1 2 3 Done
+    Testing tcp | 65536B: 1 2 3 Done
+    Testing tcp | 131072B: 1 2 3 Done
+    Testing tcp | 262144B: 1 2 3 Done
+    Testing inproc | 64B: 1 2 3 Done
+    Testing inproc | 256B: 1 2 3 Done
+    Testing inproc | 1024B: 1 2 3 Done
+    Testing inproc | 65536B: 1 2 3 Done
+    Testing inproc | 131072B: 1 2 3 Done
+    Testing inproc | 262144B: 1 2 3 Done
+    Testing ipc | 64B: 1 2 3 Done
+    Testing ipc | 256B: 1 2 3 Done
+    Testing ipc | 1024B: 1 2 3 Done
+    Testing ipc | 65536B: 1 2 3 Done
+    Testing ipc | 131072B: 1 2 3 Done
+    Testing ipc | 262144B: 1 2 3 Done
+
+### Transport: tcp
+| Size | Metric | Standard libzmq | zlink | Diff (%) |
+|------|--------|-----------------|-------|----------|
+| 64B | Throughput |   3.60 M/s |   3.61 M/s |   +0.30% |
+| | Latency |     5.11 us |     5.20 us |   -1.76% (inv) |
+| 256B | Throughput |   2.31 M/s |   2.25 M/s |   -2.78% |
+| | Latency |     5.08 us |     5.30 us |   -4.33% (inv) |
+| 1024B | Throughput |   0.88 M/s |   0.89 M/s |   +0.56% |
+| | Latency |     5.21 us |     5.42 us |   -4.03% (inv) |
+| 65536B | Throughput |   0.03 M/s |   0.03 M/s |   -5.56% |
+| | Latency |    12.57 us |    13.74 us |   -9.31% (inv) |
+| 131072B | Throughput |   0.02 M/s |   0.02 M/s |   +2.35% |
+| | Latency |    18.65 us |    22.34 us |  -19.79% (inv) |
+| 262144B | Throughput |   0.01 M/s |   0.01 M/s |  -16.64% |
+| | Latency |    30.50 us |    38.38 us |  -25.84% (inv) |
+
+### Transport: inproc
+| Size | Metric | Standard libzmq | zlink | Diff (%) |
+|------|--------|-----------------|-------|----------|
+| 64B | Throughput |   6.51 M/s |   6.36 M/s |   -2.23% |
+| | Latency |     0.11 us |     0.12 us |   -9.09% (inv) |
+| 256B | Throughput |   5.30 M/s |   5.53 M/s |   +4.22% |
+| | Latency |     0.11 us |     0.12 us |   -9.09% (inv) |
+| 1024B | Throughput |   2.81 M/s |   2.73 M/s |   -2.81% |
+| | Latency |     0.13 us |     0.15 us |  -15.38% (inv) |
+| 65536B | Throughput |   0.14 M/s |   0.16 M/s |   +9.62% |
+| | Latency |     2.02 us |     1.98 us |   +1.98% (inv) |
+| 131072B | Throughput |   0.10 M/s |   0.11 M/s |   +6.71% |
+| | Latency |     3.78 us |     3.64 us |   +3.70% (inv) |
+| 262144B | Throughput |   0.06 M/s |   0.06 M/s |   -0.20% |
+| | Latency |     7.25 us |     6.99 us |   +3.59% (inv) |
+
+### Transport: ipc
+| Size | Metric | Standard libzmq | zlink | Diff (%) |
+|------|--------|-----------------|-------|----------|
+| 64B | Throughput |   3.69 M/s |   3.69 M/s |   +0.03% |
+| | Latency |     4.57 us |     4.75 us |   -3.94% (inv) |
+| 256B | Throughput |   2.47 M/s |   2.27 M/s |   -8.12% |
+| | Latency |     4.60 us |     4.95 us |   -7.61% (inv) |
+| 1024B | Throughput |   1.00 M/s |   0.90 M/s |  -10.12% |
+| | Latency |     4.59 us |     4.83 us |   -5.23% (inv) |
+| 65536B | Throughput |   0.03 M/s |   0.03 M/s |   -9.93% |
+| | Latency |    12.32 us |    13.85 us |  -12.42% (inv) |
+| 131072B | Throughput |   0.02 M/s |   0.02 M/s |   -1.58% |
+| | Latency |    18.61 us |    21.66 us |  -16.39% (inv) |
+| 262144B | Throughput |   0.01 M/s |   0.01 M/s |  -18.41% |
+| | Latency |    31.00 us |    37.80 us |  -21.94% (inv) |
+
+## PATTERN: ROUTER_ROUTER
+  > Benchmarking libzmq for ROUTER_ROUTER...
+    Testing tcp | 64B: 1 2 3 Done
+    Testing tcp | 256B: 1 2 3 Done
+    Testing tcp | 1024B: 1 2 3 Done
+    Testing tcp | 65536B: 1 2 3 Done
+    Testing tcp | 131072B: 1 2 3 Done
+    Testing tcp | 262144B: 1 2 3 Done
+    Testing inproc | 64B: 1 2 3 Done
+    Testing inproc | 256B: 1 2 3 Done
+    Testing inproc | 1024B: 1 2 3 Done
+    Testing inproc | 65536B: 1 2 3 Done
+    Testing inproc | 131072B: 1 2 3 Done
+    Testing inproc | 262144B: 1 2 3 Done
+    Testing ipc | 64B: 1 2 3 Done
+    Testing ipc | 256B: 1 2 3 Done
+    Testing ipc | 1024B: 1 2 3 Done
+    Testing ipc | 65536B: 1 2 3 Done
+    Testing ipc | 131072B: 1 2 3 Done
+    Testing ipc | 262144B: 1 2 3 Done
+  > Benchmarking zlink for ROUTER_ROUTER...
+    Testing tcp | 64B: 1 2 3 Done
+    Testing tcp | 256B: 1 2 3 Done
+    Testing tcp | 1024B: 1 2 3 Done
+    Testing tcp | 65536B: 1 2 3 Done
+    Testing tcp | 131072B: 1 2 3 Done
+    Testing tcp | 262144B: 1 2 3 Done
+    Testing inproc | 64B: 1 2 3 Done
+    Testing inproc | 256B: 1 2 3 Done
+    Testing inproc | 1024B: 1 2 3 Done
+    Testing inproc | 65536B: 1 2 3 Done
+    Testing inproc | 131072B: 1 2 3 Done
+    Testing inproc | 262144B: 1 2 3 Done
+    Testing ipc | 64B: 1 2 3 Done
+    Testing ipc | 256B: 1 2 3 Done
+    Testing ipc | 1024B: 1 2 3 Done
+    Testing ipc | 65536B: 1 2 3 Done
+    Testing ipc | 131072B: 1 2 3 Done
+    Testing ipc | 262144B: 1 2 3 Done
+
+### Transport: tcp
+| Size | Metric | Standard libzmq | zlink | Diff (%) |
+|------|--------|-----------------|-------|----------|
+| 64B | Throughput |   3.31 M/s |   3.37 M/s |   +1.74% |
+| | Latency |     4.23 us |     4.02 us |   +4.96% (inv) |
+| 256B | Throughput |   2.19 M/s |   2.13 M/s |   -2.40% |
+| | Latency |     4.28 us |     4.13 us |   +3.50% (inv) |
+| 1024B | Throughput |   0.87 M/s |   0.85 M/s |   -2.70% |
+| | Latency |     4.52 us |     4.21 us |   +6.86% (inv) |
+| 65536B | Throughput |   0.03 M/s |   0.03 M/s |   +1.11% |
+| | Latency |    11.56 us |    12.99 us |  -12.37% (inv) |
+| 131072B | Throughput |   0.02 M/s |   0.02 M/s |   +4.92% |
+| | Latency |    17.99 us |    21.71 us |  -20.68% (inv) |
+| 262144B | Throughput |   0.01 M/s |   0.01 M/s |  -10.07% |
+| | Latency |    38.04 us |    46.67 us |  -22.69% (inv) |
+
+### Transport: inproc
+| Size | Metric | Standard libzmq | zlink | Diff (%) |
+|------|--------|-----------------|-------|----------|
+| 64B | Throughput |   5.32 M/s |   5.24 M/s |   -1.39% |
+| | Latency |     0.16 us |     0.20 us |  -25.00% (inv) |
+| 256B | Throughput |   4.55 M/s |   4.18 M/s |   -8.10% |
+| | Latency |     0.16 us |     0.19 us |  -18.75% (inv) |
+| 1024B | Throughput |   2.70 M/s |   2.62 M/s |   -3.05% |
+| | Latency |     0.19 us |     0.21 us |  -10.53% (inv) |
+| 65536B | Throughput |   0.15 M/s |   0.16 M/s |   +8.99% |
+| | Latency |     2.03 us |     2.13 us |   -4.93% (inv) |
+| 131072B | Throughput |   0.10 M/s |   0.10 M/s |   +2.41% |
+| | Latency |     3.84 us |     4.02 us |   -4.69% (inv) |
+| 262144B | Throughput |   0.06 M/s |   0.06 M/s |   -6.00% |
+| | Latency |     7.15 us |     7.96 us |  -11.33% (inv) |
+
+### Transport: ipc
+| Size | Metric | Standard libzmq | zlink | Diff (%) |
+|------|--------|-----------------|-------|----------|
+| 64B | Throughput |   3.48 M/s |   3.51 M/s |   +0.82% |
+| | Latency |     3.79 us |     3.40 us |  +10.29% (inv) |
+| 256B | Throughput |   2.35 M/s |   2.24 M/s |   -4.79% |
+| | Latency |     3.83 us |     3.44 us |  +10.18% (inv) |
+| 1024B | Throughput |   0.97 M/s |   0.94 M/s |   -3.50% |
+| | Latency |     3.82 us |     3.60 us |   +5.76% (inv) |
+| 65536B | Throughput |   0.03 M/s |   0.03 M/s |  +16.50% |
+| | Latency |    14.18 us |    12.69 us |  +10.51% (inv) |
+| 131072B | Throughput |   0.02 M/s |   0.02 M/s |   -2.33% |
+| | Latency |    26.39 us |    20.89 us |  +20.84% (inv) |
+| 262144B | Throughput |   0.01 M/s |   0.01 M/s |   +2.45% |
+| | Latency |    37.01 us |    42.42 us |  -14.62% (inv) |
+
+## PATTERN: ROUTER_ROUTER_POLL
+  > Benchmarking libzmq for ROUTER_ROUTER_POLL...
+    Testing tcp | 64B: 1 2 3 Done
+    Testing tcp | 256B: 1 2 3 Done
+    Testing tcp | 1024B: 1 2 3 Done
+    Testing tcp | 65536B: 1 2 3 Done
+    Testing tcp | 131072B: 1 2 3 Done
+    Testing tcp | 262144B: 1 2 3 Done
+    Testing inproc | 64B: 1 2 3 Done
+    Testing inproc | 256B: 1 2 3 Done
+    Testing inproc | 1024B: 1 2 3 Done
+    Testing inproc | 65536B: 1 2 3 Done
+    Testing inproc | 131072B: 1 2 3 Done
+    Testing inproc | 262144B: 1 2 3 Done
+    Testing ipc | 64B: 1 2 3 Done
+    Testing ipc | 256B: 1 2 3 Done
+    Testing ipc | 1024B: 1 2 3 Done
+    Testing ipc | 65536B: 1 2 3 Done
+    Testing ipc | 131072B: 1 2 3 Done
+    Testing ipc | 262144B: 1 2 3 Done
+  > Benchmarking zlink for ROUTER_ROUTER_POLL...
+    Testing tcp | 64B: 1 2 3 Done
+    Testing tcp | 256B: 1 2 3 Done
+    Testing tcp | 1024B: 1 2 3 Done
+    Testing tcp | 65536B: 1 2 3 Done
+    Testing tcp | 131072B: 1 2 3 Done
+    Testing tcp | 262144B: 1 2 3 Done
+    Testing inproc | 64B: 1 2 3 Done
+    Testing inproc | 256B: 1 2 3 Done
+    Testing inproc | 1024B: 1 2 3 Done
+    Testing inproc | 65536B: 1 2 3 Done
+    Testing inproc | 131072B: 1 2 3 Done
+    Testing inproc | 262144B: 1 2 3 Done
+    Testing ipc | 64B: 1 2 3 Done
+    Testing ipc | 256B: 1 2 3 Done
+    Testing ipc | 1024B: 1 2 3 Done
+    Testing ipc | 65536B: 1 2 3 Done
+    Testing ipc | 131072B: 1 2 3 Done
+    Testing ipc | 262144B: 1 2 3 Done
+
+### Transport: tcp
+| Size | Metric | Standard libzmq | zlink | Diff (%) |
+|------|--------|-----------------|-------|----------|
+| 64B | Throughput |   3.43 M/s |   3.11 M/s |   -9.51% |
+| | Latency |     4.58 us |     4.71 us |   -2.84% (inv) |
+| 256B | Throughput |   2.11 M/s |   1.97 M/s |   -6.41% |
+| | Latency |     4.63 us |     4.94 us |   -6.70% (inv) |
+| 1024B | Throughput |   0.82 M/s |   0.79 M/s |   -4.08% |
+| | Latency |     4.77 us |     4.76 us |   +0.21% (inv) |
+| 65536B | Throughput |   0.03 M/s |   0.03 M/s |   -4.62% |
+| | Latency |    12.50 us |    13.70 us |   -9.60% (inv) |
+| 131072B | Throughput |   0.02 M/s |   0.02 M/s |   +6.17% |
+| | Latency |    18.82 us |    23.94 us |  -27.21% (inv) |
+| 262144B | Throughput |   0.01 M/s |   0.01 M/s |   +1.30% |
+| | Latency |    38.55 us |    46.85 us |  -21.53% (inv) |
+
+### Transport: inproc
+| Size | Metric | Standard libzmq | zlink | Diff (%) |
+|------|--------|-----------------|-------|----------|
+| 64B | Throughput |   5.27 M/s |   4.87 M/s |   -7.55% |
+| | Latency |     0.55 us |     0.50 us |   +9.09% (inv) |
+| 256B | Throughput |   4.21 M/s |   4.18 M/s |   -0.62% |
+| | Latency |     0.55 us |     0.52 us |   +5.45% (inv) |
+| 1024B | Throughput |   2.34 M/s |   2.47 M/s |   +5.74% |
+| | Latency |     0.59 us |     0.53 us |  +10.17% (inv) |
+| 65536B | Throughput |   0.11 M/s |   0.14 M/s |  +24.92% |
+| | Latency |     2.58 us |     2.40 us |   +6.98% (inv) |
+| 131072B | Throughput |   0.09 M/s |   0.10 M/s |  +12.81% |
+| | Latency |     4.36 us |     4.30 us |   +1.38% (inv) |
+| 262144B | Throughput |   0.06 M/s |   0.06 M/s |   -0.88% |
+| | Latency |     7.73 us |     8.27 us |   -6.99% (inv) |
+
+### Transport: ipc
+| Size | Metric | Standard libzmq | zlink | Diff (%) |
+|------|--------|-----------------|-------|----------|
+| 64B | Throughput |   3.47 M/s |   3.49 M/s |   +0.71% |
+| | Latency |     4.24 us |     3.96 us |   +6.60% (inv) |
+| 256B | Throughput |   2.33 M/s |   2.27 M/s |   -2.61% |
+| | Latency |     4.28 us |     4.13 us |   +3.50% (inv) |
+| 1024B | Throughput |   0.92 M/s |   0.94 M/s |   +2.29% |
+| | Latency |     4.34 us |     4.23 us |   +2.53% (inv) |
+| 65536B | Throughput |   0.03 M/s |   0.03 M/s |   +2.17% |
+| | Latency |    13.16 us |    13.14 us |   +0.15% (inv) |
+| 131072B | Throughput |   0.02 M/s |   0.02 M/s |   -1.47% |
+| | Latency |    23.68 us |    22.19 us |   +6.29% (inv) |
+| 262144B | Throughput |   0.01 M/s |   0.01 M/s |   +0.82% |
+| | Latency |    40.98 us |    40.58 us |   +0.98% (inv) |
