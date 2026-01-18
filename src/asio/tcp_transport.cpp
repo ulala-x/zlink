@@ -28,7 +28,11 @@ bool tcp_allow_sync_write ()
     static int enabled = -1;
     if (enabled == -1) {
         const char *env = std::getenv ("ZMQ_ASIO_TCP_SYNC_WRITE");
-        enabled = (env && *env && *env != '0') ? 1 : 0;
+        if (env && *env) {
+            enabled = (*env != '0') ? 1 : 0;
+        } else {
+            enabled = 1;
+        }
     }
     return enabled == 1;
 }
@@ -156,6 +160,49 @@ void tcp_transport_t::async_write_two_buffers (const unsigned char *header,
     } else if (handler) {
         handler (boost::asio::error::bad_descriptor, 0);
     }
+}
+
+std::size_t tcp_transport_t::write_two_buffers (const unsigned char *header,
+                                                std::size_t header_size,
+                                                const unsigned char *body,
+                                                std::size_t body_size)
+{
+    if (!_socket || !_socket->is_open ()) {
+        errno = EBADF;
+        return 0;
+    }
+
+    if (header_size == 0 && body_size == 0)
+        return 0;
+
+    boost::array<boost::asio::const_buffer, 2> buffers;
+    buffers[0] = boost::asio::buffer (header, header_size);
+    buffers[1] = boost::asio::buffer (body, body_size);
+
+    boost::system::error_code ec;
+    const std::size_t bytes_written = _socket->write_some (buffers, ec);
+
+    if (ec) {
+        if (ec == boost::asio::error::would_block
+            || ec == boost::asio::error::try_again) {
+            errno = EAGAIN;
+            return 0;
+        }
+        if (ec == boost::asio::error::broken_pipe
+            || ec == boost::asio::error::connection_reset) {
+            errno = EPIPE;
+        } else if (ec == boost::asio::error::not_connected) {
+            errno = ENOTCONN;
+        } else if (ec == boost::asio::error::bad_descriptor) {
+            errno = EBADF;
+        } else {
+            errno = EIO;
+        }
+        return 0;
+    }
+
+    errno = 0;
+    return bytes_written;
 }
 
 std::size_t tcp_transport_t::write_some (const std::uint8_t *data,

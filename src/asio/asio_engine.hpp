@@ -258,6 +258,8 @@ class asio_engine_t : public i_engine
     std::vector<unsigned char> _large_header;
     const unsigned char *_large_body;
     size_t _large_body_size;
+    size_t _large_header_offset;
+    size_t _large_body_offset;
 
     //  True Proactor Pattern: Pending buffers for backpressure handling.
     //  When _input_stopped is true, incoming data is stored here instead of

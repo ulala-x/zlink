@@ -4,27 +4,31 @@
 
 - 브랜치: `feature/asio-large-writev`
 - 설정: `BENCH_TRANSPORTS=tcp`, 사이즈 `65536,131072,262144`, runs=10
-- 로그: `docs/team/20260118_feature-asio-large-writev/01_benchmark_tcp_large_runs10.txt`
+- 로그:
+  - `docs/team/20260118_feature-asio-large-writev/01_benchmark_tcp_large_runs10.txt`
+  - `docs/team/20260118_feature-asio-large-writev/03_benchmark_tcp_large_runs10_sync_try.txt`
+  - `docs/team/20260118_feature-asio-large-writev/04_benchmark_tcp_large_runs10_sync_loop.txt`
+  - `docs/team/20260118_feature-asio-large-writev/05_benchmark_tcp_large_runs10_threshold128k.txt`
+  - `docs/team/20260118_feature-asio-large-writev/06_benchmark_tcp_large_runs10_sync_default.txt`
 
 ## 결과 요약
 
-- 64KB/128KB throughput은 대부분 패턴에서 개선됨
-  - 예: PUBSUB 64KB +21.12%, 128KB +8.61%
-  - ROUTER_ROUTER_POLL 64KB +9.84%, 128KB +11.49%
-  - 일부 예외: PAIR 64KB -0.73%
-- 256KB throughput은 전반적으로 여전히 회귀
-  - 대다수 패턴에서 -1% ~ -15% 범위
+- 64KB/128KB throughput은 다수 패턴에서 개선 신호가 존재
+  - sync 시도/loop, sync 기본값, 임계값 128KB 비교에서도 경향 유사
+- 256KB throughput은 전반적으로 지속 회귀
+  - 패턴 전반에서 -1% ~ -15% 범위가 반복적으로 관찰됨
 - latency는 대부분 패턴에서 악화
-  - 64KB/128KB 구간에서도 음수 diff가 많음
-  - PUBSUB은 64KB/128KB에서 latency 개선이 관찰됨
+  - 특히 TCP 대형 구간에서 -20% 이상 하락 케이스가 빈번
+  - PUBSUB 일부 구간만 예외적으로 개선
+- 임계값 128KB 상향 및 sync 경로 강화는 latency 회귀를 해소하지 못함
 
 ## 판단
 
-- TCP 대용량에서 throughput 개선 신호는 확인됨
-- 그러나 256KB 회귀와 latency 악화가 지속되어 “전반적 개선” 기준에는 아직 미달
+- TCP 대용량에서 throughput 개선 신호는 있으나, latency 악화와 256KB 회귀가 잔존
+- “전반적 개선” 기준에는 아직 미달
 
 ## 다음 액션 후보
 
-1) 256KB 이상 구간에 대해 임계값/전송 전략을 별도로 분리
-2) large-path 사용률/비율 로깅 추가 후 실제 적용 비중 확인
-3) async_write 분할/완료 횟수 감소를 위한 설정 조정 검토
+1) 256KB 이상 구간에 대해 별도 전송 전략(직접 writev/단일 syscall) 분리 검토
+2) large-path 사용률/분할 횟수 로깅 추가 후 실 적용 비중 확인
+3) TCP 전송 경로의 syscall 수/완료 횟수를 줄이는 방식(예: transfer-all 정책 변경) 검토

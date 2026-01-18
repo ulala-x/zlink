@@ -124,6 +124,8 @@ zmq::asio_engine_t::asio_engine_t (
     _large_header (large_header_buffer_size),
     _large_body (NULL),
     _large_body_size (0),
+    _large_header_offset (0),
+    _large_body_offset (0),
     _total_pending_bytes (0),
     _fd (fd_),
     _plugged (false),
@@ -514,11 +516,37 @@ void zmq::asio_engine_t::start_large_async_write ()
         return;
     }
 
+    const size_t header_remaining =
+      _large_header.size () - _large_header_offset;
+    const size_t body_remaining = _large_body_size - _large_body_offset;
+    const unsigned char *header_ptr =
+      header_remaining ? &_large_header[0] + _large_header_offset : NULL;
+    const unsigned char *body_ptr =
+      body_remaining ? _large_body + _large_body_offset : NULL;
+
     _write_pending = true;
     _large_write_inflight = true;
 
+    if (header_remaining == 0) {
+        tcp_transport->async_write_some (
+          body_ptr, body_remaining,
+          [this] (const boost::system::error_code &ec, std::size_t bytes) {
+              on_write_complete (ec, bytes);
+          });
+        return;
+    }
+
+    if (body_remaining == 0) {
+        tcp_transport->async_write_some (
+          header_ptr, header_remaining,
+          [this] (const boost::system::error_code &ec, std::size_t bytes) {
+              on_write_complete (ec, bytes);
+          });
+        return;
+    }
+
     tcp_transport->async_write_two_buffers (
-      &_large_header[0], _large_header.size (), _large_body, _large_body_size,
+      header_ptr, header_remaining, body_ptr, body_remaining,
       [this] (const boost::system::error_code &ec, std::size_t bytes) {
           on_write_complete (ec, bytes);
       });
@@ -538,6 +566,8 @@ void zmq::asio_engine_t::finalize_large_write ()
     _large_write_pending = false;
     _large_body = NULL;
     _large_body_size = 0;
+    _large_header_offset = 0;
+    _large_body_offset = 0;
     _large_header.clear ();
     _large_header.resize (large_header_buffer_size);
 }
@@ -856,9 +886,76 @@ void zmq::asio_engine_t::speculative_write ()
     }
 
     if (_large_write_pending) {
-        ENGINE_DBG ("speculative_write: large write pending, async path");
-        start_async_write ();
-        return;
+        ENGINE_DBG ("speculative_write: large write pending");
+        tcp_transport_t *tcp_transport =
+          dynamic_cast<tcp_transport_t *> (_transport.get ());
+        if (!tcp_transport) {
+            start_async_write ();
+            return;
+        }
+
+        const size_t header_remaining =
+          _large_header.size () - _large_header_offset;
+        const size_t body_remaining = _large_body_size - _large_body_offset;
+        const unsigned char *header_ptr =
+          header_remaining ? &_large_header[0] + _large_header_offset : NULL;
+        const unsigned char *body_ptr =
+          body_remaining ? _large_body + _large_body_offset : NULL;
+        size_t total = header_remaining + body_remaining;
+
+        size_t bytes =
+          tcp_transport->write_two_buffers (header_ptr, header_remaining,
+                                            body_ptr, body_remaining);
+
+        ENGINE_DBG ("speculative_write: large write returned %zu, errno=%d",
+                    bytes, errno);
+
+        if (bytes == 0) {
+            if (errno == EAGAIN || errno == EWOULDBLOCK) {
+                start_async_write ();
+                return;
+            }
+            error (connection_error);
+            return;
+        }
+
+        while (bytes < total) {
+            if (bytes <= header_remaining) {
+                _large_header_offset += bytes;
+            } else {
+                _large_header_offset = _large_header.size ();
+                _large_body_offset += (bytes - header_remaining);
+            }
+
+            const size_t hdr_rem =
+              _large_header.size () - _large_header_offset;
+            const size_t body_rem = _large_body_size - _large_body_offset;
+            const unsigned char *hdr_ptr =
+              hdr_rem ? &_large_header[0] + _large_header_offset : NULL;
+            const unsigned char *body_ptr =
+              body_rem ? _large_body + _large_body_offset : NULL;
+            const size_t remaining = hdr_rem + body_rem;
+
+            const size_t more_bytes =
+              tcp_transport->write_two_buffers (hdr_ptr, hdr_rem, body_ptr,
+                                                body_rem);
+            ENGINE_DBG ("speculative_write: large retry %zu, errno=%d",
+                        more_bytes, errno);
+
+            if (more_bytes == 0) {
+                if (errno == EAGAIN || errno == EWOULDBLOCK) {
+                    start_async_write ();
+                    return;
+                }
+                error (connection_error);
+                return;
+            }
+
+            bytes = more_bytes;
+            total = remaining;
+        }
+
+        finalize_large_write ();
     }
 
     if (!_transport->supports_speculative_write ()) {
@@ -916,6 +1013,82 @@ void zmq::asio_engine_t::speculative_write ()
         //  Try to prepare and write more data speculatively.
         //  This loop enables efficient burst writes without async overhead.
         while (prepare_output_buffer ()) {
+            if (_large_write_pending) {
+                ENGINE_DBG ("speculative_write loop: large write pending");
+                tcp_transport_t *tcp_transport =
+                  dynamic_cast<tcp_transport_t *> (_transport.get ());
+                if (!tcp_transport) {
+                    start_async_write ();
+                    return;
+                }
+
+                const size_t header_remaining =
+                  _large_header.size () - _large_header_offset;
+                const size_t body_remaining =
+                  _large_body_size - _large_body_offset;
+                const unsigned char *header_ptr =
+                  header_remaining ? &_large_header[0] + _large_header_offset
+                                   : NULL;
+                const unsigned char *body_ptr =
+                  body_remaining ? _large_body + _large_body_offset : NULL;
+                size_t total = header_remaining + body_remaining;
+
+                size_t more_bytes =
+                  tcp_transport->write_two_buffers (header_ptr, header_remaining,
+                                                    body_ptr, body_remaining);
+
+                ENGINE_DBG ("speculative_write loop: large wrote %zu, errno=%d",
+                            more_bytes, errno);
+
+                if (more_bytes == 0) {
+                    if (errno == EAGAIN || errno == EWOULDBLOCK) {
+                        start_async_write ();
+                        return;
+                    }
+                    error (connection_error);
+                    return;
+                }
+
+                while (more_bytes < total) {
+                    if (more_bytes <= header_remaining) {
+                        _large_header_offset += more_bytes;
+                    } else {
+                        _large_header_offset = _large_header.size ();
+                        _large_body_offset += (more_bytes - header_remaining);
+                    }
+
+                    const size_t hdr_rem =
+                      _large_header.size () - _large_header_offset;
+                    const size_t body_rem =
+                      _large_body_size - _large_body_offset;
+                    const unsigned char *hdr_ptr =
+                      hdr_rem ? &_large_header[0] + _large_header_offset : NULL;
+                    const unsigned char *body_ptr =
+                      body_rem ? _large_body + _large_body_offset : NULL;
+                    const size_t remaining = hdr_rem + body_rem;
+
+                    more_bytes = tcp_transport->write_two_buffers (
+                      hdr_ptr, hdr_rem, body_ptr, body_rem);
+                    ENGINE_DBG (
+                      "speculative_write loop: large retry %zu, errno=%d",
+                      more_bytes, errno);
+
+                    if (more_bytes == 0) {
+                        if (errno == EAGAIN || errno == EWOULDBLOCK) {
+                            start_async_write ();
+                            return;
+                        }
+                        error (connection_error);
+                        return;
+                    }
+
+                    total = remaining;
+                }
+
+                finalize_large_write ();
+                continue;
+            }
+
             const std::size_t more_bytes = _transport->write_some (
               reinterpret_cast<const std::uint8_t *> (_outpos), _outsize);
 
@@ -1235,6 +1408,8 @@ bool zmq::asio_engine_t::prepare_large_write (msg_t &msg_)
     _large_header.resize (header_size);
     _large_body = body_ptr;
     _large_body_size = body_size;
+    _large_header_offset = 0;
+    _large_body_offset = 0;
     _large_write_pending = true;
     _outpos = NULL;
     _outsize = 0;
