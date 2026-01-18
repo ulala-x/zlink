@@ -31,7 +31,7 @@ bool tcp_allow_sync_write ()
         if (env && *env) {
             enabled = (*env != '0') ? 1 : 0;
         } else {
-            enabled = 1;
+            enabled = 0;
         }
     }
     return enabled == 1;
@@ -156,7 +156,7 @@ void tcp_transport_t::async_write_two_buffers (const unsigned char *header,
         boost::array<boost::asio::const_buffer, 2> buffers;
         buffers[0] = boost::asio::buffer (header, header_size);
         buffers[1] = boost::asio::buffer (body, body_size);
-        boost::asio::async_write (*_socket, buffers, handler);
+        _socket->async_write_some (buffers, handler);
     } else if (handler) {
         handler (boost::asio::error::bad_descriptor, 0);
     }

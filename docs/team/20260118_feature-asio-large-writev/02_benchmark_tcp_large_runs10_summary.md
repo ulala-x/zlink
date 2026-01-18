@@ -10,6 +10,8 @@
   - `docs/team/20260118_feature-asio-large-writev/04_benchmark_tcp_large_runs10_sync_loop.txt`
   - `docs/team/20260118_feature-asio-large-writev/05_benchmark_tcp_large_runs10_threshold128k.txt`
   - `docs/team/20260118_feature-asio-large-writev/06_benchmark_tcp_large_runs10_sync_default.txt`
+  - `docs/team/20260118_feature-asio-large-writev/09_benchmark_tcp_large_runs10_no_sync_loop_full.txt`
+  - `docs/team/20260118_feature-asio-large-writev/10_benchmark_tcp_large_runs10_async_write_some.txt`
 
 ## 결과 요약
 
@@ -21,6 +23,8 @@
   - 특히 TCP 대형 구간에서 -20% 이상 하락 케이스가 빈번
   - PUBSUB 일부 구간만 예외적으로 개선
 - 임계값 128KB 상향 및 sync 경로 강화는 latency 회귀를 해소하지 못함
+- sync loop 제거 시도에서도 latency 회귀는 지속됨 (throughput은 일부 개선)
+- async_write_some 전환은 throughput 개선 폭을 키웠으나, latency는 여전히 큰 폭의 음수 diff
 
 ## 판단
 

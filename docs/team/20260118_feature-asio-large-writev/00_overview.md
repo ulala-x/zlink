@@ -59,10 +59,15 @@
 - `docs/team/20260118_feature-asio-large-writev/04_benchmark_tcp_large_runs10_sync_loop.txt`
 - `docs/team/20260118_feature-asio-large-writev/05_benchmark_tcp_large_runs10_threshold128k.txt`
 - `docs/team/20260118_feature-asio-large-writev/06_benchmark_tcp_large_runs10_sync_default.txt`
+- `docs/team/20260118_feature-asio-large-writev/07_benchmark_tcp_large_runs10_no_sync_loop.txt` (중단)
+- `docs/team/20260118_feature-asio-large-writev/08_benchmark_tcp_large_runs10_no_sync_loop_full.txt` (중단)
+- `docs/team/20260118_feature-asio-large-writev/09_benchmark_tcp_large_runs10_no_sync_loop_full.txt`
+- `docs/team/20260118_feature-asio-large-writev/10_benchmark_tcp_large_runs10_async_write_some.txt`
 
 ## 진행 현황 (2026-01-19)
 
 - 구현 완료: 대형 메시지 header/body 분리 + scatter/gather writev 경로
 - 보강: sync write 우선 시도 + 부분 전송 offset 처리
 - 튜닝 시도: 64KB 임계값 유지/128KB 상향 비교
+- 튜닝 시도: 대형 write path의 sync loop 제거 (partial write는 async로 전환)
 - 결론: 64KB/128KB throughput 개선 신호는 있으나, 256KB 및 latency 회귀 지속

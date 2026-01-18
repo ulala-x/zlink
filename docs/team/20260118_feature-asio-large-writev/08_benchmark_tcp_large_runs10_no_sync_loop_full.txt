@@ -1,0 +1,65 @@
+
+## PATTERN: PAIR
+  > Benchmarking libzmq for PAIR...
+    Testing tcp | 65536B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing tcp | 131072B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing tcp | 262144B: 1 2 3 4 5 6 7 8 9 10 Done
+  > Benchmarking zlink for PAIR...
+    Testing tcp | 65536B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing tcp | 131072B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing tcp | 262144B: 1 2 3 4 5 6 7 8 9 10 Done
+
+### Transport: tcp
+| Size   | Metric     |  Standard libzmq |            zlink |  Diff (%) |
+|--------|------------|------------------|------------------|-----------|
+| 65536B | Throughput |     2210.07 MB/s |     2220.27 MB/s |   +0.46% |
+| 65536B | Latency    |         11.95 us |         15.33 us |  -28.34% |
+| 131072B | Throughput |     2200.13 MB/s |     2438.98 MB/s |  +10.86% |
+| 131072B | Latency    |         17.67 us |         30.90 us |  -74.87% |
+| 262144B | Throughput |     2669.45 MB/s |     2569.20 MB/s |   -3.76% |
+| 262144B | Latency    |         28.86 us |         61.47 us | -112.99% |
+
+## PATTERN: PUBSUB
+  > Benchmarking libzmq for PUBSUB...
+    Testing tcp | 65536B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing tcp | 131072B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing tcp | 262144B: 1 2 3 4 5 6 7 8 9 10 Done
+  > Benchmarking zlink for PUBSUB...
+    Testing tcp | 65536B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing tcp | 131072B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing tcp | 262144B: 1 2 3 4 5 6 7 8 9 10 Done
+
+### Transport: tcp
+| Size   | Metric     |  Standard libzmq |            zlink |  Diff (%) |
+|--------|------------|------------------|------------------|-----------|
+| 65536B | Throughput |     2259.70 MB/s |     2240.73 MB/s |   -0.84% |
+| 65536B | Latency    |         29.01 us |         29.24 us |   -0.83% |
+| 131072B | Throughput |     2197.44 MB/s |     2410.00 MB/s |   +9.67% |
+| 131072B | Latency    |         59.66 us |         54.39 us |   +8.83% |
+| 262144B | Throughput |     2636.92 MB/s |     2814.69 MB/s |   +6.74% |
+| 262144B | Latency    |         99.41 us |         93.15 us |   +6.30% |
+
+## PATTERN: DEALER_DEALER
+  > Benchmarking libzmq for DEALER_DEALER...
+    Testing tcp | 65536B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing tcp | 131072B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing tcp | 262144B: 1 2 3 4 5 6 7 8 9 10 Done
+  > Benchmarking zlink for DEALER_DEALER...
+    Testing tcp | 65536B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing tcp | 131072B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing tcp | 262144B: 1 2 3 4 5 6 7 8 9 10 Done
+
+### Transport: tcp
+| Size   | Metric     |  Standard libzmq |            zlink |  Diff (%) |
+|--------|------------|------------------|------------------|-----------|
+| 65536B | Throughput |     2269.14 MB/s |     2256.96 MB/s |   -0.54% |
+| 65536B | Latency    |         12.04 us |         15.72 us |  -30.55% |
+| 131072B | Throughput |     2181.63 MB/s |     2437.69 MB/s |  +11.74% |
+| 131072B | Latency    |         17.59 us |         31.56 us |  -79.45% |
+| 262144B | Throughput |     2750.87 MB/s |     2586.53 MB/s |   -5.97% |
+| 262144B | Latency    |         28.68 us |         61.68 us | -115.10% |
+
+## PATTERN: DEALER_ROUTER
+  > Benchmarking libzmq for DEALER_ROUTER...
+    Testing tcp | 65536B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing tcp | 131072B: 1 

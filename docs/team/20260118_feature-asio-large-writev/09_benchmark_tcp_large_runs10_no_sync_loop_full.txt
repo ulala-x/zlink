@@ -1,0 +1,120 @@
+
+## PATTERN: PAIR
+  > Benchmarking libzmq for PAIR...
+    Testing tcp | 65536B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing tcp | 131072B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing tcp | 262144B: 1 2 3 4 5 6 7 8 9 10 Done
+  > Benchmarking zlink for PAIR...
+    Testing tcp | 65536B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing tcp | 131072B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing tcp | 262144B: 1 2 3 4 5 6 7 8 9 10 Done
+
+### Transport: tcp
+| Size   | Metric     |  Standard libzmq |            zlink |  Diff (%) |
+|--------|------------|------------------|------------------|-----------|
+| 65536B | Throughput |     2215.28 MB/s |     2212.57 MB/s |   -0.12% |
+| 65536B | Latency    |         11.82 us |         16.19 us |  -37.03% |
+| 131072B | Throughput |     2416.65 MB/s |     2370.19 MB/s |   -1.92% |
+| 131072B | Latency    |         17.74 us |         30.97 us |  -74.50% |
+| 262144B | Throughput |     2886.36 MB/s |     2764.71 MB/s |   -4.21% |
+| 262144B | Latency    |         28.55 us |         59.67 us | -108.98% |
+
+## PATTERN: PUBSUB
+  > Benchmarking libzmq for PUBSUB...
+    Testing tcp | 65536B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing tcp | 131072B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing tcp | 262144B: 1 2 3 4 5 6 7 8 9 10 Done
+  > Benchmarking zlink for PUBSUB...
+    Testing tcp | 65536B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing tcp | 131072B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing tcp | 262144B: 1 2 3 4 5 6 7 8 9 10 Done
+
+### Transport: tcp
+| Size   | Metric     |  Standard libzmq |            zlink |  Diff (%) |
+|--------|------------|------------------|------------------|-----------|
+| 65536B | Throughput |     2209.18 MB/s |     2235.15 MB/s |   +1.18% |
+| 65536B | Latency    |         29.66 us |         29.32 us |   +1.15% |
+| 131072B | Throughput |     2198.49 MB/s |     2442.78 MB/s |  +11.11% |
+| 131072B | Latency    |         59.62 us |         53.66 us |  +10.01% |
+| 262144B | Throughput |     2655.92 MB/s |     2768.42 MB/s |   +4.24% |
+| 262144B | Latency    |         98.71 us |         94.69 us |   +4.07% |
+
+## PATTERN: DEALER_DEALER
+  > Benchmarking libzmq for DEALER_DEALER...
+    Testing tcp | 65536B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing tcp | 131072B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing tcp | 262144B: 1 2 3 4 5 6 7 8 9 10 Done
+  > Benchmarking zlink for DEALER_DEALER...
+    Testing tcp | 65536B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing tcp | 131072B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing tcp | 262144B: 1 2 3 4 5 6 7 8 9 10 Done
+
+### Transport: tcp
+| Size   | Metric     |  Standard libzmq |            zlink |  Diff (%) |
+|--------|------------|------------------|------------------|-----------|
+| 65536B | Throughput |     2099.37 MB/s |     2215.03 MB/s |   +5.51% |
+| 65536B | Latency    |         11.88 us |         15.86 us |  -33.52% |
+| 131072B | Throughput |     2448.23 MB/s |     2445.36 MB/s |   -0.12% |
+| 131072B | Latency    |         17.68 us |         32.36 us |  -83.03% |
+| 262144B | Throughput |     2654.80 MB/s |     2698.36 MB/s |   +1.64% |
+| 262144B | Latency    |         28.81 us |         60.89 us | -111.35% |
+
+## PATTERN: DEALER_ROUTER
+  > Benchmarking libzmq for DEALER_ROUTER...
+    Testing tcp | 65536B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing tcp | 131072B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing tcp | 262144B: 1 2 3 4 5 6 7 8 9 10 Done
+  > Benchmarking zlink for DEALER_ROUTER...
+    Testing tcp | 65536B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing tcp | 131072B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing tcp | 262144B: 1 2 3 4 5 6 7 8 9 10 Done
+
+### Transport: tcp
+| Size   | Metric     |  Standard libzmq |            zlink |  Diff (%) |
+|--------|------------|------------------|------------------|-----------|
+| 65536B | Throughput |     2220.25 MB/s |     2214.80 MB/s |   -0.25% |
+| 65536B | Latency    |         12.06 us |         15.61 us |  -29.38% |
+| 131072B | Throughput |     2218.44 MB/s |     2467.85 MB/s |  +11.24% |
+| 131072B | Latency    |         17.91 us |         29.52 us |  -64.78% |
+| 262144B | Throughput |     2606.35 MB/s |     2636.98 MB/s |   +1.17% |
+| 262144B | Latency    |         29.56 us |         62.13 us | -110.18% |
+
+## PATTERN: ROUTER_ROUTER
+  > Benchmarking libzmq for ROUTER_ROUTER...
+    Testing tcp | 65536B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing tcp | 131072B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing tcp | 262144B: 1 2 3 4 5 6 7 8 9 10 Done
+  > Benchmarking zlink for ROUTER_ROUTER...
+    Testing tcp | 65536B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing tcp | 131072B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing tcp | 262144B: 1 2 3 4 5 6 7 8 9 10 Done
+
+### Transport: tcp
+| Size   | Metric     |  Standard libzmq |            zlink |  Diff (%) |
+|--------|------------|------------------|------------------|-----------|
+| 65536B | Throughput |     2209.85 MB/s |     2246.43 MB/s |   +1.66% |
+| 65536B | Latency    |         11.21 us |         17.85 us |  -59.28% |
+| 131072B | Throughput |     2213.42 MB/s |     2482.84 MB/s |  +12.17% |
+| 131072B | Latency    |         17.27 us |         34.80 us | -101.42% |
+| 262144B | Throughput |     2601.22 MB/s |     2791.56 MB/s |   +7.32% |
+| 262144B | Latency    |         36.35 us |         69.54 us |  -91.29% |
+
+## PATTERN: ROUTER_ROUTER_POLL
+  > Benchmarking libzmq for ROUTER_ROUTER_POLL...
+    Testing tcp | 65536B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing tcp | 131072B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing tcp | 262144B: 1 2 3 4 5 6 7 8 9 10 Done
+  > Benchmarking zlink for ROUTER_ROUTER_POLL...
+    Testing tcp | 65536B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing tcp | 131072B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing tcp | 262144B: 1 2 3 4 5 6 7 8 9 10 Done
+
+### Transport: tcp
+| Size   | Metric     |  Standard libzmq |            zlink |  Diff (%) |
+|--------|------------|------------------|------------------|-----------|
+| 65536B | Throughput |     2113.67 MB/s |     2187.43 MB/s |   +3.49% |
+| 65536B | Latency    |         11.62 us |         17.52 us |  -50.71% |
+| 131072B | Throughput |     2316.60 MB/s |     2471.50 MB/s |   +6.69% |
+| 131072B | Latency    |         17.83 us |         34.36 us |  -92.71% |
+| 262144B | Throughput |     2493.96 MB/s |     2683.73 MB/s |   +7.61% |
+| 262144B | Latency    |         36.72 us |         69.44 us |  -89.09% |
