@@ -66,6 +66,7 @@
 - `docs/team/20260118_feature-asio-large-writev/11_benchmark_tcp_large_runs10_header32.txt`
 - `docs/team/20260118_feature-asio-large-writev/12_benchmark_tcp_large_runs10_threshold512k.txt`
 - `docs/team/20260118_feature-asio-large-writev/13_benchmark_tcp_large_runs10_sync_on_async_write_some.txt`
+- `docs/team/20260118_feature-asio-large-writev/14_benchmark_tcp_large_runs10_recv_burst.txt`
 
 ## 진행 현황 (2026-01-19)
 

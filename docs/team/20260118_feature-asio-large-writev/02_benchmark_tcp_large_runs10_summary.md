@@ -15,6 +15,7 @@
   - `docs/team/20260118_feature-asio-large-writev/11_benchmark_tcp_large_runs10_header32.txt`
   - `docs/team/20260118_feature-asio-large-writev/12_benchmark_tcp_large_runs10_threshold512k.txt`
   - `docs/team/20260118_feature-asio-large-writev/13_benchmark_tcp_large_runs10_sync_on_async_write_some.txt`
+  - `docs/team/20260118_feature-asio-large-writev/14_benchmark_tcp_large_runs10_recv_burst.txt`
 
 ## 결과 요약
 
@@ -31,6 +32,7 @@
 - header buffer 축소(64B→32B)는 latency 개선에 유의미한 영향이 없었음
 - large path 비활성에 가까운 임계값(512KB)에서도 latency 회귀가 유지됨
 - sync write 강제(ZMQ_ASIO_TCP_SYNC_WRITE=1)도 latency 회귀 개선 효과는 없음
+- recv burst(추가 read_some 최대 4회)는 throughput 개선폭 확대, latency 회귀는 유지
 
 ## 판단
 

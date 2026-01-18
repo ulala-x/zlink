@@ -135,6 +135,7 @@ zmq::asio_engine_t::asio_engine_t (
     _write_pending (false),
     _terminating (false),
     _read_buffer_ptr (NULL),
+    _read_buffer_capacity (0),
     _session (NULL),
     _socket (NULL)
 {
@@ -379,6 +380,7 @@ void zmq::asio_engine_t::start_async_read ()
     }
 
     ENGINE_DBG ("start_async_read: reading up to %zu bytes", read_size);
+    _read_buffer_capacity = read_size;
 
     if (_transport) {
         _transport->async_read_some (
@@ -419,6 +421,7 @@ bool zmq::asio_engine_t::speculative_read ()
 
     if (read_size == 0)
         return false;
+    _read_buffer_capacity = read_size;
 
     errno = 0;
     const std::size_t bytes =
@@ -633,21 +636,45 @@ void zmq::asio_engine_t::on_read_complete (const boost::system::error_code &ec,
         return;
     }
 
+    //  Opportunistic read burst: try to drain a few extra chunks to reduce
+    //  async completion overhead for large messages.
+    size_t bytes_received = bytes_transferred;
+    if (_transport && _read_buffer_capacity > bytes_transferred) {
+        size_t remaining = _read_buffer_capacity - bytes_transferred;
+        unsigned char *extra_ptr = _read_buffer_ptr + bytes_transferred;
+        for (int i = 0; i < 4 && remaining > 0; ++i) {
+            errno = 0;
+            const std::size_t more = _transport->read_some (
+              reinterpret_cast<std::uint8_t *> (extra_ptr), remaining);
+            if (more == 0) {
+                if (errno == EAGAIN || errno == EWOULDBLOCK)
+                    break;
+                error (connection_error);
+                return;
+            }
+            bytes_received += more;
+            extra_ptr += more;
+            if (more >= remaining)
+                break;
+            remaining -= more;
+        }
+    }
+
     //  Handle buffer pointers based on whether we have partial data
     if (_decoder && _insize > 0) {
         //  We have partial data from previous read.
         //  start_async_read() moved partial data to buffer start and set _inpos there.
         //  New data was read right after the partial data.
         const size_t partial_size = _insize;
-        _insize = partial_size + bytes_transferred;
+        _insize = partial_size + bytes_received;
         ENGINE_DBG ("on_read_complete: total %zu bytes (partial=%zu + new=%zu)",
-                    _insize, partial_size, bytes_transferred);
+                    _insize, partial_size, bytes_received);
         //  Note: Do NOT call resize_buffer() here - it interferes with decoder's
         //  internal state management. The decoder tracks its own buffer state.
     } else {
         //  Fresh read - set buffer pointers
         _inpos = _read_buffer_ptr;
-        _insize = bytes_transferred;
+        _insize = bytes_received;
         //  Note: Do NOT call resize_buffer() here - let process_input() handle
         //  decoder buffer management when data is copied to decoder buffer.
     }

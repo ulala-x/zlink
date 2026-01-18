@@ -297,6 +297,7 @@ class asio_engine_t : public i_engine
 
     //  Buffer pointer for current async read (points to where data was read)
     unsigned char *_read_buffer_ptr;
+    size_t _read_buffer_capacity;
 
     //  The session this engine is attached to.
     zmq::session_base_t *_session;
