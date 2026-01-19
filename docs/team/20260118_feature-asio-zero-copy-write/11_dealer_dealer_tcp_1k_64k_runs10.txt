@@ -1,0 +1,40 @@
+
+## PATTERN: DEALER_DEALER
+  > Benchmarking libzmq for DEALER_DEALER...
+    Testing tcp | 1024B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing tcp | 65536B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing inproc | 1024B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing inproc | 65536B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing ipc | 1024B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing ipc | 65536B: 1 2 3 4 5 6 7 8 9 10 Done
+  > Benchmarking zlink for DEALER_DEALER...
+    Testing tcp | 1024B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing tcp | 65536B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing inproc | 1024B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing inproc | 65536B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing ipc | 1024B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing ipc | 65536B: 1 2 3 4 5 6 7 8 9 10 Done
+
+### Transport: tcp
+| Size   | Metric     |  Standard libzmq |            zlink |  Diff (%) |
+|--------|------------|------------------|------------------|-----------|
+| 1024B  | Throughput |      0.93 Mmsg/s |      0.97 Mmsg/s |   +4.86% |
+| 1024B  | Latency    |          4.90 us |          5.20 us |   -6.12% |
+| 65536B | Throughput |     2151.03 MB/s |     2362.90 MB/s |   +9.85% |
+| 65536B | Latency    |         12.09 us |         14.44 us |  -19.39% |
+
+### Transport: inproc
+| Size   | Metric     |  Standard libzmq |            zlink |  Diff (%) |
+|--------|------------|------------------|------------------|-----------|
+| 1024B  | Throughput |      2.96 Mmsg/s |      3.84 Mmsg/s |  +29.93% |
+| 1024B  | Latency    |          0.10 us |          0.08 us |  +15.00% |
+| 65536B | Throughput |     9828.09 MB/s |     9723.76 MB/s |   -1.06% |
+| 65536B | Latency    |          1.92 us |          2.09 us |   -9.14% |
+
+### Transport: ipc
+| Size   | Metric     |  Standard libzmq |            zlink |  Diff (%) |
+|--------|------------|------------------|------------------|-----------|
+| 1024B  | Throughput |      0.98 Mmsg/s |      1.08 Mmsg/s |  +10.38% |
+| 1024B  | Latency    |          4.48 us |          4.53 us |   -1.12% |
+| 65536B | Throughput |     2065.66 MB/s |     2245.52 MB/s |   +8.71% |
+| 65536B | Latency    |         11.88 us |         14.13 us |  -18.99% |

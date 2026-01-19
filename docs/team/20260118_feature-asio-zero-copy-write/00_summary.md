@@ -54,3 +54,17 @@
   - 64K throughput +33.12% (latency -38.11%)
   - 128K throughput +33.19% (latency -89.99%)
   - 256K throughput +11.85% (latency -71.15%)
+
+## 1K/64K 전체 패턴 (TCP/inproc/ipc)
+- PAIR: `docs/team/20260118_feature-asio-zero-copy-write/11_pair_tcp_1k_64k_runs10.txt`
+  - TCP 1K +7.37% / 64K +8.83%
+- PUBSUB: `docs/team/20260118_feature-asio-zero-copy-write/11_pubsub_tcp_1k_64k_runs10.txt`
+  - TCP 1K +4.99% / 64K +14.64%
+- DEALER_ROUTER: `docs/team/20260118_feature-asio-zero-copy-write/11_dealer_router_tcp_1k_64k_runs10.txt`
+  - TCP 1K +5.79% / 64K +8.86%
+- DEALER_DEALER: `docs/team/20260118_feature-asio-zero-copy-write/11_dealer_dealer_tcp_1k_64k_runs10.txt`
+  - TCP 1K +4.86% / 64K +9.85%
+- ROUTER_ROUTER: `docs/team/20260118_feature-asio-zero-copy-write/11_router_router_tcp_1k_64k_runs10.txt`
+  - TCP 1K +9.08% / 64K +19.32%
+- ROUTER_ROUTER_POLL: `docs/team/20260118_feature-asio-zero-copy-write/11_router_router_poll_tcp_1k_64k_runs10.txt`
+  - TCP 1K +11.69% / 64K +11.93%

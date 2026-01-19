@@ -1,0 +1,40 @@
+
+## PATTERN: ROUTER_ROUTER_POLL
+  > Benchmarking libzmq for ROUTER_ROUTER_POLL...
+    Testing tcp | 1024B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing tcp | 65536B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing inproc | 1024B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing inproc | 65536B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing ipc | 1024B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing ipc | 65536B: 1 2 3 4 5 6 7 8 9 10 Done
+  > Benchmarking zlink for ROUTER_ROUTER_POLL...
+    Testing tcp | 1024B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing tcp | 65536B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing inproc | 1024B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing inproc | 65536B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing ipc | 1024B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing ipc | 65536B: 1 2 3 4 5 6 7 8 9 10 Done
+
+### Transport: tcp
+| Size   | Metric     |  Standard libzmq |            zlink |  Diff (%) |
+|--------|------------|------------------|------------------|-----------|
+| 1024B  | Throughput |      0.86 Mmsg/s |      0.96 Mmsg/s |  +11.69% |
+| 1024B  | Latency    |          4.50 us |          4.45 us |   +1.11% |
+| 65536B | Throughput |     2097.59 MB/s |     2347.82 MB/s |  +11.93% |
+| 65536B | Latency    |         11.62 us |         17.06 us |  -46.82% |
+
+### Transport: inproc
+| Size   | Metric     |  Standard libzmq |            zlink |  Diff (%) |
+|--------|------------|------------------|------------------|-----------|
+| 1024B  | Throughput |      2.67 Mmsg/s |      2.63 Mmsg/s |   -1.57% |
+| 1024B  | Latency    |          0.56 us |          0.46 us |  +17.70% |
+| 65536B | Throughput |     8258.84 MB/s |     9195.96 MB/s |  +11.35% |
+| 65536B | Latency    |          2.38 us |          2.49 us |   -4.40% |
+
+### Transport: ipc
+| Size   | Metric     |  Standard libzmq |            zlink |  Diff (%) |
+|--------|------------|------------------|------------------|-----------|
+| 1024B  | Throughput |      0.97 Mmsg/s |      1.09 Mmsg/s |  +12.83% |
+| 1024B  | Latency    |          4.12 us |          3.98 us |   +3.64% |
+| 65536B | Throughput |     2131.76 MB/s |     2358.20 MB/s |  +10.62% |
+| 65536B | Latency    |         13.27 us |         16.88 us |  -27.17% |
