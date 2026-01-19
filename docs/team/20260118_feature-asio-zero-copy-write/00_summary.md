@@ -68,3 +68,77 @@
   - TCP 1K +9.08% / 64K +19.32%
 - ROUTER_ROUTER_POLL: `docs/team/20260118_feature-asio-zero-copy-write/11_router_router_poll_tcp_1k_64k_runs10.txt`
   - TCP 1K +11.69% / 64K +11.93%
+
+## recv 백프레셔 처리 변경 (읽기 중단)
+- 변경: `_input_stopped` 시 추가 read를 예약하지 않고 현재 버퍼에 보관하도록 수정.
+- 로그: `docs/team/20260118_feature-asio-zero-copy-write/12_pair_tcp_1k_64k_runs10_stop_read.txt`
+- PAIR, TCP (1K/64K):
+  - 1K throughput -18.30% (latency -3.77%)
+  - 64K throughput -11.17% (latency -19.61%)
+→ 성능 저하 확인으로 인해 해당 변경은 되돌리고 기존 read-지속+buffer 방식 유지.
+
+## read-지속 방식 복귀 후 재측정
+- 로그: `docs/team/20260118_feature-asio-zero-copy-write/13_pair_tcp_1k_64k_runs10_revert_stop_read.txt`
+- PAIR, TCP (1K/64K):
+  - 1K throughput -13.47% (latency -3.46%)
+  - 64K throughput -17.33% (latency -23.13%)
+
+## pending buffer 직접 디코딩 (중간 copy 제거)
+- 변경: backpressure 큐에서 decoder 버퍼로 복사하지 않고 바로 decode 호출.
+- 로그: `docs/team/20260118_feature-asio-zero-copy-write/14_pair_tcp_1k_64k_runs10_pending_direct_decode.txt`
+- PAIR, TCP (1K/64K):
+  - 1K throughput -16.40% (latency -3.97%)
+  - 64K throughput -20.29% (latency -22.51%)
+→ 성능 개선이 확인되지 않아 원래 복사 경로 유지.
+
+## 기준 갱신 후 재측정 (libzmq baseline refresh)
+- 로그: `docs/team/20260118_feature-asio-zero-copy-write/16_pair_tcp_1k_64k_runs10_refresh_baseline.txt`
+- PAIR, TCP (1K/64K):
+  - 1K throughput +21.92% (latency -4.76%)
+  - 64K throughput +56.71% (latency -21.17%)
+
+## backpressure read buffer pool (복사 1회 제거)
+- 변경: `_input_stopped` 중 async_read는 풀 버퍼로 읽고 그대로 pending 큐에 보관 (추가 memcpy 제거).
+- 로그: `docs/team/20260118_feature-asio-zero-copy-write/17_pair_tcp_1k_64k_runs10_backpressure_pool.txt`
+- PAIR, TCP (1K/64K):
+  - 1K throughput +29.86% (latency -3.46%)
+  - 64K throughput +55.14% (latency -23.79%)
+
+## 전체 패턴 재측정 (TCP, baseline refresh)
+- 로그: `docs/team/20260118_feature-asio-zero-copy-write/18_all_patterns_tcp_1k_64k_runs10_backpressure_pool.txt`
+- PAIR: 1K +47.88%, 64K +11.87% (lat -22.47%)
+- PUBSUB: 1K +30.99%, 64K +65.17% (lat +39.44%)
+- DEALER_DEALER: 1K +34.98%, 64K +43.75% (lat -17.52%)
+- DEALER_ROUTER: 1K +27.95%, 64K +55.87% (lat -27.54%)
+- ROUTER_ROUTER: 1K +37.51%, 64K +54.92% (lat -49.55%)
+- ROUTER_ROUTER_POLL: 1K +17.05%, 64K +24.32% (lat -41.89%)
+
+## 전체 패턴 재측정 (TCP/IPC/INPROC, baseline refresh)
+- 로그: `docs/team/20260118_feature-asio-zero-copy-write/19_all_patterns_all_transports_1k_64k_runs10_backpressure_pool.txt`
+- PAIR:
+  - TCP: 1K +35.46%, 64K +32.56%
+  - INPROC: 1K +134.57%, 64K +10.49%
+  - IPC: 1K +33.08%, 64K +19.57%
+- PUBSUB:
+  - TCP: 1K +31.22%, 64K +44.90%
+  - INPROC: 1K +124.30%, 64K -30.16%
+  - IPC: 1K +25.00%, 64K +14.43%
+- DEALER_DEALER:
+  - TCP: 1K +24.82%, 64K +14.61%
+  - INPROC: 1K +136.31%, 64K +48.87%
+  - IPC: 1K +30.29%, 64K +16.27%
+- DEALER_ROUTER:
+  - TCP: 1K +30.98%, 64K +45.99%
+  - INPROC: 1K +113.14%, 64K -13.02%
+  - IPC: 1K +28.26%, 64K +41.16%
+- ROUTER_ROUTER:
+  - TCP: 1K +30.24%, 64K +73.51%
+  - INPROC: 1K +96.79%, 64K +4.12%
+  - IPC: 1K +27.01%, 64K +20.49%
+
+## ROUTER_ROUTER_POLL 재측정 보완 (TCP/IPC/INPROC)
+- 로그: `docs/team/20260118_feature-asio-zero-copy-write/20_router_router_poll_all_transports_1k_64k_runs10_backpressure_pool.txt`
+- ROUTER_ROUTER_POLL:
+  - TCP: 1K +32.55%, 64K +37.98%
+  - INPROC: 1K +77.75%, 64K -16.56%
+  - IPC: 1K +17.60%, 64K +15.22%

@@ -1,0 +1,14 @@
+
+## PATTERN: PAIR
+  [libzmq] Using cached baseline.
+  > Benchmarking zlink for PAIR...
+    Testing tcp | 1024B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing tcp | 65536B: 1 2 3 4 5 6 7 8 9 10 Done
+
+### Transport: tcp
+| Size   | Metric     |  Standard libzmq |            zlink |  Diff (%) |
+|--------|------------|------------------|------------------|-----------|
+| 1024B  | Throughput |      0.95 Mmsg/s |      0.81 Mmsg/s |  -15.36% |
+| 1024B  | Latency    |          4.91 us |          5.03 us |   -2.34% |
+| 65536B | Throughput |     2270.69 MB/s |     1994.13 MB/s |  -12.18% |
+| 65536B | Latency    |         12.06 us |         14.37 us |  -19.15% |

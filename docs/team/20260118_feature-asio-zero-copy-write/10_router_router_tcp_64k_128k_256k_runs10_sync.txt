@@ -1,0 +1,52 @@
+
+## PATTERN: ROUTER_ROUTER
+  > Benchmarking libzmq for ROUTER_ROUTER...
+    Testing tcp | 65536B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing tcp | 131072B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing tcp | 262144B: 1 2 3 4 5 6 7 8 9 10 Done
+  > Benchmarking zlink for ROUTER_ROUTER...
+    Testing tcp | 65536B: 1 2 3 4 5 6 7 8 9 10 (failures=10) Done
+    Testing tcp | 131072B: 1 2 3 4 5 6 7 8 9 10 (failures=10) Done
+    Testing tcp | 262144B: 1 2 3 4 5 6 7 8 9 10 (failures=10) Done
+
+### Transport: tcp
+| Size   | Metric     |  Standard libzmq |            zlink |  Diff (%) |
+|--------|------------|------------------|------------------|-----------|
+| 65536B | Throughput |     1497.65 MB/s |        0.00 MB/s | -100.00% |
+| 65536B | Latency    |         10.96 us |          0.00 us | +100.00% |
+| 131072B | Throughput |     1674.65 MB/s |        0.00 MB/s | -100.00% |
+| 131072B | Latency    |         17.14 us |          0.00 us | +100.00% |
+| 262144B | Throughput |     2166.01 MB/s |        0.00 MB/s | -100.00% |
+| 262144B | Latency    |         36.29 us |          0.00 us | +100.00% |
+
+## Failures
+- ROUTER_ROUTER zlink tcp 65536B: timeout
+- ROUTER_ROUTER zlink tcp 65536B: timeout
+- ROUTER_ROUTER zlink tcp 65536B: timeout
+- ROUTER_ROUTER zlink tcp 65536B: timeout
+- ROUTER_ROUTER zlink tcp 65536B: timeout
+- ROUTER_ROUTER zlink tcp 65536B: timeout
+- ROUTER_ROUTER zlink tcp 65536B: timeout
+- ROUTER_ROUTER zlink tcp 65536B: timeout
+- ROUTER_ROUTER zlink tcp 65536B: timeout
+- ROUTER_ROUTER zlink tcp 65536B: timeout
+- ROUTER_ROUTER zlink tcp 131072B: timeout
+- ROUTER_ROUTER zlink tcp 131072B: timeout
+- ROUTER_ROUTER zlink tcp 131072B: timeout
+- ROUTER_ROUTER zlink tcp 131072B: timeout
+- ROUTER_ROUTER zlink tcp 131072B: timeout
+- ROUTER_ROUTER zlink tcp 131072B: timeout
+- ROUTER_ROUTER zlink tcp 131072B: timeout
+- ROUTER_ROUTER zlink tcp 131072B: timeout
+- ROUTER_ROUTER zlink tcp 131072B: timeout
+- ROUTER_ROUTER zlink tcp 131072B: timeout
+- ROUTER_ROUTER zlink tcp 262144B: timeout
+- ROUTER_ROUTER zlink tcp 262144B: timeout
+- ROUTER_ROUTER zlink tcp 262144B: timeout
+- ROUTER_ROUTER zlink tcp 262144B: timeout
+- ROUTER_ROUTER zlink tcp 262144B: timeout
+- ROUTER_ROUTER zlink tcp 262144B: timeout
+- ROUTER_ROUTER zlink tcp 262144B: timeout
+- ROUTER_ROUTER zlink tcp 262144B: timeout
+- ROUTER_ROUTER zlink tcp 262144B: timeout
+- ROUTER_ROUTER zlink tcp 262144B: timeout
