@@ -1,0 +1,20 @@
+
+## PATTERN: PAIR
+  > Benchmarking libzmq for PAIR...
+    Testing tcp | 65536B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing tcp | 131072B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing tcp | 262144B: 1 2 3 4 5 6 7 8 9 10 Done
+  > Benchmarking zlink for PAIR...
+    Testing tcp | 65536B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing tcp | 131072B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing tcp | 262144B: 1 2 3 4 5 6 7 8 9 10 Done
+
+### Transport: tcp
+| Size   | Metric     |  Standard libzmq |            zlink |  Diff (%) |
+|--------|------------|------------------|------------------|-----------|
+| 65536B | Throughput |     1292.44 MB/s |     1880.25 MB/s |  +45.48% |
+| 65536B | Latency    |         11.82 us |         14.52 us |  -22.79% |
+| 131072B | Throughput |     1748.49 MB/s |     2220.88 MB/s |  +27.02% |
+| 131072B | Latency    |         17.69 us |         28.51 us |  -61.14% |
+| 262144B | Throughput |     2226.79 MB/s |     2494.71 MB/s |  +12.03% |
+| 262144B | Latency    |         28.82 us |         57.03 us |  -97.92% |

@@ -1,0 +1,20 @@
+
+## PATTERN: PUBSUB
+  > Benchmarking libzmq for PUBSUB...
+    Testing tcp | 65536B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing tcp | 131072B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing tcp | 262144B: 1 2 3 4 5 6 7 8 9 10 Done
+  > Benchmarking zlink for PUBSUB...
+    Testing tcp | 65536B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing tcp | 131072B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing tcp | 262144B: 1 2 3 4 5 6 7 8 9 10 Done
+
+### Transport: tcp
+| Size   | Metric     |  Standard libzmq |            zlink |  Diff (%) |
+|--------|------------|------------------|------------------|-----------|
+| 65536B | Throughput |     1372.74 MB/s |     1928.91 MB/s |  +40.52% |
+| 65536B | Latency    |         48.52 us |         33.98 us |  +29.98% |
+| 131072B | Throughput |     1648.78 MB/s |     2236.73 MB/s |  +35.66% |
+| 131072B | Latency    |         79.51 us |         58.60 us |  +26.30% |
+| 262144B | Throughput |     2123.06 MB/s |     2543.80 MB/s |  +19.82% |
+| 262144B | Latency    |        123.48 us |        103.06 us |  +16.54% |
