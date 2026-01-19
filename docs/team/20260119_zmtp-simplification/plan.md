@@ -49,11 +49,18 @@
 - 기본 성능 벤치마크 확보 (현재 기준선)
 - **Socket type 검증/Identity 전달/Heartbeat 요구사항 정리**
 - **64-bit 정렬 및 헤더 오버헤드(소형 메시지) 영향 측정**
+- **HELLO/IDENTITY/ROUTER 규칙과 기존 코드 경로 매핑**
+- **TLS 강제 체크 위치/실패 동작(로그/에러 코드) 확정**
+- **HELLO/HEARTBEAT 타임아웃 정책 타당성 검증**
 
 **산출물**
 - 핫패스 플로우 다이어그램
+- HELLO/IDENTITY/ROUTER 매핑 다이어그램
 - 기준 성능 수치 (latency/throughput)
 - 최소 핸드셰이크/컨트롤 프레임 규칙 합의안
+- TLS 체크 위치 및 실패 동작 정리
+- 타임아웃 정책 검증 결과
+- Phase 0 조사 기록 (`phase0_findings.md`)
 
 
 ### Phase 1. 커스텀 프로토콜 PoC (5~8일)
