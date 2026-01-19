@@ -45,7 +45,7 @@
 ### Phase 0. 사전 분석 (1~2일)
 - 현재 ZMTP 관련 핫패스 코드 경로 정리
 - TLS 전용 환경에서 남아있는 핸드셰이크/메커니즘 처리 확인
-- **TLS 오버헤드 비중 분석 (TLS vs ZMTP 프레이밍)**
+- **프로토콜 오버헤드 비중 분석 (프레이밍/핫패스 비용)**
 - 기본 성능 벤치마크 확보 (현재 기준선)
 - **Socket type 검증/Identity 전달/Heartbeat 요구사항 정리**
 - **64-bit 정렬 및 헤더 오버헤드(소형 메시지) 영향 측정**
@@ -103,6 +103,7 @@
 - 헤더는 8 bytes로 64-bit 정렬을 만족
 - v0는 8 bytes 고정, 축소 헤더는 v1 이후 검토
 - 대형 메시지 확장 필요 시 length를 64-bit로 확장하는 옵션을 검토
+- 모든 multi-byte 필드는 big-endian 고정
 
 **멀티파트 규칙**
 - MORE=1이면 동일 메시지의 다음 프레임이 이어짐
@@ -114,17 +115,30 @@
 - v0에서는 “첫 프레임=ID” 규칙을 사용하지 않음
 - IDENTITY 프레임은 **HELLO/TYPE 이후, 데이터 프레임 직전에만 허용**
 - IDENTITY 프레임은 MORE=1과 동시 사용 불가 (단독 프레임)
+- HELLO Identity는 **연결 식별용**, IDENTITY 프레임은 **ROUTER 라우팅용**으로 구분
 
 **CONTROL 프레임**
 - **연결 직후 HELLO/TYPE 프레임 1회 필수 (socket type 교환/검증)**
 - **HEARTBEAT 프레임 사용 (CONTROL=1)**
 - CONTROL 프레임 바디 포맷은 고정 필드로 정의
+- CONTROL 프레임은 **메시지 경계에서만 허용**
+
+**CONTROL 타입 enum**
+- 0x01 = HELLO
+- 0x02 = HEARTBEAT
+- 0x03 = HEARTBEAT_ACK
 
 **HELLO/TYPE 바디 포맷 (v0 고정)**
 - Byte 0: Control type (0x01 = HELLO)
 - Byte 1: Socket type (enum, 1 byte)
 - Byte 2: Identity length (uint8, 0~255)
 - Byte 3..: Identity bytes (optional)
+- 최소 길이: 3 bytes (identity length=0)
+
+**HELLO 교환 규칙 (v0)**
+- 연결 직후 양측 HELLO 1회 교환
+- HELLO 미수신 또는 socket type 불일치 시 연결 종료
+- HELLO 수신 타임아웃: 3s
 
 **HEARTBEAT 정책 (v0)**
 - 기본 활성, 고정 간격 송신 (예: 5s)
@@ -142,6 +156,7 @@
 - 예: `ZLINK_PROTOCOL=zmtp|zmp`
 - 포트 분리 권장 (혼선 방지)
 - Magic/Version 불일치 또는 HELLO 누락 시 즉시 연결 종료
+- Reserved 비트/바이트가 0이 아니면 연결 종료
 
 ---
 
@@ -205,6 +220,7 @@
 - 성능 테스트: TCP/TLS throughput, latency
 - 회귀 테스트: 기존 Unity 테스트 + 주요 시나리오
 - 성능 목표: 1K 이하 기준 중앙값 +5% 이상 개선
+- Phase 0 프로토콜 오버헤드 비중 분석 결과에 따라 목표 재조정
 
 ---
 
