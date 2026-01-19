@@ -130,6 +130,8 @@ class asio_engine_t : public i_engine
     //  Access to session and socket
     session_base_t *session () { return _session; }
     socket_base_t *socket () { return _socket; }
+    i_asio_transport *transport () { return _transport.get (); }
+    const i_asio_transport *transport () const { return _transport.get (); }
 
     const options_t _options;
 

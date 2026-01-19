@@ -5,6 +5,7 @@
 
 #include "asio_tls_connecter.hpp"
 #include "asio_poller.hpp"
+#include "asio_zmp_engine.hpp"
 #include "asio_zmtp_engine.hpp"
 #include "ssl_transport.hpp"
 #include "ssl_context_helper.hpp"
@@ -16,6 +17,7 @@
 #include "../err.hpp"
 #include "../ip.hpp"
 #include "../tcp.hpp"
+#include "../zmp_protocol.hpp"
 
 #ifndef ZMQ_HAVE_WINDOWS
 #include <unistd.h>
@@ -482,11 +484,18 @@ void zmq::asio_tls_connecter_t::create_engine (fd_t fd_,
     if (!_tls_hostname.empty ())
         transport->set_hostname (_tls_hostname);
 
-    i_engine *engine =
-      new (std::nothrow) asio_zmtp_engine_t (
-        fd_, options, endpoint_pair, std::unique_ptr<i_asio_transport> (
-                                     transport.release ()),
-        std::move (_ssl_context));
+    i_engine *engine = NULL;
+    if (zmp_protocol_enabled ()) {
+        engine = new (std::nothrow) asio_zmp_engine_t (
+          fd_, options, endpoint_pair,
+          std::unique_ptr<i_asio_transport> (transport.release ()),
+          std::move (_ssl_context));
+    } else {
+        engine = new (std::nothrow) asio_zmtp_engine_t (
+          fd_, options, endpoint_pair,
+          std::unique_ptr<i_asio_transport> (transport.release ()),
+          std::move (_ssl_context));
+    }
     alloc_assert (engine);
 
     //  Attach the engine to the session

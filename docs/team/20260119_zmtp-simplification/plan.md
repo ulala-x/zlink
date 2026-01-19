@@ -62,6 +62,7 @@
 - 타임아웃 정책 검증 결과
 - Phase 0 조사 기록 (`phase0_findings.md`)
 - Phase 0 플로우 다이어그램 (`phase0_flow.md`)
+- Phase 1 구현 기록 (`phase1_impl_notes.md`)
 
 
 ### Phase 1. 커스텀 프로토콜 PoC (5~8일)
