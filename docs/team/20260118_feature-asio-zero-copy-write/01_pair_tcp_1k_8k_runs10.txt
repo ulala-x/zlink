@@ -1,0 +1,16 @@
+
+## PATTERN: PAIR
+  > Benchmarking libzmq for PAIR...
+    Testing tcp | 1024B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing tcp | 8192B: 1 2 3 4 5 6 7 8 9 10 Done
+  > Benchmarking zlink for PAIR...
+    Testing tcp | 1024B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing tcp | 8192B: 1 2 3 4 5 6 7 8 9 10 Done
+
+### Transport: tcp
+| Size   | Metric     |  Standard libzmq |            zlink |  Diff (%) |
+|--------|------------|------------------|------------------|-----------|
+| 1024B  | Throughput |      0.56 Mmsg/s |      0.81 Mmsg/s |  +44.31% |
+| 1024B  | Latency    |          4.96 us |          5.05 us |   -1.71% |
+| 8192B  | Throughput |      861.87 MB/s |     1048.81 MB/s |  +21.69% |
+| 8192B  | Latency    |          7.33 us |          7.46 us |   -1.91% |
