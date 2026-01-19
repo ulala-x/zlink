@@ -353,9 +353,9 @@ void zmq::asio_engine_t::start_async_read ()
 
     _read_pending = true;
 
-    //  Get buffer from decoder if available
     size_t read_size;
 
+    //  Get buffer from decoder if available
     if (_decoder) {
         _decoder->get_buffer (&_read_buffer_ptr, &read_size);
 
@@ -749,9 +749,14 @@ void zmq::asio_engine_t::on_write_complete (const boost::system::error_code &ec,
 
     _write_buffer.clear ();
 
-    //  If still handshaking and there's nothing more to write, just return
-    if (_handshaking && _outsize == 0)
+    //  During handshake, prioritize sending any pending greeting data.
+    if (_handshaking) {
+        if (_outsize > 0) {
+            start_async_write ();
+            return;
+        }
         return;
+    }
 
     //  Continue writing if more data available
     if (!_output_stopped)

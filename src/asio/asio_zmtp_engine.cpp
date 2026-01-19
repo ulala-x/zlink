@@ -243,6 +243,9 @@ int zmq::asio_zmtp_engine_t::receive_greeting ()
         receive_greeting_versioned ();
     }
 
+    if (_outsize > 0)
+        start_async_write ();
+
     if (_greeting_bytes_read < _greeting_size && !unversioned) {
         //  Need more data
         errno = EAGAIN;
@@ -256,12 +259,16 @@ void zmq::asio_zmtp_engine_t::receive_greeting_versioned ()
 {
     //  After receiving signature (10 bytes), need to send version byte (3)
     if (_outpos + _outsize == _greeting_send + signature_size) {
+        const bool need_write = (_outsize == 0);
         _outpos[_outsize++] = 3;
+        if (need_write)
+            start_async_write ();
     }
 
     //  After receiving more than signature, send rest of greeting
     if (_greeting_bytes_read > signature_size) {
         if (_outpos + _outsize == _greeting_send + signature_size + 1) {
+            const bool need_write = (_outsize == 0);
             if (_greeting_recv[revision_pos] == ASIO_ZMTP_1_0
                 || _greeting_recv[revision_pos] == ASIO_ZMTP_2_0)
                 _outpos[_outsize++] = _options.type;
@@ -284,6 +291,8 @@ void zmq::asio_zmtp_engine_t::receive_greeting_versioned ()
                 _outsize += 32;
                 _greeting_size = v3_greeting_size;
             }
+            if (need_write)
+                start_async_write ();
         }
     }
 }
