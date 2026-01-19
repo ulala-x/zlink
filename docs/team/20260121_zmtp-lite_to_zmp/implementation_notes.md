@@ -15,12 +15,12 @@
 - `src/v2_encoder.cpp`
 - `src/v2_decoder.cpp`
 
-### Changes (Planned)
-- Remove greeting downgrade paths.
-- Enforce ZMTP 3.1 only.
-- Restrict mechanism to NULL for zlink-only mode.
-- Avoid unnecessary metadata parsing.
-- Keep routing-id flow unchanged.
+### Changes (Done)
+- Removed legacy ZMTP 1.0/2.0/3.0 handshake paths in `src/asio/asio_zmtp_engine.cpp`.
+- Enforced ZMTP 3.1 greeting/minor version only.
+- Restricted mechanism negotiation to NULL only.
+- Updated `tests/test_mock_pub_sub.cpp` to drop legacy (non-command) mock paths.
+- Kept routing-id flow unchanged.
 
 ---
 
