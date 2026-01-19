@@ -116,6 +116,7 @@
 - IDENTITY 프레임은 **HELLO/TYPE 이후, 데이터 프레임 직전에만 허용**
 - IDENTITY 프레임은 MORE=1과 동시 사용 불가 (단독 프레임)
 - HELLO Identity는 **연결 식별용**, IDENTITY 프레임은 **ROUTER 라우팅용**으로 구분
+- ROUTER는 IDENTITY 프레임 필수 (누락 시 오류)
 
 **CONTROL 프레임**
 - **연결 직후 HELLO/TYPE 프레임 1회 필수 (socket type 교환/검증)**
@@ -126,11 +127,11 @@
 **CONTROL 타입 enum**
 - 0x01 = HELLO
 - 0x02 = HEARTBEAT
-- 0x03 = HEARTBEAT_ACK
+- 0x03 = HEARTBEAT_ACK (v1 후보)
 
 **HELLO/TYPE 바디 포맷 (v0 고정)**
 - Byte 0: Control type (0x01 = HELLO)
-- Byte 1: Socket type (enum, 1 byte)
+- Byte 1: Socket type (enum, 1 byte, 기존 ZMQ 값 재사용)
 - Byte 2: Identity length (uint8, 0~255)
 - Byte 3..: Identity bytes (optional)
 - 최소 길이: 3 bytes (identity length=0)
@@ -143,6 +144,7 @@
 **HEARTBEAT 정책 (v0)**
 - 기본 활성, 고정 간격 송신 (예: 5s)
 - 연속 미수신 3회 시 연결 종료
+- HEARTBEAT 바디는 0 bytes (타임스탬프 없음)
 
 **오류 처리 (Fail-fast)**
 - Magic/Version/Reserved 불일치: 연결 종료
@@ -157,6 +159,8 @@
 - 포트 분리 권장 (혼선 방지)
 - Magic/Version 불일치 또는 HELLO 누락 시 즉시 연결 종료
 - Reserved 비트/바이트가 0이 아니면 연결 종료
+- 모드 우선순위: 런타임 옵션 > 빌드 옵션
+- 모드 불일치 시 에러 로그 후 연결 종료
 
 ---
 
