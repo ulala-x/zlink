@@ -17,7 +17,10 @@
 #include "../err.hpp"
 #include "../ip.hpp"
 #include "../tcp.hpp"
+#include "../zmp_protocol.hpp"
 #include "../likely.hpp"
+#include <cstdio>
+#include <cstdlib>
 
 #ifndef ZMQ_HAVE_WINDOWS
 #include <unistd.h>
@@ -1350,12 +1353,48 @@ int zmq::asio_engine_t::push_one_then_decode_and_push (msg_t *msg_)
 
 int zmq::asio_engine_t::pull_msg_from_session (msg_t *msg_)
 {
-    return _session->pull_msg (msg_);
+    const int rc = _session->pull_msg (msg_);
+    if (std::getenv ("ZMP_DEBUG") != NULL) {
+        if (rc == 0) {
+            std::fprintf (stderr,
+                          "ZMP: pull_msg_from_session ok size=%zu local=%d\n",
+                          msg_->size (), _endpoint_uri_pair.local_type);
+        } else {
+            std::fprintf (stderr,
+                          "ZMP: pull_msg_from_session EAGAIN local=%d\n",
+                          _endpoint_uri_pair.local_type);
+        }
+    }
+    if (rc == -1 && std::getenv ("ZMP_DEBUG") != NULL) {
+        // already logged above
+    }
+    return rc;
 }
 
 int zmq::asio_engine_t::push_msg_to_session (msg_t *msg_)
 {
-    return _session->push_msg (msg_);
+    if (zmp_protocol_enabled () && (msg_->flags () & msg_t::routing_id)
+        && !_options.recv_routing_id) {
+        int rc = msg_->close ();
+        errno_assert (rc == 0);
+        rc = msg_->init ();
+        errno_assert (rc == 0);
+        return 0;
+    }
+
+    const int rc = _session->push_msg (msg_);
+    if (std::getenv ("ZMP_DEBUG") != NULL) {
+        if (rc == 0) {
+            std::fprintf (stderr,
+                          "ZMP: push_msg_to_session ok size=%zu local=%d\n",
+                          msg_->size (), _endpoint_uri_pair.local_type);
+        } else {
+            std::fprintf (stderr,
+                          "ZMP: push_msg_to_session EAGAIN local=%d\n",
+                          _endpoint_uri_pair.local_type);
+        }
+    }
+    return rc;
 }
 
 void zmq::asio_engine_t::error (error_reason_t reason_)

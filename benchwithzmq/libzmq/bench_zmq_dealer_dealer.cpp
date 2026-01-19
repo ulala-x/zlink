@@ -9,6 +9,8 @@ void run_dealer_dealer(const std::string& transport, size_t msg_size, int msg_co
     void *ctx = zmq_ctx_new();
     void *s1 = zmq_socket(ctx, ZMQ_DEALER);
     void *s2 = zmq_socket(ctx, ZMQ_DEALER);
+    configure_transport_socket(s1, transport, true);
+    configure_transport_socket(s2, transport, false);
 
     int hwm = 0;
     zmq_setsockopt(s1, ZMQ_SNDHWM, &hwm, sizeof(hwm));

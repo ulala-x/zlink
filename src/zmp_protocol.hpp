@@ -17,7 +17,9 @@ enum
     zmp_header_size = 8,
     zmp_flag_more = 0x01,
     zmp_flag_control = 0x02,
-    zmp_flag_identity = 0x04
+    zmp_flag_identity = 0x04,
+    zmp_flag_subscribe = 0x08,
+    zmp_flag_cancel = 0x10
 };
 
 enum
@@ -35,6 +37,16 @@ inline bool zmp_protocol_enabled ()
     if (!env)
         return false;
     return std::strcmp (env, "zmp") == 0 || std::strcmp (env, "ZMP") == 0;
+}
+
+inline bool zmp_force_activate_enabled ()
+{
+    const char *env = std::getenv ("ZMP_FORCE_ACTIVATE");
+    if (!env)
+        return true;
+    if (!*env || std::strcmp (env, "0") == 0)
+        return false;
+    return true;
 }
 }
 

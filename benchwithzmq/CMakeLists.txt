@@ -1,6 +1,14 @@
+cmake_minimum_required(VERSION 3.16)
+project(zlink_benchwithzmq LANGUAGES C CXX)
+
+find_package(Threads REQUIRED)
+
 # Define standard libzmq location
 set(STD_LIBZMQ_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/libzmq/libzmq_dist")
 set(STD_LIBZMQ_INCLUDE_DIR "${STD_LIBZMQ_ROOT}/include")
+set(ZLINK_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/..")
+set(ZLINK_BUILD_ROOT "${ZLINK_ROOT}/build")
+set(ZLINK_LIBZMQ_LIBRARY "${ZLINK_BUILD_ROOT}/lib/libzmq.so")
 
 if(WIN32)
     # Automatically find the .lib and .dll regardless of the versioned filename
@@ -18,7 +26,7 @@ if(EXISTS "${STD_LIBZMQ_INCLUDE_DIR}/zmq.h" AND STD_LIBZMQ_LIBRARY)
     function(add_std_zmq_bench name source)
         add_executable(${name} ${source})
         target_link_libraries(${name} PRIVATE ${STD_LIBZMQ_LIBRARY} Threads::Threads)
-        target_include_directories(${name} PRIVATE ${STD_LIBZMQ_INCLUDE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/common)
+        target_include_directories(${name} PRIVATE ${STD_LIBZMQ_INCLUDE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/common ${CMAKE_CURRENT_SOURCE_DIR}/../tests)
         target_compile_options(${name} PRIVATE ${BENCH_CXX_FLAGS})
         target_compile_features(${name} PRIVATE cxx_std_11)
         
@@ -39,8 +47,16 @@ if(EXISTS "${STD_LIBZMQ_INCLUDE_DIR}/zmq.h" AND STD_LIBZMQ_LIBRARY)
 
     function(add_zlink_bench name source)
         add_executable(${name} ${source})
-        target_link_libraries(${name} PRIVATE libzmq Threads::Threads)
-        target_include_directories(${name} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/common)
+        if(EXISTS "${ZLINK_LIBZMQ_LIBRARY}")
+            target_link_libraries(${name} PRIVATE ${ZLINK_LIBZMQ_LIBRARY} Threads::Threads)
+            set_target_properties(${name} PROPERTIES 
+                BUILD_RPATH "${ZLINK_BUILD_ROOT}/lib"
+                INSTALL_RPATH "${ZLINK_BUILD_ROOT}/lib"
+            )
+        else()
+            message(FATAL_ERROR "Zlink libzmq not found at ${ZLINK_LIBZMQ_LIBRARY}. Build zlink first.")
+        endif()
+        target_include_directories(${name} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/common ${CMAKE_CURRENT_SOURCE_DIR}/../tests ${ZLINK_ROOT}/include)
         target_compile_options(${name} PRIVATE ${BENCH_CXX_FLAGS})
         target_compile_features(${name} PRIVATE cxx_std_11)
         

@@ -4,6 +4,27 @@
 #include "zmp_encoder.hpp"
 #include "msg.hpp"
 #include "wire.hpp"
+#include <cstdlib>
+#include <cstdarg>
+
+namespace
+{
+bool zmp_debug_enabled ()
+{
+    return std::getenv ("ZMP_DEBUG") != NULL;
+}
+
+void zmp_debug (const char *fmt_, ...)
+{
+    if (!zmp_debug_enabled ())
+        return;
+    std::va_list args;
+    va_start (args, fmt_);
+    std::vfprintf (stderr, fmt_, args);
+    std::fprintf (stderr, "\n");
+    va_end (args);
+}
+}
 
 zmq::zmp_encoder_t::zmp_encoder_t (size_t bufsize_) :
     encoder_base_t<zmp_encoder_t> (bufsize_)
@@ -27,12 +48,18 @@ void zmq::zmp_encoder_t::header_ready ()
         flags |= zmp_flag_control;
     if (msg->flags () & msg_t::routing_id)
         flags |= zmp_flag_identity;
+    if (msg->is_subscribe ())
+        flags |= zmp_flag_subscribe;
+    if (msg->is_cancel ())
+        flags |= zmp_flag_cancel;
 
     _tmp_buf[0] = zmp_magic;
     _tmp_buf[1] = zmp_version;
     _tmp_buf[2] = flags;
     _tmp_buf[3] = 0;
     put_uint32 (_tmp_buf + 4, static_cast<uint32_t> (size));
+
+    zmp_debug ("ZMP: encode header size=%zu flags=0x%02x", size, flags);
 
     next_step (_tmp_buf, zmp_header_size, &zmp_encoder_t::body_ready, false);
 }

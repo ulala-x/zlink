@@ -9,6 +9,8 @@ void run_dealer_router(const std::string& transport, size_t msg_size, int msg_co
     void *ctx = zmq_ctx_new();
     void *router = zmq_socket(ctx, ZMQ_ROUTER);
     void *dealer = zmq_socket(ctx, ZMQ_DEALER);
+    configure_transport_socket(router, transport, true);
+    configure_transport_socket(dealer, transport, false);
 
     // Set Routing ID for Dealer
     zmq_setsockopt(dealer, ZMQ_IDENTITY, "CLIENT", 6);

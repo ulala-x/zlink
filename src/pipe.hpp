@@ -90,6 +90,9 @@ class pipe_t ZMQ_FINAL : public object_t,
     //  Flush the messages downstream.
     void flush ();
 
+    //  Force read activation even if the pipe is already marked active.
+    void set_force_read_activation (bool enabled_);
+
     //  Temporarily disconnects the inbound message stream and drops
     //  all the messages on the fly. Causes 'hiccuped' event to be generated
     //  in the peer.
@@ -232,6 +235,7 @@ class pipe_t ZMQ_FINAL : public object_t,
     static int compute_lwm (int hwm_);
 
     const bool _conflate;
+    bool _force_read_activation;
 
     // The endpoints of this pipe.
     endpoint_uri_pair_t _endpoint_pair;

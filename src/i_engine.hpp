@@ -48,6 +48,9 @@ struct i_engine
 
     virtual void zap_msg_available () = 0;
 
+    //  Hook for engines to act once the session pipe is ready.
+    virtual void session_ready () {}
+
     virtual const endpoint_uri_pair_t &get_endpoint () const = 0;
 };
 }

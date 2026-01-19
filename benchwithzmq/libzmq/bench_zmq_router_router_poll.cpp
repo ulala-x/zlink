@@ -23,6 +23,8 @@ void run_router_router_poll(const std::string &transport,
     void *ctx = zmq_ctx_new();
     void *router1 = zmq_socket(ctx, ZMQ_ROUTER);
     void *router2 = zmq_socket(ctx, ZMQ_ROUTER);
+    configure_transport_socket(router1, transport, true);
+    configure_transport_socket(router2, transport, false);
 
     zmq_setsockopt(router1, ZMQ_ROUTING_ID, "ROUTER1", 7);
     zmq_setsockopt(router2, ZMQ_ROUTING_ID, "ROUTER2", 7);

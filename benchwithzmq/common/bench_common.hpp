@@ -7,16 +7,34 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cerrno>
+#include <cstring>
 #include <iostream>
 #include <iomanip>
 #include <thread>
 #include <zmq.h>
+#ifndef ZMQ_HAVE_WINDOWS
+#include <unistd.h>
+#include <sys/stat.h>
+#endif
+#include "certs/test_certs.hpp"
 
 // --- Configuration ---
 static const std::vector<size_t> MSG_SIZES = {64, 256, 1024, 65536, 131072, 262144};
-static const std::vector<std::string> TRANSPORTS = {"tcp", "inproc", "ipc"};
+static const std::vector<std::string> TRANSPORTS = {"tcp", "tls", "inproc", "ipc"};
 static const size_t MAX_SOCKET_STRING = 256;
 static const int SETTLE_TIME_MS = 300;
+#if defined(ZMQ_TLS_CERT)
+static const char *TLS_HOSTNAME = "localhost";
+#endif
+
+#if defined(ZMQ_TLS_CERT)
+struct tls_bench_files_t {
+    std::string dir;
+    std::string ca_cert;
+    std::string server_cert;
+    std::string server_key;
+};
+#endif
 
 // --- Stopwatch ---
 class stopwatch_t {
@@ -83,10 +101,104 @@ inline bool set_sockopt_int(void *socket_, int option_, int value_,
     return rc == 0;
 }
 
+#if defined(ZMQ_TLS_CERT)
+inline bool write_pem_file(const std::string &path_, const char *pem_) {
+    FILE *fp = fopen(path_.c_str(), "wb");
+    if (!fp)
+        return false;
+    const size_t len = strlen(pem_);
+    const size_t written = fwrite(pem_, 1, len, fp);
+    fclose(fp);
+    return written == len;
+}
+
+inline void cleanup_tls_files(tls_bench_files_t *files_) {
+    if (!files_)
+        return;
+    remove(files_->ca_cert.c_str());
+    remove(files_->server_cert.c_str());
+    remove(files_->server_key.c_str());
+#ifdef ZMQ_HAVE_WINDOWS
+    _rmdir(files_->dir.c_str());
+#else
+    rmdir(files_->dir.c_str());
+#endif
+}
+
+inline tls_bench_files_t &tls_bench_files() {
+    static tls_bench_files_t files = []() {
+        tls_bench_files_t out;
+#ifdef ZMQ_HAVE_WINDOWS
+        char tmp_dir[MAX_PATH] = "";
+        if (tmpnam_s(tmp_dir) == 0) {
+            _mkdir(tmp_dir);
+            out.dir.assign(tmp_dir);
+        }
+#else
+        char tmp_dir[] = "zmp_tls_XXXXXX";
+        char *dir = mkdtemp(tmp_dir);
+        if (dir)
+            out.dir.assign(dir);
+#endif
+        out.ca_cert = out.dir + "/ca.crt";
+        out.server_cert = out.dir + "/server.crt";
+        out.server_key = out.dir + "/server.key";
+        write_pem_file(out.ca_cert, zmq::test_certs::ca_cert_pem);
+        write_pem_file(out.server_cert, zmq::test_certs::server_cert_pem);
+        write_pem_file(out.server_key, zmq::test_certs::server_key_pem);
+        return out;
+    }();
+    static bool registered = false;
+    if (!registered) {
+        registered = true;
+        std::atexit([]() { cleanup_tls_files(&tls_bench_files()); });
+    }
+    return files;
+}
+
+inline bool apply_tls_server_opts(void *socket_) {
+    tls_bench_files_t &files = tls_bench_files();
+    if (!set_sockopt_int(socket_, ZMQ_TLS_TRUST_SYSTEM, 0, "ZMQ_TLS_TRUST_SYSTEM"))
+        return false;
+    if (zmq_setsockopt(socket_, ZMQ_TLS_CERT, files.server_cert.c_str(),
+                       files.server_cert.size()) != 0)
+        return false;
+    if (zmq_setsockopt(socket_, ZMQ_TLS_KEY, files.server_key.c_str(),
+                       files.server_key.size()) != 0)
+        return false;
+    return true;
+}
+
+inline bool apply_tls_client_opts(void *socket_) {
+    tls_bench_files_t &files = tls_bench_files();
+    if (!set_sockopt_int(socket_, ZMQ_TLS_TRUST_SYSTEM, 0, "ZMQ_TLS_TRUST_SYSTEM"))
+        return false;
+    if (zmq_setsockopt(socket_, ZMQ_TLS_CA, files.ca_cert.c_str(),
+                       files.ca_cert.size()) != 0)
+        return false;
+    if (zmq_setsockopt(socket_, ZMQ_TLS_HOSTNAME, TLS_HOSTNAME,
+                       strlen(TLS_HOSTNAME)) != 0)
+        return false;
+    return true;
+}
+
+inline void configure_transport_socket(void *socket_, const std::string &transport,
+                                      bool is_bind) {
+    if (transport != "tls")
+        return;
+    if (is_bind)
+        apply_tls_server_opts(socket_);
+    else
+        apply_tls_client_opts(socket_);
+}
+#else
+inline void configure_transport_socket(void *, const std::string &, bool) {}
+#endif
+
 inline void apply_debug_timeouts(void *socket_, const std::string &transport) {
     if (!bench_debug_enabled())
         return;
-    if (transport == "tcp" || transport == "ws") {
+    if (transport == "tcp" || transport == "ws" || transport == "tls") {
         const int timeout_ms = 2000;
         set_sockopt_int(socket_, ZMQ_SNDTIMEO, timeout_ms, "ZMQ_SNDTIMEO");
         set_sockopt_int(socket_, ZMQ_RCVTIMEO, timeout_ms, "ZMQ_RCVTIMEO");
@@ -154,6 +266,7 @@ inline int bench_recv_fast(void *socket_, void *buf_, size_t len_,
 inline std::string make_endpoint(const std::string& transport, const std::string& id) {
     if (transport == "inproc") return "inproc://" + id;
     if (transport == "ipc") return "ipc://*";
+    if (transport == "tls") return "tls://127.0.0.1:*";
     if (transport == "ws") return "ws://127.0.0.1:*";
     return "tcp://127.0.0.1:*";
 }
@@ -176,7 +289,7 @@ inline std::string bind_and_resolve_endpoint(void *socket_,
             return std::string();
         }
         endpoint.assign(last_endpoint);
-        if (transport == "tcp" || transport == "ws") {
+        if (transport == "tcp" || transport == "ws" || transport == "tls") {
             const std::string tcp_any = "://0.0.0.0:";
             const std::string tcp_ipv6_any = "://[::]:";
             size_t pos = endpoint.find(tcp_any);
@@ -198,6 +311,13 @@ inline std::string bind_and_resolve_endpoint(void *socket_,
 
 inline bool transport_available(const std::string& transport) {
     if (transport == "ipc") return zmq_has("ipc") != 0;
+    if (transport == "tls") {
+#if defined(ZMQ_TLS_CERT)
+        return zmq_has("tls") != 0;
+#else
+        return false;
+#endif
+    }
     return true;
 }
 

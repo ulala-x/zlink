@@ -10,6 +10,8 @@ void run_router_router(const std::string& transport, size_t msg_size, int msg_co
     void *ctx = zmq_ctx_new();
     void *router1 = zmq_socket(ctx, ZMQ_ROUTER);
     void *router2 = zmq_socket(ctx, ZMQ_ROUTER);
+    configure_transport_socket(router1, transport, true);
+    configure_transport_socket(router2, transport, false);
 
     // Set Routing IDs
     zmq_setsockopt(router1, ZMQ_ROUTING_ID, "ROUTER1", 7);

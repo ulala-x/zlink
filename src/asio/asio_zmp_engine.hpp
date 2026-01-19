@@ -32,6 +32,7 @@ class asio_zmp_engine_t : public asio_engine_t
   protected:
     bool handshake () ZMQ_OVERRIDE;
     void plug_internal () ZMQ_OVERRIDE;
+    void session_ready () ZMQ_OVERRIDE;
     int decode_and_push (msg_t *msg_) ZMQ_OVERRIDE;
     int process_command_message (msg_t *msg_) ZMQ_OVERRIDE;
     int produce_ping_message (msg_t *msg_) ZMQ_OVERRIDE;
@@ -55,6 +56,9 @@ class asio_zmp_engine_t : public asio_engine_t
     unsigned char _hello_recv[272];
     unsigned char _hello_send[272];
     size_t _hello_send_size;
+    unsigned char _peer_routing_id[256];
+    size_t _peer_routing_id_size;
+    bool _peer_routing_id_sent;
 
     bool _subscription_required;
     int _heartbeat_timeout;

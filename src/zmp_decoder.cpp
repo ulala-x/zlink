@@ -5,6 +5,27 @@
 #include "msg.hpp"
 #include "wire.hpp"
 #include "err.hpp"
+#include <cstdlib>
+#include <cstdarg>
+
+namespace
+{
+bool zmp_debug_enabled ()
+{
+    return std::getenv ("ZMP_DEBUG") != NULL;
+}
+
+void zmp_debug (const char *fmt_, ...)
+{
+    if (!zmp_debug_enabled ())
+        return;
+    std::va_list args;
+    va_start (args, fmt_);
+    std::vfprintf (stderr, fmt_, args);
+    std::fprintf (stderr, "\n");
+    va_end (args);
+}
+}
 
 zmq::zmp_decoder_t::zmp_decoder_t (size_t bufsize_, int64_t maxmsgsize_) :
     decoder_base_t<zmp_decoder_t, shared_message_memory_allocator> (bufsize_),
@@ -25,6 +46,8 @@ zmq::zmp_decoder_t::~zmp_decoder_t ()
 
 int zmq::zmp_decoder_t::header_ready (unsigned char const *read_from_)
 {
+    zmp_debug ("ZMP: decode header %02x %02x %02x %02x",
+               _tmpbuf[0], _tmpbuf[1], _tmpbuf[2], _tmpbuf[3]);
     if (_tmpbuf[0] != zmp_magic || _tmpbuf[1] != zmp_version) {
         errno = EPROTO;
         return -1;
@@ -36,13 +59,18 @@ int zmq::zmp_decoder_t::header_ready (unsigned char const *read_from_)
     }
 
     const unsigned char flags = _tmpbuf[2];
-    const unsigned char reserved = flags & ~(zmp_flag_more | zmp_flag_control
-                                              | zmp_flag_identity);
+    const unsigned char reserved =
+      flags & ~(zmp_flag_more | zmp_flag_control | zmp_flag_identity
+                | zmp_flag_subscribe | zmp_flag_cancel);
     if (reserved != 0) {
         errno = EPROTO;
         return -1;
     }
 
+    if ((flags & zmp_flag_subscribe) && (flags & zmp_flag_cancel)) {
+        errno = EPROTO;
+        return -1;
+    }
     if ((flags & zmp_flag_control) && (flags & zmp_flag_more)) {
         errno = EPROTO;
         return -1;
@@ -51,7 +79,17 @@ int zmq::zmp_decoder_t::header_ready (unsigned char const *read_from_)
         errno = EPROTO;
         return -1;
     }
+    if ((flags & zmp_flag_control)
+        && (flags & (zmp_flag_subscribe | zmp_flag_cancel))) {
+        errno = EPROTO;
+        return -1;
+    }
     if ((flags & zmp_flag_identity) && (flags & zmp_flag_more)) {
+        errno = EPROTO;
+        return -1;
+    }
+    if ((flags & zmp_flag_identity)
+        && (flags & (zmp_flag_subscribe | zmp_flag_cancel))) {
         errno = EPROTO;
         return -1;
     }
@@ -63,6 +101,10 @@ int zmq::zmp_decoder_t::header_ready (unsigned char const *read_from_)
         _msg_flags |= msg_t::command;
     if (flags & zmp_flag_identity)
         _msg_flags |= msg_t::routing_id;
+    if (flags & zmp_flag_subscribe)
+        _msg_flags |= msg_t::subscribe;
+    if (flags & zmp_flag_cancel)
+        _msg_flags |= msg_t::cancel;
 
     const uint32_t msg_size = get_uint32 (_tmpbuf + 4);
 
@@ -71,6 +113,7 @@ int zmq::zmp_decoder_t::header_ready (unsigned char const *read_from_)
         return -1;
     }
 
+    zmp_debug ("ZMP: decode body size=%u flags=0x%02x", msg_size, _tmpbuf[2]);
     return size_ready (msg_size, read_from_);
 }
 

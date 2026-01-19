@@ -16,6 +16,7 @@
 #if defined ZMQ_HAVE_ASIO_SSL
 #include <boost/asio/ssl.hpp>
 #endif
+#include <cstdarg>
 #include <algorithm>
 
 namespace
@@ -23,6 +24,22 @@ namespace
 const int zmp_hello_timeout_ms = 3000;
 const size_t zmp_hello_min_body = 3;
 const size_t zmp_hello_max_body = 3 + 255;
+
+bool zmp_debug_enabled ()
+{
+    return std::getenv ("ZMP_DEBUG") != NULL;
+}
+
+void zmp_debug (const char *fmt_, ...)
+{
+    if (!zmp_debug_enabled ())
+        return;
+    std::va_list args;
+    va_start (args, fmt_);
+    std::vfprintf (stderr, fmt_, args);
+    std::fprintf (stderr, "\n");
+    va_end (args);
+}
 }
 
 zmq::asio_zmp_engine_t::asio_zmp_engine_t (
@@ -36,6 +53,8 @@ zmq::asio_zmp_engine_t::asio_zmp_engine_t (
     _hello_body_bytes (0),
     _hello_body_len (0),
     _hello_send_size (0),
+    _peer_routing_id_size (0),
+    _peer_routing_id_sent (false),
     _subscription_required (false),
     _heartbeat_timeout (0)
 {
@@ -54,6 +73,8 @@ zmq::asio_zmp_engine_t::asio_zmp_engine_t (
     _hello_body_bytes (0),
     _hello_body_len (0),
     _hello_send_size (0),
+    _peer_routing_id_size (0),
+    _peer_routing_id_sent (false),
     _subscription_required (false),
     _heartbeat_timeout (0)
 {
@@ -74,6 +95,8 @@ zmq::asio_zmp_engine_t::asio_zmp_engine_t (
     _hello_body_bytes (0),
     _hello_body_len (0),
     _hello_send_size (0),
+    _peer_routing_id_size (0),
+    _peer_routing_id_sent (false),
     _subscription_required (false),
     _heartbeat_timeout (0),
     _ssl_context (std::move (ssl_context_))
@@ -88,10 +111,8 @@ zmq::asio_zmp_engine_t::~asio_zmp_engine_t ()
 
 void zmq::asio_zmp_engine_t::init_zmp_engine ()
 {
-    _next_msg = static_cast<int (asio_engine_t::*) (msg_t *)> (
-      &asio_zmp_engine_t::routing_id_msg);
-    _process_msg = static_cast<int (asio_engine_t::*) (msg_t *)> (
-      &asio_zmp_engine_t::process_routing_id_msg);
+    _next_msg = &asio_zmp_engine_t::pull_msg_from_session;
+    _process_msg = &asio_zmp_engine_t::push_msg_to_session;
 
     if (_options.heartbeat_interval > 0) {
         _heartbeat_timeout = _options.heartbeat_timeout;
@@ -101,6 +122,9 @@ void zmq::asio_zmp_engine_t::init_zmp_engine ()
 
     memset (_hello_recv, 0, sizeof (_hello_recv));
     memset (_hello_send, 0, sizeof (_hello_send));
+    memset (_peer_routing_id, 0, sizeof (_peer_routing_id));
+    _peer_routing_id_size = 0;
+    _peer_routing_id_sent = false;
 }
 
 void zmq::asio_zmp_engine_t::plug_internal ()
@@ -135,6 +159,8 @@ void zmq::asio_zmp_engine_t::plug_internal ()
                 _options.routing_id, identity_len);
 
     _hello_send_size = zmp_header_size + body_len;
+    zmp_debug ("ZMP: send HELLO size=%zu body=%zu type=%d",
+               _hello_send_size, body_len, _options.type);
     _outpos = _hello_send;
     _outsize = _hello_send_size;
     _hello_sent = true;
@@ -144,6 +170,32 @@ void zmq::asio_zmp_engine_t::plug_internal ()
 
     start_async_read ();
     start_async_write ();
+}
+
+void zmq::asio_zmp_engine_t::session_ready ()
+{
+    if (!_options.recv_routing_id) {
+        zmp_debug ("ZMP: session_ready skip recv_routing_id=0 local=%d",
+                   get_endpoint ().local_type);
+        return;
+    }
+
+    if (_peer_routing_id_sent)
+        return;
+
+    zmp_debug ("ZMP: session_ready routing_id size=%zu local=%d",
+               _peer_routing_id_size, get_endpoint ().local_type);
+
+    msg_t routing_id;
+    int rc = routing_id.init_size (_peer_routing_id_size);
+    errno_assert (rc == 0);
+    if (_peer_routing_id_size > 0)
+        memcpy (routing_id.data (), _peer_routing_id, _peer_routing_id_size);
+    routing_id.set_flags (msg_t::routing_id);
+    rc = session ()->push_msg (&routing_id);
+    errno_assert (rc == 0);
+    session ()->flush ();
+    _peer_routing_id_sent = true;
 }
 
 bool zmq::asio_zmp_engine_t::handshake ()
@@ -167,21 +219,28 @@ bool zmq::asio_zmp_engine_t::handshake ()
 
     _input_in_decoder_buffer = false;
 
-    _next_msg = static_cast<int (asio_engine_t::*) (msg_t *)> (
-      &asio_zmp_engine_t::routing_id_msg);
-    _process_msg = static_cast<int (asio_engine_t::*) (msg_t *)> (
-      &asio_zmp_engine_t::process_routing_id_msg);
+    _next_msg = &asio_zmp_engine_t::pull_msg_from_session;
+    _process_msg = &asio_zmp_engine_t::push_msg_to_session;
 
     if (_options.heartbeat_interval > 0 && !_has_heartbeat_timer) {
         add_timer (_options.heartbeat_interval, heartbeat_ivl_timer_id);
         _has_heartbeat_timer = true;
     }
 
+    if (_output_stopped)
+        restart_output ();
+    else
+        start_async_write ();
+
+    zmp_debug ("ZMP: handshake complete local=%d",
+               get_endpoint ().local_type);
     return true;
 }
 
 bool zmq::asio_zmp_engine_t::receive_hello ()
 {
+    zmp_debug ("ZMP: receive_hello insize=%zu header_bytes=%zu body_bytes=%zu",
+               _insize, _hello_header_bytes, _hello_body_bytes);
     while (_insize > 0) {
         if (_hello_header_bytes < zmp_header_size) {
             const size_t to_copy =
@@ -193,6 +252,8 @@ bool zmq::asio_zmp_engine_t::receive_hello ()
             if (_hello_header_bytes < zmp_header_size)
                 return false;
             _hello_body_len = get_uint32 (_hello_recv + 4);
+            zmp_debug ("ZMP: hello header complete body_len=%zu",
+                       _hello_body_len);
             if (_hello_body_len < zmp_hello_min_body
                 || _hello_body_len > zmp_hello_max_body) {
                 errno = EPROTO;
@@ -216,6 +277,7 @@ bool zmq::asio_zmp_engine_t::receive_hello ()
 
         if (parse_hello (_hello_recv, zmp_header_size + _hello_body_len)) {
             _hello_received = true;
+            zmp_debug ("ZMP: hello received");
             return true;
         }
 
@@ -229,12 +291,14 @@ bool zmq::asio_zmp_engine_t::parse_hello (const unsigned char *data_,
                                           size_t size_)
 {
     if (size_ < zmp_header_size + zmp_hello_min_body) {
+        zmp_debug ("ZMP: hello parse fail (size)");
         errno = EPROTO;
         error (protocol_error);
         return false;
     }
 
     if (data_[0] != zmp_magic || data_[1] != zmp_version) {
+        zmp_debug ("ZMP: hello parse fail (magic/version)");
         errno = EPROTO;
         socket ()->event_handshake_failed_protocol (
           session ()->get_endpoint (),
@@ -245,6 +309,7 @@ bool zmq::asio_zmp_engine_t::parse_hello (const unsigned char *data_,
 
     const unsigned char flags = data_[2];
     if (data_[3] != 0 || flags != zmp_flag_control) {
+        zmp_debug ("ZMP: hello parse fail (flags)");
         errno = EPROTO;
         socket ()->event_handshake_failed_protocol (
           session ()->get_endpoint (),
@@ -255,6 +320,7 @@ bool zmq::asio_zmp_engine_t::parse_hello (const unsigned char *data_,
 
     const uint32_t body_len = get_uint32 (data_ + 4);
     if (body_len + zmp_header_size != size_) {
+        zmp_debug ("ZMP: hello parse fail (len mismatch)");
         errno = EPROTO;
         error (protocol_error);
         return false;
@@ -262,6 +328,7 @@ bool zmq::asio_zmp_engine_t::parse_hello (const unsigned char *data_,
 
     const unsigned char *body = data_ + zmp_header_size;
     if (body[0] != zmp_control_hello) {
+        zmp_debug ("ZMP: hello parse fail (control)");
         errno = EPROTO;
         error (protocol_error);
         return false;
@@ -269,6 +336,7 @@ bool zmq::asio_zmp_engine_t::parse_hello (const unsigned char *data_,
 
     const int peer_type = body[1];
     if (!is_socket_type_compatible (peer_type)) {
+        zmp_debug ("ZMP: hello parse fail (type)");
         errno = EPROTO;
         error (protocol_error);
         return false;
@@ -276,9 +344,15 @@ bool zmq::asio_zmp_engine_t::parse_hello (const unsigned char *data_,
 
     const unsigned char identity_len = body[2];
     if (body_len != static_cast<uint32_t> (zmp_hello_min_body + identity_len)) {
+        zmp_debug ("ZMP: hello parse fail (identity len)");
         errno = EPROTO;
         error (protocol_error);
         return false;
+    }
+
+    _peer_routing_id_size = identity_len;
+    if (identity_len > 0) {
+        memcpy (_peer_routing_id, body + zmp_hello_min_body, identity_len);
     }
 
     return true;
@@ -328,10 +402,8 @@ int zmq::asio_zmp_engine_t::process_routing_id_msg (msg_t *msg_)
         const int rc = session ()->push_msg (msg_);
         errno_assert (rc == 0);
     } else {
-        int rc = msg_->close ();
-        errno_assert (rc == 0);
-        rc = msg_->init ();
-        errno_assert (rc == 0);
+        errno = EPROTO;
+        return -1;
     }
 
     if (_subscription_required) {
@@ -365,6 +437,14 @@ int zmq::asio_zmp_engine_t::decode_and_push (msg_t *msg_)
         const int rc = process_command_message (msg_);
         if (rc != 0)
             return -1;
+        return 0;
+    }
+
+    if ((msg_->flags () & msg_t::routing_id) && !_options.recv_routing_id) {
+        int rc = msg_->close ();
+        errno_assert (rc == 0);
+        rc = msg_->init ();
+        errno_assert (rc == 0);
         return 0;
     }
 

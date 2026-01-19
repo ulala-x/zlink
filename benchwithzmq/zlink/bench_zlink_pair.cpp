@@ -14,6 +14,8 @@ void run_pair(const std::string& transport, size_t msg_size, int msg_count, cons
     void *ctx = zmq_ctx_new();
     void *s_bind = zmq_socket(ctx, ZMQ_PAIR);
     void *s_conn = zmq_socket(ctx, ZMQ_PAIR);
+    configure_transport_socket(s_bind, transport, true);
+    configure_transport_socket(s_conn, transport, false);
 
     int nodelay = 1;
     set_sockopt_int(s_bind, ZMQ_TCP_NODELAY, nodelay, "ZMQ_TCP_NODELAY");

@@ -8,6 +8,7 @@
 #include "pipe.hpp"
 #include "likely.hpp"
 #include "address.hpp"
+#include "zmp_protocol.hpp"
 
 // ASIO-only build: Transport connecters are always included
 #include "asio/asio_tcp_connecter.hpp"
@@ -22,6 +23,8 @@
 #endif
 
 #include "ctx.hpp"
+#include <cstdio>
+#include <cstdlib>
 
 zmq::session_base_t *zmq::session_base_t::create (class io_thread_t *io_thread_,
                                                   bool active_,
@@ -116,6 +119,7 @@ int zmq::session_base_t::pull_msg (msg_t *msg_)
 
 int zmq::session_base_t::push_msg (msg_t *msg_)
 {
+    const bool zmp_debug = std::getenv ("ZMP_DEBUG") != NULL;
     //  pass subscribe/cancel to the sockets
     if ((msg_->flags () & msg_t::command) && !msg_->is_subscribe ()
         && !msg_->is_cancel ())
@@ -124,6 +128,11 @@ int zmq::session_base_t::push_msg (msg_t *msg_)
         const int rc = msg_->init ();
         errno_assert (rc == 0);
         return 0;
+    }
+
+    if (zmp_debug) {
+        std::fprintf (stderr, "ZMP: push_msg blocked (pipe=%s)\n",
+                      _pipe ? "present" : "null");
     }
 
     errno = EAGAIN;
@@ -229,6 +238,13 @@ void zmq::session_base_t::pipe_terminated (pipe_t *pipe_)
 
 void zmq::session_base_t::read_activated (pipe_t *pipe_)
 {
+    if (std::getenv ("ZMP_DEBUG") != NULL) {
+        int local_type = -1;
+        if (_engine)
+            local_type = _engine->get_endpoint ().local_type;
+        std::fprintf (stderr, "ZMP: session read_activated local=%d\n",
+                      local_type);
+    }
     // Skip activating if we're detaching this pipe
     if (unlikely (pipe_ != _pipe && pipe_ != _zap_pipe)) {
         zmq_assert (_terminating_pipes.count (pipe_) == 1);
@@ -347,6 +363,10 @@ void zmq::session_base_t::process_attach (i_engine *engine_)
 
 void zmq::session_base_t::engine_ready ()
 {
+    if (std::getenv ("ZMP_DEBUG") != NULL && _engine) {
+        std::fprintf (stderr, "ZMP: engine_ready local=%d\n",
+                      _engine->get_endpoint ().local_type);
+    }
     //  Create the pipe if it does not exist yet.
     if (!_pipe && !is_terminating ()) {
         object_t *parents[2] = {this, _socket};
@@ -362,6 +382,8 @@ void zmq::session_base_t::engine_ready ()
 
         //  Plug the local end of the pipe.
         pipes[0]->set_event_sink (this);
+        pipes[0]->set_force_read_activation (zmp_protocol_enabled ()
+                                             && zmp_force_activate_enabled ());
 
         //  Remember the local end of the pipe.
         zmq_assert (!_pipe);
@@ -372,9 +394,23 @@ void zmq::session_base_t::engine_ready ()
         pipes[0]->set_endpoint_pair (_engine->get_endpoint ());
         pipes[1]->set_endpoint_pair (_engine->get_endpoint ());
 
+        if (zmp_protocol_enabled ())
+            pipes[0]->check_read ();
+
+        //  Allow the engine to enqueue any session-initial data.
+        if (_engine)
+            _engine->session_ready ();
+
         //  Ask socket to plug into the remote end of the pipe.
         send_bind (_socket, pipes[1]);
     }
+
+    //  Allow the engine to enqueue any session-initial data.
+    if (_engine)
+        _engine->session_ready ();
+
+    if (_engine && zmp_protocol_enabled ())
+        _engine->restart_output ();
 }
 
 void zmq::session_base_t::engine_error (bool handshaked_,

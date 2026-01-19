@@ -9,6 +9,8 @@ void run_pubsub(const std::string& transport, size_t msg_size, int msg_count, co
     void *ctx = zmq_ctx_new();
     void *pub = zmq_socket(ctx, ZMQ_PUB);
     void *sub = zmq_socket(ctx, ZMQ_SUB);
+    configure_transport_socket(pub, transport, true);
+    configure_transport_socket(sub, transport, false);
 
     int hwm = 0;
     set_sockopt_int(pub, ZMQ_SNDHWM, hwm, "ZMQ_SNDHWM");

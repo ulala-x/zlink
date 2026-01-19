@@ -3,10 +3,13 @@
 #include "precompiled.hpp"
 #include <new>
 #include <stddef.h>
+#include <cstdio>
+#include <cstdlib>
 
 #include "macros.hpp"
 #include "pipe.hpp"
 #include "err.hpp"
+#include "zmp_protocol.hpp"
 
 #include "ypipe.hpp"
 #include "ypipe_conflate.hpp"
@@ -95,7 +98,8 @@ zmq::pipe_t::pipe_t (object_t *parent_,
     _state (active),
     _delay (true),
     _server_socket_routing_id (0),
-    _conflate (conflate_)
+    _conflate (conflate_),
+    _force_read_activation (false)
 {
     _disconnect_msg.init ();
 }
@@ -117,6 +121,11 @@ void zmq::pipe_t::set_event_sink (i_pipe_events *sink_)
     // Sink can be set once only.
     zmq_assert (!_sink);
     _sink = sink_;
+}
+
+void zmq::pipe_t::set_force_read_activation (bool enabled_)
+{
+    _force_read_activation = enabled_;
 }
 
 void zmq::pipe_t::set_server_socket_routing_id (
@@ -264,16 +273,40 @@ void zmq::pipe_t::flush ()
     if (_state == term_ack_sent)
         return;
 
-    if (_out_pipe && !_out_pipe->flush ())
-        send_activate_read (_peer);
+    if (_out_pipe) {
+        const bool reader_awake = _out_pipe->flush ();
+        const bool activate = !reader_awake
+                              || (zmp_protocol_enabled ()
+                                  && zmp_force_activate_enabled ());
+        if (std::getenv ("ZMP_DEBUG_FLUSH") != NULL) {
+            std::fprintf (stderr,
+                          "ZMP: pipe flush local=%d reader_awake=%d activate=%d\n",
+                          _endpoint_pair.local_type, reader_awake,
+                          activate ? 1 : 0);
+        }
+        if (activate)
+            send_activate_read (_peer);
+    }
 }
 
 void zmq::pipe_t::process_activate_read ()
 {
-    if (!_in_active && (_state == active || _state == waiting_for_delimiter)) {
+    if (std::getenv ("ZMP_DEBUG_ACTIVATE") != NULL) {
+        std::fprintf (stderr,
+                      "ZMP: pipe activate_read local=%d in_active=%d\n",
+                      _endpoint_pair.local_type, _in_active ? 1 : 0);
+    }
+    if (_state != active && _state != waiting_for_delimiter)
+        return;
+
+    if (!_in_active) {
         _in_active = true;
         _sink->read_activated (this);
+        return;
     }
+
+    if (_force_read_activation)
+        _sink->read_activated (this);
 }
 
 void zmq::pipe_t::process_activate_write (uint64_t msgs_read_)
