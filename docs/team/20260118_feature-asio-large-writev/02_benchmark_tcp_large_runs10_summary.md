@@ -21,6 +21,7 @@
   - `docs/team/20260118_feature-asio-large-writev/17_benchmark_tcp_large_runs10_in_batch_64k.txt`
   - `docs/team/20260118_feature-asio-large-writev/18_benchmark_tcp_large_runs10_in_batch_32k.txt`
   - `docs/team/20260118_feature-asio-large-writev/19_benchmark_tcp_large_runs10_in_batch_16k.txt`
+  - `docs/team/20260118_feature-asio-large-writev/20_benchmark_tcp_large_runs10_in_batch_256k.txt`
 
 ## 결과 요약
 
@@ -43,6 +44,7 @@
 - in_batch_size tcp=64KB는 throughput 개선 일부 있으나 latency 악화는 유지
 - in_batch_size tcp=32KB도 latency 개선 없이 혼재
 - in_batch_size tcp=16KB도 latency 개선 없이 혼재
+- in_batch_size tcp=256KB도 latency 개선 없이 혼재
 
 ## 판단
 
