@@ -1,0 +1,16 @@
+
+## PATTERN: DEALER_ROUTER
+  > Benchmarking libzmq for DEALER_ROUTER...
+    Testing tcp | 1024B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing tcp | 8192B: 1 2 3 4 5 6 7 8 9 10 Done
+  > Benchmarking zlink for DEALER_ROUTER...
+    Testing tcp | 1024B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing tcp | 8192B: 1 2 3 4 5 6 7 8 9 10 Done
+
+### Transport: tcp
+| Size   | Metric     |  Standard libzmq |            zlink |  Diff (%) |
+|--------|------------|------------------|------------------|-----------|
+| 1024B  | Throughput |      0.58 Mmsg/s |      0.79 Mmsg/s |  +37.55% |
+| 1024B  | Latency    |          5.13 us |          5.12 us |   +0.29% |
+| 8192B  | Throughput |      834.48 MB/s |      993.93 MB/s |  +19.11% |
+| 8192B  | Latency    |          7.29 us |          7.58 us |   -4.05% |

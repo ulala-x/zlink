@@ -18,3 +18,11 @@
 
 ## 참고
 - `test_pair_tcp` 통과 확인.
+
+## 추가 벤치마크 결과 (TCP)
+- PUBSUB: `docs/team/20260118_feature-asio-zero-copy-write/02_pubsub_tcp_1k_8k_runs10.txt`
+  - 1024B throughput: +28.70% (latency +22.36%)
+  - 8192B throughput: +25.56% (latency +20.31%)
+- DEALER_ROUTER: `docs/team/20260118_feature-asio-zero-copy-write/03_dealer_router_tcp_1k_8k_runs10.txt`
+  - 1024B throughput: +37.55% (latency +0.29%)
+  - 8192B throughput: +19.11% (latency -4.05%)
