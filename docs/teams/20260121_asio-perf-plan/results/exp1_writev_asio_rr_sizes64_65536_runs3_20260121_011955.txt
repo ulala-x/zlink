@@ -1,0 +1,34 @@
+
+## PATTERN: ROUTER_ROUTER
+  [libzmq] Using cached baseline.
+  > Benchmarking zlink for ROUTER_ROUTER...
+    Testing tcp | 64B: 1 2 3 Done
+    Testing tcp | 65536B: 1 2 3 Done
+    Testing inproc | 64B: 1 2 3 Done
+    Testing inproc | 65536B: 1 2 3 Done
+    Testing ipc | 64B: 1 2 3 Done
+    Testing ipc | 65536B: 1 2 3 Done
+
+### Transport: tcp
+| Size   | Metric     |  Standard libzmq |            zlink |  Diff (%) |
+|--------|------------|------------------|------------------|-----------|
+| 64B    | Throughput |      3.47 Mmsg/s |      3.46 Mmsg/s |   -0.30% |
+| 64B    | Latency    |          4.07 us |          3.82 us |   +6.14% |
+| 65536B | Throughput |     2164.92 MB/s |     2223.12 MB/s |   +2.69% |
+| 65536B | Latency    |         11.18 us |         11.37 us |   -1.65% |
+
+### Transport: inproc
+| Size   | Metric     |  Standard libzmq |            zlink |  Diff (%) |
+|--------|------------|------------------|------------------|-----------|
+| 64B    | Throughput |      5.40 Mmsg/s |      5.43 Mmsg/s |   +0.56% |
+| 64B    | Latency    |          0.16 us |          0.16 us |   +0.00% |
+| 65536B | Throughput |    10057.42 MB/s |    10192.68 MB/s |   +1.34% |
+| 65536B | Latency    |          1.96 us |          2.00 us |   -1.78% |
+
+### Transport: ipc
+| Size   | Metric     |  Standard libzmq |            zlink |  Diff (%) |
+|--------|------------|------------------|------------------|-----------|
+| 64B    | Throughput |      3.54 Mmsg/s |      3.58 Mmsg/s |   +0.95% |
+| 64B    | Latency    |          3.67 us |          3.38 us |   +8.03% |
+| 65536B | Throughput |     2040.80 MB/s |     2198.13 MB/s |   +7.71% |
+| 65536B | Latency    |         13.72 us |         11.32 us |  +17.52% |

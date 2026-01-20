@@ -1,0 +1,55 @@
+% time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- -------------------
+ 57.25    5.429804        1803      3011       714 futex
+ 17.20    1.631297          77     20999           poll
+  6.46    0.612376          14     42005           sendto
+  5.59    0.530262           8     64020           getpid
+  4.44    0.420774           9     43009      1005 recvfrom
+  3.59    0.340024           7     43041           epoll_wait
+  2.13    0.202473           8     24357      2337 read
+  1.89    0.178920           8     22016           write
+  1.39    0.131359          21      6179           brk
+  0.07    0.006463           6      1017           epoll_ctl
+  0.00    0.000207          10        20           close
+  0.00    0.000072           3        19           mprotect
+  0.00    0.000069          23         3           clone3
+  0.00    0.000038           2        15           rt_sigprocmask
+  0.00    0.000031           0        45           mmap
+  0.00    0.000026           8         3           madvise
+  0.00    0.000010           2         4           set_robust_list
+  0.00    0.000008           2         4           rseq
+  0.00    0.000005           0         9           fstat
+  0.00    0.000000           0         4           munmap
+  0.00    0.000000           0         1           rt_sigaction
+  0.00    0.000000           0         4           ioctl
+  0.00    0.000000           0         2           pread64
+  0.00    0.000000           0         1         1 access
+  0.00    0.000000           0         3           socket
+  0.00    0.000000           0         1         1 connect
+  0.00    0.000000           0         3         2 accept
+  0.00    0.000000           0         5           recvmsg
+  0.00    0.000000           0         2           bind
+  0.00    0.000000           0         1           listen
+  0.00    0.000000           0         6           getsockname
+  0.00    0.000000           0         4           getpeername
+  0.00    0.000000           0         3           setsockopt
+  0.00    0.000000           0         1           getsockopt
+  0.00    0.000000           0         1           execve
+  0.00    0.000000           0        24           fcntl
+  0.00    0.000000           0         2           sched_getparam
+  0.00    0.000000           0         2           sched_setscheduler
+  0.00    0.000000           0         2           sched_getscheduler
+  0.00    0.000000           0         2           prctl
+  0.00    0.000000           0         1           arch_prctl
+  0.00    0.000000           0         1           set_tid_address
+  0.00    0.000000           0         1           clock_nanosleep
+  0.00    0.000000           0        13         5 openat
+  0.00    0.000000           0         2         2 newfstatat
+  0.00    0.000000           0         1           timerfd_create
+  0.00    0.000000           0         1           timerfd_settime
+  0.00    0.000000           0         6           eventfd2
+  0.00    0.000000           0         1           epoll_create1
+  0.00    0.000000           0         1           prlimit64
+  0.00    0.000000           0         1           getrandom
+------ ----------- ----------- --------- --------- -------------------
+100.00    9.484218          35    269879      4067 total

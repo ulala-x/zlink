@@ -93,31 +93,32 @@
 - 최종 요약(전/후 비교, 채택 변경 리스트).
 
 실행 TODO (중단 없이 진행)
-- [ ] results/ 디렉토리 준비: docs/teams/20260121_asio-perf-plan/results/
-- [ ] 환경 기록: git commit, 브랜치, uname -a, WSL 버전, CPU/메모리
-- [ ] 기준선 고정:
+- [x] results/ 디렉토리 준비: docs/teams/20260121_asio-perf-plan/results/
+- [x] 환경 기록: git commit, 브랜치, uname -a, WSL 버전, CPU/메모리
+- [x] 기준선 고정:
   - runs=10, ZMP 기본, taskset 기본 유지
   - 명령: benchwithzmq/run_benchmarks.sh --runs 10 --reuse-build --output <파일>
-- [ ] 기준선 저장 규칙:
+- [x] 기준선 저장 규칙:
   - 예: results/bench_baseline_zmp_runs10_YYYYMMDD.txt
   - ZMTP는 results/bench_baseline_zmtp_runs10_YYYYMMDD.txt
-- [ ] 프로파일링(WSL2 대안):
+- [x] 프로파일링(WSL2 대안):
   - strace: strace -c -f -o /tmp/strace_pair_tcp_64.txt -- build/bench/bin/comp_zlink_pair zlink tcp 64
   - callgrind: valgrind --tool=callgrind --callgrind-out-file=/tmp/callgrind_pair_tcp_64.out build/bench/bin/comp_zlink_pair zlink tcp 64
+  - valgrind 미설치로 callgrind 생략
   - 결과 요약을 results/ 아래에 텍스트로 정리
-- [ ] 가설 백로그 작성:
+- [x] 가설 백로그 작성:
   - handler 할당, post/dispatch, strand, write coalesce, buffer reuse, timer/wakeup, io_context 정책
   - 각 항목에 예상 효과/리스크/측정 방법을 1줄로 기록
-- [ ] 반복 루프(항목당 1회씩):
-  - [ ] 가설 1개 선택, 최소 변경 구현
-  - [ ] 미니 벤치(1 패턴 x 2 사이즈) 결과 기록
-  - [ ] 긍정 시 전체 벤치 실행 및 기록
-  - [ ] 회귀 시 즉시 롤백/기록
-  - [ ] ctest 수행(변경 확정 시)
-- [ ] 종료 조건:
+- [x] 반복 루프(항목당 1회씩):
+  - [x] 가설 1개 선택, 최소 변경 구현
+  - [x] 미니 벤치(1 패턴 x 2 사이즈) 결과 기록
+  - [x] 긍정 시 전체 벤치 실행 및 기록 (긍정 결과 없음)
+  - [x] 회귀 시 즉시 롤백/기록
+  - [x] ctest 수행(변경 확정 시) (코드 변경 없음)
+- [x] 종료 조건:
   - 전 패턴/전송에서 일관된 개선이 1회 이상 확인되거나
   - 3회 연속 의미 있는 개선이 없으면 중단/재평가
-- [ ] 최종 요약 작성:
+- [x] 최종 요약 작성:
   - 채택 변경 목록, 전/후 델타, 남은 리스크
 
 다음 단계

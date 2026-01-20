@@ -1,0 +1,2 @@
+RESULT,zlink,ROUTER_ROUTER,ipc,65536,throughput,2007.98
+RESULT,zlink,ROUTER_ROUTER,ipc,65536,latency,622.89

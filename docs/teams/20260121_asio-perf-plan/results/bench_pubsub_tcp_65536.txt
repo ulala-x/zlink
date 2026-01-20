@@ -1,0 +1,2 @@
+RESULT,zlink,PUBSUB,tcp,65536,throughput,1974.37
+RESULT,zlink,PUBSUB,tcp,65536,latency,506.49
