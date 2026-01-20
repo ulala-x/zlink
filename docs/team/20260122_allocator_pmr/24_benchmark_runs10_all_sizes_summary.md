@@ -1,4 +1,7 @@
-# Runs=10 Benchmark Summary (TL pool + mimalloc default)
+# Runs=10 Benchmark Summary (historical: TL pool + mimalloc)
+
+NOTE: This summary reflects a historical configuration. Mimalloc and the TL
+pool experiment have been removed from the build.
 
 ## Setup
 
@@ -16,5 +19,5 @@
 
 ## Takeaway
 
-- TL pool + mimalloc helps small/medium sizes.
-- Large-message behavior (64KB+) still shows regressions, especially inproc and latency-sensitive paths.
+- Historical TL pool + mimalloc helped small/medium sizes.
+- Large-message behavior (64KB+) still showed regressions, especially inproc and latency-sensitive paths.

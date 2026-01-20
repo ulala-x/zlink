@@ -1,41 +1,37 @@
 # Allocator/PMR Migration Overview
 
+NOTE: The PMR/mimalloc allocator experiment has been removed. The allocator
+wrapper now uses std::malloc/free and hot-path wiring has been reverted. The
+sections below include historical context for reference.
+
 ## Goal
 
-- Introduce an internal allocator layer for high-frequency buffers.
-- Use thread-local PMR pooling with mimalloc as the default backend.
+- Maintain an internal allocator wrapper for high-frequency buffers.
+- Keep allocation behavior aligned with std::malloc/free for now.
 
 ## Design
 
-- New internal allocator wrapper (`src/allocator.hpp`, `src/allocator.cpp`).
-- Default allocation uses `std::pmr::unsynchronized_pool_resource` (thread-local) upstreamed to mimalloc.
-- Wrapper stores allocation size in a small header to allow size-less `dealloc()`.
+- Internal allocator wrapper (`src/allocator.hpp`, `src/allocator.cpp`).
+- Current implementation forwards to std::malloc/free.
 
-## Applied Scope (initial)
+## Applied Scope
 
-- `msg_t` long message storage and long group storage.
-- Encoder batch buffer (`encoder_base_t`).
-- Decoder buffers (`c_single_allocator`, `shared_message_memory_allocator`).
-  - Encoder/c_single_allocator use thread-local pool when enabled.
+- Current: hot-path wiring reverted to std::malloc/free in msg/encoder/decoder.
+- Historical (pre-removal): msg/encoder/decoder were wired to allocator wrapper.
 
 ## Notes
 
-- This change targets the hottest allocation paths first; other malloc/free sites remain unchanged.
-- Pool resource choice is process-global (static). If we need per-context resources, we can revisit.
-- Thread-local pool must only be used for allocations freed on the same thread.
-- Monotonic resource is not applied yet; needs explicit reset points to avoid unbounded growth.
+- Allocator wrapper remains for future experiments but is currently a thin pass-through.
+- PMR pooling and mimalloc backend are no longer part of the build.
 
 ## Implementation Summary
 
-- Added allocator wrapper and wired it into core msg/encoder/decoder paths.
-- Switched `malloc/free` usage to `alloc/dealloc` in hot paths.
-- Build system updated to compile allocator wrapper.
-- Async output direct-encode and `yqueue_t` pool were tested and reverted due to regressions.
+- Allocator wrapper remains but uses std::malloc/free.
+- Hot-path wiring to alloc/dealloc was reverted.
 
 ## Next Steps
 
-- Extend allocator wrapper to remaining hot paths (e.g., trie/radix_tree).
-- If needed for research, use a dedicated branch to compare allocator-only variants.
+- If allocator experiments resume, use a dedicated branch for comparisons.
 
 ## Build/Test
 
@@ -45,7 +41,7 @@
 
 - Result: 61 tests passed, 4 fuzzers skipped.
 
-Mimalloc is built from `.deps/mimalloc` and linked into libzmq by default.
+Mimalloc is no longer used or built in this repository.
 
 ## Benchmarks (Runs=3)
 
@@ -81,7 +77,7 @@ Logs:
 Summary:
 
 - Default allocator wrapper: results mostly close to libzmq with mixed +/- by pattern.
-- Default TL pool + mimalloc: small/medium messages are mixed across TCP/IPC; INPROC shows consistent gains.
-- I/O direct encode + yqueue pool (reverted): large-message TCP/IPC regressions grew in several patterns; small messages mixed.
-- No-mimalloc baseline (historical logs): throughput diffs improved vs no-mimalloc in 84/108 cases, 24 regressions; latency still dominated by zlink I/O path.
+- Historical TL pool + mimalloc: small/medium messages mixed; INPROC showed gains.
+- Historical I/O direct encode + yqueue pool (reverted): large-message TCP/IPC regressions grew; small messages mixed.
+- Historical no-mimalloc baseline: throughput diffs improved in 84/108 cases, 24 regressions; latency still dominated by zlink I/O path.
 - libzmq vs libzmq variance (runs=3): throughput diff mean +0.88%, median +0.32% (min -18.33%, max +27.05%); latency diff mean +0.06%, median 0.00% (min -17.02%, max +16.50%).

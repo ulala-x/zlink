@@ -1,0 +1,48 @@
+ENC_STATS: encode_calls=203565 encode_bytes=14544036 zero_copy_calls=0 zero_copy_bytes=0 copy_bytes=14544036
+ENC_STATS: messages=202003 large_messages=0 (threshold=65536) command_messages=0
+ENC_STATS: header_bytes=1616024 body_bytes=12928012 header_pct=11.11 copy_pct=100.00 zero_copy_pct=0.00 frags_per_msg=1.01
+ENC_STATS: large_body_bytes=0 large_body_pct=0.00
+ENC_STATS: encode_calls=208253 encode_bytes=53328036 zero_copy_calls=0 zero_copy_bytes=0 copy_bytes=53328036
+ENC_STATS: messages=202003 large_messages=0 (threshold=65536) command_messages=0
+ENC_STATS: header_bytes=1616024 body_bytes=51712012 header_pct=3.03 copy_pct=100.00 zero_copy_pct=0.00 frags_per_msg=1.03
+ENC_STATS: large_body_bytes=0 large_body_pct=0.00
+ENC_STATS: encode_calls=227003 encode_bytes=208464036 zero_copy_calls=0 zero_copy_bytes=0 copy_bytes=208464036
+ENC_STATS: messages=202003 large_messages=0 (threshold=65536) command_messages=0
+ENC_STATS: header_bytes=1616024 body_bytes=206848012 header_pct=0.78 copy_pct=100.00 zero_copy_pct=0.00 frags_per_msg=1.12
+ENC_STATS: large_body_bytes=0 large_body_pct=0.00
+ENC_STATS: encode_calls=44003 encode_bytes=1441968036 zero_copy_calls=22000 zero_copy_bytes=1261744000 copy_bytes=180224036
+ENC_STATS: messages=22003 large_messages=22000 (threshold=65536) command_messages=0
+ENC_STATS: header_bytes=176024 body_bytes=1441792012 header_pct=0.01 copy_pct=12.50 zero_copy_pct=87.50 frags_per_msg=2.00
+ENC_STATS: large_body_bytes=1441792000 large_body_pct=100.00
+ENC_STATS: encode_calls=44003 encode_bytes=2883760036 zero_copy_calls=22000 zero_copy_bytes=2703536000 copy_bytes=180224036
+ENC_STATS: messages=22003 large_messages=22000 (threshold=65536) command_messages=0
+ENC_STATS: header_bytes=176024 body_bytes=2883584012 header_pct=0.01 copy_pct=6.25 zero_copy_pct=93.75 frags_per_msg=2.00
+ENC_STATS: large_body_bytes=2883584000 large_body_pct=100.00
+ENC_STATS: encode_calls=44003 encode_bytes=5767344036 zero_copy_calls=22000 zero_copy_bytes=5587120000 copy_bytes=180224036
+ENC_STATS: messages=22003 large_messages=22000 (threshold=65536) command_messages=0
+ENC_STATS: header_bytes=176024 body_bytes=5767168012 header_pct=0.00 copy_pct=3.12 zero_copy_pct=96.88 frags_per_msg=2.00
+ENC_STATS: large_body_bytes=5767168000 large_body_pct=100.00
+ENC_STATS: encode_calls=203565 encode_bytes=14544036 zero_copy_calls=0 zero_copy_bytes=0 copy_bytes=14544036
+ENC_STATS: messages=202003 large_messages=0 (threshold=65536) command_messages=0
+ENC_STATS: header_bytes=1616024 body_bytes=12928012 header_pct=11.11 copy_pct=100.00 zero_copy_pct=0.00 frags_per_msg=1.01
+ENC_STATS: large_body_bytes=0 large_body_pct=0.00
+ENC_STATS: encode_calls=208253 encode_bytes=53328036 zero_copy_calls=0 zero_copy_bytes=0 copy_bytes=53328036
+ENC_STATS: messages=202003 large_messages=0 (threshold=65536) command_messages=0
+ENC_STATS: header_bytes=1616024 body_bytes=51712012 header_pct=3.03 copy_pct=100.00 zero_copy_pct=0.00 frags_per_msg=1.03
+ENC_STATS: large_body_bytes=0 large_body_pct=0.00
+ENC_STATS: encode_calls=227003 encode_bytes=208464036 zero_copy_calls=0 zero_copy_bytes=0 copy_bytes=208464036
+ENC_STATS: messages=202003 large_messages=0 (threshold=65536) command_messages=0
+ENC_STATS: header_bytes=1616024 body_bytes=206848012 header_pct=0.78 copy_pct=100.00 zero_copy_pct=0.00 frags_per_msg=1.12
+ENC_STATS: large_body_bytes=0 large_body_pct=0.00
+ENC_STATS: encode_calls=44003 encode_bytes=1441968036 zero_copy_calls=22000 zero_copy_bytes=1261744000 copy_bytes=180224036
+ENC_STATS: messages=22003 large_messages=22000 (threshold=65536) command_messages=0
+ENC_STATS: header_bytes=176024 body_bytes=1441792012 header_pct=0.01 copy_pct=12.50 zero_copy_pct=87.50 frags_per_msg=2.00
+ENC_STATS: large_body_bytes=1441792000 large_body_pct=100.00
+ENC_STATS: encode_calls=44003 encode_bytes=2883760036 zero_copy_calls=22000 zero_copy_bytes=2703536000 copy_bytes=180224036
+ENC_STATS: messages=22003 large_messages=22000 (threshold=65536) command_messages=0
+ENC_STATS: header_bytes=176024 body_bytes=2883584012 header_pct=0.01 copy_pct=6.25 zero_copy_pct=93.75 frags_per_msg=2.00
+ENC_STATS: large_body_bytes=2883584000 large_body_pct=100.00
+ENC_STATS: encode_calls=44003 encode_bytes=5767344036 zero_copy_calls=22000 zero_copy_bytes=5587120000 copy_bytes=180224036
+ENC_STATS: messages=22003 large_messages=22000 (threshold=65536) command_messages=0
+ENC_STATS: header_bytes=176024 body_bytes=5767168012 header_pct=0.00 copy_pct=3.12 zero_copy_pct=96.88 frags_per_msg=2.00
+ENC_STATS: large_body_bytes=5767168000 large_body_pct=100.00

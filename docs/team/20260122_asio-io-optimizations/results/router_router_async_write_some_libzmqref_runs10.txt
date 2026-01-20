@@ -1,0 +1,70 @@
+
+## PATTERN: ROUTER_ROUTER
+  [libzmq] Using cached baseline.
+  > Benchmarking zlink for ROUTER_ROUTER...
+    Testing tcp | 64B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing tcp | 256B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing tcp | 1024B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing tcp | 65536B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing tcp | 131072B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing tcp | 262144B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing inproc | 64B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing inproc | 256B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing inproc | 1024B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing inproc | 65536B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing inproc | 131072B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing inproc | 262144B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing ipc | 64B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing ipc | 256B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing ipc | 1024B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing ipc | 65536B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing ipc | 131072B: 1 2 3 4 5 6 7 8 9 10 Done
+    Testing ipc | 262144B: 1 2 3 4 5 6 7 8 9 10 Done
+
+### Transport: tcp
+| Size   | Metric     |  Standard libzmq |            zlink |  Diff (%) |
+|--------|------------|------------------|------------------|-----------|
+| 64B    | Throughput |      3.26 Mmsg/s |      3.35 Mmsg/s |   +2.74% |
+| 64B    | Latency    |          4.31 us |          3.93 us |   +8.82% |
+| 256B   | Throughput |      2.12 Mmsg/s |      2.17 Mmsg/s |   +2.28% |
+| 256B   | Latency    |          4.31 us |          4.05 us |   +5.92% |
+| 1024B  | Throughput |      0.79 Mmsg/s |      0.83 Mmsg/s |   +6.17% |
+| 1024B  | Latency    |          4.39 us |          4.17 us |   +5.13% |
+| 65536B | Throughput |     2035.77 MB/s |     2173.61 MB/s |   +6.77% |
+| 65536B | Latency    |         12.12 us |         19.52 us |  -61.16% |
+| 131072B | Throughput |     2098.00 MB/s |     2318.03 MB/s |  +10.49% |
+| 131072B | Latency    |         18.54 us |         37.99 us | -104.91% |
+| 262144B | Throughput |     2745.77 MB/s |     2525.92 MB/s |   -8.01% |
+| 262144B | Latency    |         39.60 us |         74.00 us |  -86.88% |
+
+### Transport: inproc
+| Size   | Metric     |  Standard libzmq |            zlink |  Diff (%) |
+|--------|------------|------------------|------------------|-----------|
+| 64B    | Throughput |      4.92 Mmsg/s |      6.07 Mmsg/s |  +23.33% |
+| 64B    | Latency    |          0.17 us |          0.16 us |   +5.88% |
+| 256B   | Throughput |      4.32 Mmsg/s |      4.90 Mmsg/s |  +13.41% |
+| 256B   | Latency    |          0.17 us |          0.16 us |   +8.57% |
+| 1024B  | Throughput |      2.53 Mmsg/s |      2.66 Mmsg/s |   +4.98% |
+| 1024B  | Latency    |          0.20 us |          0.17 us |  +15.00% |
+| 65536B | Throughput |     9109.06 MB/s |     8356.83 MB/s |   -8.26% |
+| 65536B | Latency    |          2.10 us |          2.27 us |   -8.33% |
+| 131072B | Throughput |    12210.78 MB/s |     9611.42 MB/s |  -21.29% |
+| 131072B | Latency    |          3.96 us |          3.91 us |   +1.51% |
+| 262144B | Throughput |    15396.60 MB/s |     9448.63 MB/s |  -38.63% |
+| 262144B | Latency    |          7.43 us |          7.38 us |   +0.61% |
+
+### Transport: ipc
+| Size   | Metric     |  Standard libzmq |            zlink |  Diff (%) |
+|--------|------------|------------------|------------------|-----------|
+| 64B    | Throughput |      3.18 Mmsg/s |      3.41 Mmsg/s |   +7.01% |
+| 64B    | Latency    |          3.92 us |          3.50 us |  +10.73% |
+| 256B   | Throughput |      2.17 Mmsg/s |      2.11 Mmsg/s |   -2.82% |
+| 256B   | Latency    |          3.90 us |          6.46 us |  -65.51% |
+| 1024B  | Throughput |      0.91 Mmsg/s |      0.92 Mmsg/s |   +1.54% |
+| 1024B  | Latency    |          3.96 us |          3.66 us |   +7.82% |
+| 65536B | Throughput |     1957.08 MB/s |     1987.41 MB/s |   +1.55% |
+| 65536B | Latency    |         14.38 us |         19.15 us |  -33.12% |
+| 131072B | Throughput |     2345.63 MB/s |     2246.10 MB/s |   -4.24% |
+| 131072B | Latency    |         23.70 us |         38.33 us |  -61.73% |
+| 262144B | Throughput |     2594.22 MB/s |     2270.17 MB/s |  -12.49% |
+| 262144B | Latency    |         38.80 us |         76.05 us |  -96.02% |
