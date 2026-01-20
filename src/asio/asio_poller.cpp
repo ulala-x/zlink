@@ -10,6 +10,8 @@
 #include <new>
 #include <thread>
 #include <chrono>
+#include <cstdlib>
+#include <cstring>
 
 // Debug logging for ASIO poller - set to 1 to enable
 #define ASIO_POLLER_DEBUG 0
@@ -25,6 +27,35 @@
 #include "../err.hpp"
 #include "../config.hpp"
 #include "../i_poll_events.hpp"
+
+namespace
+{
+int asio_ioctx_mode ()
+{
+    static int mode = -1;
+    if (mode == -1) {
+        const char *env = std::getenv ("ZMQ_ASIO_IOCTX_MODE");
+        if (!env || !*env || std::strcmp (env, "poll") == 0)
+            mode = 0;
+        else if (std::strcmp (env, "run_for") == 0)
+            mode = 1;
+        else
+            mode = 0;
+    }
+    return mode;
+}
+
+int compute_poll_timeout_ms (uint64_t timeout, unsigned int idle_rounds)
+{
+    static const int max_poll_timeout_ms = 100;
+    const unsigned int backoff = std::min (idle_rounds + 1, 7u);
+    const int backoff_ms = std::min (max_poll_timeout_ms, 1 << backoff);
+    if (timeout > 0)
+        return static_cast<int> (
+          std::min (timeout, static_cast<uint64_t> (backoff_ms)));
+    return backoff_ms;
+}
+}
 
 zmq::asio_poller_t::poll_entry_t::poll_entry_t (
   socket_type_t type_, void *socket_) :
@@ -42,7 +73,8 @@ zmq::asio_poller_t::asio_poller_t (const zmq::thread_ctx_t &ctx_) :
     worker_poller_base_t (ctx_),
     _io_context (),
     _work_guard (boost::asio::make_work_guard (_io_context)),
-    _stopping (false)
+    _stopping (false),
+    _idle_rounds (0)
 {
     ASIO_DBG ("Constructor called, this=%p", (void *) this);
 }
@@ -347,24 +379,26 @@ void zmq::asio_poller_t::loop ()
         //  scenarios like ROUTER patterns where multiple messages arrive rapidly.
 
         //  Step 1: Process all ready events non-blocking
-        std::size_t events_processed = _io_context.poll ();
-        ASIO_DBG ("loop: poll() processed %zu events", events_processed);
+        const int mode = asio_ioctx_mode ();
+        std::size_t events_processed = 0;
 
-        //  Step 2: Only wait if no events were ready
+        if (mode == 0) {
+            events_processed = _io_context.poll ();
+            ASIO_DBG ("loop: poll() processed %zu events", events_processed);
+        }
+
         if (events_processed == 0) {
-            static const int max_poll_timeout_ms = 100;
-            int poll_timeout_ms;
-            if (timeout > 0) {
-                poll_timeout_ms = static_cast<int> (
-                  std::min (timeout, static_cast<uint64_t> (max_poll_timeout_ms)));
-            } else {
-                poll_timeout_ms = max_poll_timeout_ms;
-            }
-
+            const int poll_timeout_ms =
+              compute_poll_timeout_ms (timeout, _idle_rounds);
             ASIO_DBG ("loop: run_for %d ms (no ready events)", poll_timeout_ms);
-            _io_context.run_for (
+            events_processed = _io_context.run_for (
               std::chrono::milliseconds (poll_timeout_ms));
         }
+
+        if (events_processed == 0)
+            ++_idle_rounds;
+        else
+            _idle_rounds = 0;
         //  else: Events were processed, continue loop immediately to check
         //  for more ready events (batching effect)
         //  Clean up retired entries that have no pending operations

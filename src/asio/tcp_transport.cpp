@@ -10,11 +10,15 @@
 #include <atomic>
 #include <algorithm>
 #include <boost/array.hpp>
+#include <climits>
 #include <cstdlib>
 #ifndef ZMQ_HAVE_WINDOWS
+#include <netinet/tcp.h>
 #include <sys/uio.h>
 #include <unistd.h>
 #endif
+
+#include "../tcp.hpp"
 
 namespace zmq
 {
@@ -128,6 +132,45 @@ bool tcp_writev_single_shot ()
     }
     return enabled == 1;
 }
+
+bool tcp_nodelay_enabled ()
+{
+    static int enabled = -1;
+    if (enabled == -1) {
+        const char *env = std::getenv ("ZMQ_ASIO_TCP_NODELAY");
+        enabled = (env && *env && *env != '0') ? 1 : 0;
+    }
+    return enabled == 1;
+}
+
+bool tcp_quickack_enabled ()
+{
+    static int enabled = -1;
+    if (enabled == -1) {
+        const char *env = std::getenv ("ZMQ_ASIO_TCP_QUICKACK");
+        enabled = (env && *env && *env != '0') ? 1 : 0;
+    }
+    return enabled == 1;
+}
+
+int tcp_busy_poll_value ()
+{
+    static int value = -2;
+    if (value == -2) {
+        const char *env = std::getenv ("ZMQ_ASIO_TCP_BUSY_POLL");
+        if (!env || !*env) {
+            value = -1;
+        } else {
+            char *end = NULL;
+            const long parsed = std::strtol (env, &end, 10);
+            if (end == env || parsed <= 0 || parsed > INT_MAX)
+                value = -1;
+            else
+                value = static_cast<int> (parsed);
+        }
+    }
+    return value;
+}
 }
 
 tcp_transport_t::tcp_transport_t ()
@@ -165,6 +208,24 @@ bool tcp_transport_t::open (boost::asio::io_context &io_context, fd_t fd)
         _socket.reset ();
         return false;
     }
+
+#ifndef ZMQ_HAVE_WINDOWS
+    if (tcp_nodelay_enabled ()) {
+        const int on = 1;
+        ::setsockopt (_socket->native_handle (), IPPROTO_TCP, TCP_NODELAY,
+                      reinterpret_cast<const char *> (&on), sizeof (on));
+    }
+#ifdef TCP_QUICKACK
+    if (tcp_quickack_enabled ()) {
+        const int on = 1;
+        ::setsockopt (_socket->native_handle (), IPPROTO_TCP, TCP_QUICKACK,
+                      reinterpret_cast<const char *> (&on), sizeof (on));
+    }
+#endif
+    const int busy_poll = tcp_busy_poll_value ();
+    if (busy_poll > 0)
+        tune_tcp_busy_poll (_socket->native_handle (), busy_poll);
+#endif
 
     return true;
 }

@@ -106,6 +106,7 @@ class asio_poller_t ZMQ_FINAL : public worker_poller_base_t
 
     //  Flag to track stopping state
     bool _stopping;
+    unsigned int _idle_rounds;
 
     ZMQ_NON_COPYABLE_NOR_MOVABLE (asio_poller_t)
 };

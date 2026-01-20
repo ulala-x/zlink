@@ -21,6 +21,7 @@
 #include "../msg.hpp"
 #include "../metadata.hpp"
 #include "i_asio_transport.hpp"
+#include "handler_allocator.hpp"
 
 namespace zmq
 {
@@ -239,6 +240,9 @@ class asio_engine_t : public i_engine
 
     //  Pointer to io_context (set during plug())
     boost::asio::io_context *_io_context;
+
+    //  Per-connection handler allocator to reduce async handler allocations.
+    handler_allocator _handler_alloc;
 
     //  Transport abstraction (TCP/SSL/etc)
     std::unique_ptr<i_asio_transport> _transport;

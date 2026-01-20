@@ -180,6 +180,18 @@ zmq::asio_engine_t::asio_engine_t (
 {
     ENGINE_DBG ("Constructor called, fd=%d", fd_);
 
+    const size_t pool_read_size =
+      _options.in_batch_size > 0
+        ? static_cast<size_t> (_options.in_batch_size)
+        : read_buffer_size;
+    _pending_read_buffer.reserve (pool_read_size);
+    _pending_buffer_pool.reserve (pending_buffer_pool_max);
+    for (size_t i = 0; i < pending_buffer_pool_max; ++i) {
+        std::vector<unsigned char> buffer;
+        buffer.reserve (pool_read_size);
+        _pending_buffer_pool.push_back (std::move (buffer));
+    }
+
     const int rc = _tx_msg.init ();
     errno_assert (rc == 0);
 
@@ -291,9 +303,11 @@ void zmq::asio_engine_t::start_transport_handshake ()
 
     _transport->async_handshake (
       handshake_type,
-      [this] (const boost::system::error_code &ec, std::size_t) {
-          on_transport_handshake (ec);
-      });
+      make_custom_alloc_handler (
+        _handler_alloc,
+        [this] (const boost::system::error_code &ec, std::size_t) {
+            on_transport_handshake (ec);
+        }));
 }
 
 void zmq::asio_engine_t::on_transport_handshake (
@@ -448,9 +462,11 @@ void zmq::asio_engine_t::start_async_read ()
     if (_transport) {
         _transport->async_read_some (
           _read_buffer_ptr, read_size,
-          [this] (const boost::system::error_code &ec, std::size_t bytes) {
-              on_read_complete (ec, bytes);
-          });
+          make_custom_alloc_handler (
+            _handler_alloc,
+            [this] (const boost::system::error_code &ec, std::size_t bytes) {
+                on_read_complete (ec, bytes);
+            }));
     }
 }
 
@@ -547,9 +563,11 @@ void zmq::asio_engine_t::start_async_write ()
     if (_transport) {
         _transport->async_write_some (
           _outpos, _outsize,
-          [this] (const boost::system::error_code &ec, std::size_t bytes) {
-              on_write_complete (ec, bytes);
-          });
+          make_custom_alloc_handler (
+            _handler_alloc,
+            [this] (const boost::system::error_code &ec, std::size_t bytes) {
+                on_write_complete (ec, bytes);
+            }));
     }
 }
 
@@ -603,9 +621,11 @@ bool zmq::asio_engine_t::prepare_gather_output ()
 
     _transport->async_writev (
       _gather_header, _gather_header_size, _gather_body, _gather_body_size,
-      [this] (const boost::system::error_code &ec, std::size_t bytes) {
-          on_write_complete (ec, bytes);
-      });
+      make_custom_alloc_handler (
+        _handler_alloc,
+        [this] (const boost::system::error_code &ec, std::size_t bytes) {
+            on_write_complete (ec, bytes);
+        }));
     return true;
 }
 
@@ -695,7 +715,12 @@ void zmq::asio_engine_t::on_read_complete (const boost::system::error_code &ec,
         }
 
         //  Store data in pending buffer for later processing
-        std::vector<unsigned char> buffer (bytes_transferred);
+        std::vector<unsigned char> buffer;
+        if (!_pending_buffer_pool.empty ()) {
+            buffer = std::move (_pending_buffer_pool.back ());
+            _pending_buffer_pool.pop_back ();
+        }
+        buffer.resize (bytes_transferred);
         std::memcpy (buffer.data (), _read_buffer_ptr, bytes_transferred);
         _pending_buffers.push_back (std::move (buffer));
         _total_pending_bytes += bytes_transferred;
@@ -736,7 +761,7 @@ void zmq::asio_engine_t::on_read_complete (const boost::system::error_code &ec,
         if (_handshaking && errno == EAGAIN) {
             //  Send any output that was built during greeting processing
             if (_outsize > 0)
-                start_async_write ();
+                restart_output ();
             start_async_read ();
         }
         return;
@@ -788,10 +813,12 @@ void zmq::asio_engine_t::on_write_complete (const boost::system::error_code &ec,
             if (_transport) {
                 _transport->async_write_some (
                   _outpos, _outsize,
-                  [this] (const boost::system::error_code &wec,
-                          std::size_t bytes) {
-                      on_write_complete (wec, bytes);
-                  });
+                  make_custom_alloc_handler (
+                    _handler_alloc,
+                    [this] (const boost::system::error_code &wec,
+                            std::size_t bytes) {
+                        on_write_complete (wec, bytes);
+                    }));
             }
             return;
         }
@@ -805,7 +832,7 @@ void zmq::asio_engine_t::on_write_complete (const boost::system::error_code &ec,
 
     //  Continue writing if more data available
     if (!_output_stopped)
-        start_async_write ();
+        speculative_write ();
 }
 
 bool zmq::asio_engine_t::process_input ()
@@ -833,7 +860,7 @@ bool zmq::asio_engine_t::process_input ()
             //  mechanism handshake (e.g., READY command)
             if (_mechanism != NULL) {
                 ENGINE_DBG ("process_input: greeting done, triggering write");
-                start_async_write ();
+                restart_output ();
             }
         } else
             return false;
@@ -1570,9 +1597,11 @@ void zmq::asio_engine_t::add_timer (int timeout_, int id_)
     _current_timer_id = id_;
     _timer->expires_after (std::chrono::milliseconds (timeout_));
     _timer->async_wait (
-      [this, id_] (const boost::system::error_code &ec) {
-          on_timer (id_, ec);
-      });
+      make_custom_alloc_handler (
+        _handler_alloc,
+        [this, id_] (const boost::system::error_code &ec) {
+            on_timer (id_, ec);
+        }));
 }
 
 void zmq::asio_engine_t::cancel_timer (int id_)
