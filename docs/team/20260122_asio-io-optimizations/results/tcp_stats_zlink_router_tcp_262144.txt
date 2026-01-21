@@ -1,6 +1,0 @@
-RESULT,zlink,ROUTER_ROUTER,tcp,262144,throughput,18965.68
-RESULT,zlink,ROUTER_ROUTER,tcp,262144,latency,241.38
-[ASIO_TCP_STATS] async_read calls=11010 bytes=576736846 errors=2
-[ASIO_TCP_STATS] read_some calls=0 bytes=0 eagain=0 errors=0
-[ASIO_TCP_STATS] async_write calls=4410 bytes=576736846 errors=0
-[ASIO_TCP_STATS] write_some calls=0 bytes=0 eagain=0 errors=0

@@ -1,6 +1,0 @@
-
-## PATTERN: ROUTER_ROUTER
-  [libzmq] Using cached baseline.
-  > Benchmarking zlink for ROUTER_ROUTER...
-    Testing tcp | 64B: 1 2 3 (failures=2) Done
-    Testing tcp | 256B: 1 2 
