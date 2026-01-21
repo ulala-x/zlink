@@ -13,7 +13,7 @@
 1) ERROR/READY 제어 프레임
 2) READY 메타데이터 교환(옵션)
 3) Heartbeat TTL/Context 확장(옵션)
-4) 플래그 조합 허용(MORE+IDENTITY/CONTROL)
+4) 플래그 조합 허용(MORE+IDENTITY)
 
 ## 범위 제외
 - 대용량 프레임 확장(64-bit length)
@@ -69,7 +69,8 @@ name_len(u8) | name(bytes) | value_len(u32, network order) | value(bytes)
 
 ### 3.1 전송 조건
 - 기본 비활성. 핸드셰이크 단계에서만 전송한다.
-- 활성화는 소켓/컨텍스트 옵션으로 제어한다(옵션 명칭은 별도 결정).
+- 활성화는 소켓/컨텍스트 옵션으로 제어한다.
+  - 옵션: `ZMQ_ZMP_METADATA` (0/1)
 - 비활성 시 READY 바디는 1바이트(control_type)만 포함한다.
 
 ### 3.2 기본/확장 프로퍼티
@@ -124,7 +125,7 @@ name_len(u8) | name(bytes) | value_len(u32, network order) | value(bytes)
 ### 4.4 호환성/에러 처리
 - 수신측은 바디 길이가 1인 레거시 형식을 허용한다.
 - 확장형은 길이가 4 이상일 때만 파싱한다.
-- ctx_len이 비정상적이면(E.g. 64 초과) EPROTO 처리 권장.
+- ctx_len이 비정상적이면(16 초과) EPROTO 처리 권장.
 
 ## 5. 플래그 조합 허용
 현재 ZMP 디코더는 단일 비트만 허용한다. 이를 완화한다.
@@ -143,8 +144,8 @@ name_len(u8) | name(bytes) | value_len(u32, network order) | value(bytes)
 
 ## 6. 핸드셰이크 흐름
 1) HELLO 송신/수신
-2) HELLO 교환 완료 후 READY 송신
-3) READY 수신 시 핸드셰이크 완료
+2) HELLO 송신 직후 READY 연속 전송 가능(파이프라인 허용)
+3) READY 수신 시 핸드셰이크 완료(양측 READY 수신 필요)
 4) 오류 발생 시 ERROR 송신 후 연결 종료
 
 READY 이전에 데이터 프레임 수신 시 오류 처리.
@@ -155,12 +156,12 @@ READY 이전에 데이터 프레임 수신 시 오류 처리.
 - `src/zmp_encoder.cpp`: control 플래그/바디 인코딩 확인
 - `src/asio/asio_zmp_engine.cpp`: HELLO/READY/ERROR 처리,
   heartbeat TTL/Context 파싱/타이머 정책
-- `src/mechanism.cpp`: 메타데이터 property 인코딩/파싱 재사용
+- `src/zmp_metadata.hpp`: 메타데이터 property 인코딩/파싱
 
 ## 8. 결정 요약
 - READY/ERROR 도입으로 핸드셰이크 상태와 실패 원인을 명확히 한다.
 - 메타데이터는 기본 비활성으로 유지하고, 필요 시만 전송한다.
 - Heartbeat는 레거시 1바이트 형식을 그대로 허용한다.
-- 플래그 조합은 MORE+IDENTITY/CONTROL만 허용해 라우팅/멀티파트
+- 플래그 조합은 MORE+IDENTITY만 허용해 라우팅/멀티파트
   호환성을 높인다.
 - 대용량 프레임 확장은 범위에서 제외한다.

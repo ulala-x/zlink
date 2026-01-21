@@ -103,10 +103,10 @@ Control frame body:
 
 ```
 Client -> Server: HELLO
+Client -> Server: READY (HELLO 직후 연속 전송 가능)
 Server -> Client: HELLO
-Client -> Server: READY
-Server -> Client: READY
-(then DATA)
+Server -> Client: READY (HELLO 직후 연속 전송 가능)
+(then DATA, 양측 READY 수신 이후)
 ```
 
 READY 이전에 데이터 프레임을 수신하면 EPROTO로 처리한다.
@@ -157,6 +157,7 @@ name_len(u8) | name(bytes) | value_len(u32, network order) | value(bytes)
 제약:
 - 총 메타데이터 길이 상한 권장: 4KB
 - 알 수 없는 프로퍼티는 무시하거나 보관
+- 메타데이터 전송은 기본 비활성, `ZMQ_ZMP_METADATA=1`에서만 활성
 
 ---
 

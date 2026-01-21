@@ -81,7 +81,7 @@
 
 ### Phase 2. 핸드셰이크/메타데이터
 - `src/asio/asio_zmp_engine.cpp`에 READY/ERROR 처리 추가
-- 메타데이터 인코딩/파싱은 `src/mechanism.cpp` 재사용
+- 메타데이터 인코딩/파싱은 `src/zmp_metadata.hpp` 사용
 - 메타데이터 전송 on/off 옵션 추가(기본 off)
 
 ### Phase 3. Heartbeat TTL/Context
@@ -109,7 +109,7 @@
 - `src/asio/asio_engine.cpp`
 
 보조
-- `src/mechanism.cpp` (메타데이터 인코딩/파싱 재사용)
+- `src/zmp_metadata.hpp` (메타데이터 인코딩/파싱)
 - `include/zmq.h` (옵션 제거)
 - `src/options.cpp` / `src/options.hpp` (옵션 제거)
 

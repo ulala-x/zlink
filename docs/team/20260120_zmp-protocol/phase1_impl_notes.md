@@ -18,17 +18,17 @@
 
 ## Handshake/HELLO/READY/ERROR
 
-- HELLO 프레임 교환 후 READY 교환
+- READY는 로컬 HELLO 송신 직후 연속 전송 가능(파이프라인 허용)
 - READY 메타데이터는 옵션 활성 시에만 포함
 - ERROR 발생 시 이유 전달 후 종료
-- HELLO 타임아웃: 3s
+- 핸드셰이크 타임아웃: `ZMQ_HANDSHAKE_IVL` 적용
 - READY 이전 데이터 프레임 수신 시 EPROTO 처리
 
 ---
 
 ## Metadata
 
-- `src/mechanism.cpp`의 property 인코딩 재사용
+- `src/zmp_metadata.hpp`의 property 인코딩/파싱 사용
 - 기본 프로퍼티: Socket-Type, Identity
 - 확장 프로퍼티: Resource 등
 
@@ -60,12 +60,11 @@
 
 ## Tests
 
-- encoder/decoder 단위 테스트
-- READY/ERROR 정상/에러 케이스 테스트
-- metadata 유무에 따른 핸드셰이크 테스트
-- heartbeat TTL/ctx 파싱 테스트
-- flag 조합 규칙 테스트
-- READY 이전 데이터 프레임 수신 테스트
+- decoder 플래그/최대 길이 단위 테스트
+- metadata 인코딩/파싱 단위 테스트
+- TTL 합의(helper) 단위 테스트
+- TODO: READY/ERROR 핸드셰이크 통합 테스트
+- TODO: heartbeat TTL/ctx 통합 테스트
 
 ---
 

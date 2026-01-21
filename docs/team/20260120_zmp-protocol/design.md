@@ -68,7 +68,7 @@
 
 ### 4.2 READY/ERROR
 
-- HELLO 교환 완료 후 READY 송신
+- READY는 로컬 HELLO 송신 직후 연속 전송 가능(파이프라인 허용)
 - READY 수신 시 핸드셰이크 완료
 - 오류 발생 시 ERROR 송신 후 연결 종료
 - READY 이전 데이터 프레임 수신 시 EPROTO 처리
@@ -81,6 +81,7 @@
 - 기본 프로퍼티: Socket-Type, Identity
 - 확장 프로퍼티: Resource 등(네임스페이스 권장)
 - 기본 비활성(옵션으로 enable)
+  - 옵션: `ZMQ_ZMP_METADATA` (0/1)
 
 ---
 
@@ -131,5 +132,6 @@
 - `src/zmp_encoder.cpp`
 - `src/zmp_decoder.cpp`
 - `src/zmp_protocol.hpp`
+- `src/zmp_metadata.hpp`
 - `src/session_base.cpp`
 - `src/pipe.cpp`
