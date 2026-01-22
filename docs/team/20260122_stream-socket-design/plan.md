@@ -188,6 +188,38 @@ STREAM 소켓은 ROUTER와 유사한 라우팅 옵션 및 전송 옵션을 지�
 - 엔드포인트 URL의 path 사용 (예: `ws://host:port/path`)
 - 별도 옵션은 없음 (Beast 핸드셰이크 사용)
 
+### 2.4 Heartbeat 처리
+
+STREAM 소켓은 ZMTP 프로토콜을 사용하지 않으므로 `ZMQ_HEARTBEAT_*` 옵션이
+적용되지 않는다. 대신 다음 방법을 사용한다.
+
+**1) TCP Keep-Alive (권장)**
+```c
+// OS 레벨 연결 감지
+zmq_setsockopt(sock, ZMQ_TCP_KEEPALIVE, 1);
+zmq_setsockopt(sock, ZMQ_TCP_KEEPALIVE_IDLE, 60);    // 60초 후 시작
+zmq_setsockopt(sock, ZMQ_TCP_KEEPALIVE_INTVL, 10);   // 10초 간격
+zmq_setsockopt(sock, ZMQ_TCP_KEEPALIVE_CNT, 3);      // 3회 실패시 종료
+```
+
+**2) WebSocket Ping/Pong**
+- WS/WSS 트랜스포트는 Beast가 WebSocket ping/pong 자동 처리
+- 별도 설정 불필요
+
+**3) 애플리케이션 레벨 Heartbeat**
+세밀한 연결 상태 감지가 필요하면 애플리케이션에서 직접 구현한다.
+```c
+// 예: 주기적 ping 메시지
+zmq_send(sock, &client_id, 4, ZMQ_SNDMORE);
+zmq_send(sock, "PING", 4, 0);
+
+// 클라이언트 응답
+zmq_send(sock, "PONG", 4, 0);
+```
+
+**참고**: `ZMQ_HEARTBEAT_IVL`, `ZMQ_HEARTBEAT_TIMEOUT`, `ZMQ_HEARTBEAT_TTL`은
+ZMTP 핸드셰이크 기반이므로 STREAM 소켓에서 무시된다.
+
 ---
 
 ## 3. 클라이언트 구현 가이드 (언어별 예시)
@@ -372,12 +404,21 @@ while (1) {
 }
 ```
 
-### 4.3 모니터 이벤트 활용
-connect/disconnect 이벤트를 명확히 구분하려면 모니터를 사용한다.
-```cpp
-// 예시: ZMQ_EVENT_ACCEPTED, ZMQ_EVENT_CONNECTED, ZMQ_EVENT_DISCONNECTED
-zmq_socket_monitor(s, "inproc://stream-mon", ZMQ_EVENT_ALL);
+### 4.3 이벤트 감지 (모니터 불필요)
+STREAM 소켓은 메시지 payload로 이벤트를 직접 구분하므로
+`zmq_socket_monitor()`를 사용할 필요가 없다.
+
+**이벤트 구분 방법**:
+```c
+if (payload_len == 1) {
+    if (payload[0] == 0x01) /* Connect */
+    if (payload[0] == 0x00) /* Disconnect */
+}
 ```
+
+**참고**: 기존 ZMQ 모니터 이벤트(`ZMQ_EVENT_ACCEPTED` 등)는
+routing_id를 포함하지 않아 어떤 클라이언트인지 식별할 수 없다.
+이 문제는 STREAM 구현 완료 후 별도로 개선 예정 (섹션 9 참조).
 
 ---
 
@@ -691,3 +732,47 @@ void stream_t::xpipe_terminated(pipe_t *pipe_) {
 2. raw_socket 옵션 복구 및 엔진 선택 로직
 3. raw 인코더/디코더 또는 엔진 내부 처리 결정
 4. WS raw 모드 설계 (기존 엔진 수정 vs 신규 엔진)
+
+---
+
+## 9. 향후 작업 (STREAM 완료 후)
+
+### 9.1 모니터 이벤트 개선
+현재 ZMQ 모니터 이벤트는 routing_id를 포함하지 않아 어떤 클라이언트의
+이벤트인지 식별할 수 없다.
+
+**현재 구조**:
+```c
+// zmq_event_t (routing_id 없음)
+struct {
+    uint16_t event;   // ZMQ_EVENT_ACCEPTED 등
+    int32_t value;    // fd 또는 errno
+};
+```
+
+**개선안**:
+```c
+// routing_id 포함
+struct {
+    uint16_t event;
+    int32_t value;
+    uint32_t routing_id;  // 어떤 클라이언트인지 식별
+};
+```
+
+**영향 범위**:
+- `src/socket_base.cpp`: 모니터 이벤트 발송 로직
+- `include/zmq.h`: 이벤트 구조체 정의 (API 변경)
+- 모든 소켓 타입 (ROUTER, DEALER, STREAM 등)
+
+**우선순위**: STREAM 구현 완료 후 별도 이슈로 진행
+
+### 9.2 기존 소켓 이벤트 구분 개선
+ROUTER 등 기존 소켓도 connect/disconnect 이벤트를 명시적으로 구분할 수 있도록
+개선한다. STREAM과 동일한 이벤트 코드(0x01/0x00) 방식 적용 검토.
+
+**대상 소켓**: ROUTER, DEALER, XPUB/XSUB
+
+**고려사항**:
+- 하위 호환성 (기존 동작 유지 옵션)
+- 소켓 옵션으로 이벤트 코드 활성화 여부 선택
