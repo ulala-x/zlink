@@ -136,41 +136,41 @@ install:
   - cmd: echo "Generator='%CMAKE_GENERATOR%'"
   - cmd: echo "Platform='%Platform%'"
 
-clone_folder: C:\projects\libzmq
+clone_folder: C:\projects\libzlink
 
 before_build:
-  - cmd: set LIBZMQ_SRCDIR=%cd%
-  - cmd: set LIBZMQ_BUILDDIR=C:\projects\build_libzmq
+  - cmd: set LIBZLINK_SRCDIR=%cd%
+  - cmd: set LIBZLINK_BUILDDIR=C:\projects\build_libzlink
   # TODO this does not work with sonarcloud.io, as it misses the sonar-cxx plugin
   # - cmd: curl -L https://sonarsource.bintray.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-3.1.0.1141-windows.zip -o sonar-scanner-cli-3.1.0.1141-windows.zip
   # - cmd: unzip sonar-scanner-cli-3.1.0.1141-windows.zip
-  # - cmd: set BUILDLOG="%LIBZMQ_SRCDIR%\build.log"
-  - cmd: md "%LIBZMQ_BUILDDIR%"
-  - cd "%LIBZMQ_BUILDDIR%"
-  - cmd: if "%PLATFORM%" == "cygwin64" set APPVEYOR_BUILD_FOLDER=/cygdrive/C/projects/libzmq
-  - cmd: if "%ENABLE_ANALYSIS%"=="ON" ( set LIBZMQ_WERROR="OFF" ) else ( set LIBZMQ_WERROR="ON" )
-  - cmd: cmake -D ENABLE_ANALYSIS="%ENABLE_ANALYSIS%" %EXTRA_FLAGS% -D LIBZMQ_WERROR="%LIBZMQ_WERROR%" -G "%CMAKE_GENERATOR%" "%APPVEYOR_BUILD_FOLDER%"
-  - cmd: cd "%LIBZMQ_SRCDIR%"
-  - ps: $env:ZMQ_VERSION_MAJOR = (Select-String -Path .\include\zmq.h -Pattern ".*#define ZMQ_VERSION_MAJOR ([0-9]+).*").Matches.Groups[1].Value
-  - ps: $env:ZMQ_VERSION_MINOR = (Select-String -Path .\include\zmq.h -Pattern ".*#define ZMQ_VERSION_MINOR ([0-9]+).*").Matches.Groups[1].Value
-  - ps: $env:ZMQ_VERSION_PATCH = (Select-String -Path .\include\zmq.h -Pattern ".*#define ZMQ_VERSION_PATCH ([0-9]+).*").Matches.Groups[1].Value
-  - ps: $env:ZMQ_VERSION = "${env:ZMQ_VERSION_MAJOR}.${env:ZMQ_VERSION_MINOR}.${env:ZMQ_VERSION_PATCH}"
-  - cmd: echo "ZMQ_VERSION is %ZMQ_VERSION%"
+  # - cmd: set BUILDLOG="%LIBZLINK_SRCDIR%\build.log"
+  - cmd: md "%LIBZLINK_BUILDDIR%"
+  - cd "%LIBZLINK_BUILDDIR%"
+  - cmd: if "%PLATFORM%" == "cygwin64" set APPVEYOR_BUILD_FOLDER=/cygdrive/C/projects/libzlink
+  - cmd: if "%ENABLE_ANALYSIS%"=="ON" ( set LIBZLINK_WERROR="OFF" ) else ( set LIBZLINK_WERROR="ON" )
+  - cmd: cmake -D ENABLE_ANALYSIS="%ENABLE_ANALYSIS%" %EXTRA_FLAGS% -D LIBZLINK_WERROR="%LIBZLINK_WERROR%" -G "%CMAKE_GENERATOR%" "%APPVEYOR_BUILD_FOLDER%"
+  - cmd: cd "%LIBZLINK_SRCDIR%"
+  - ps: $env:ZLINK_VERSION_MAJOR = (Select-String -Path .\include\zlink.h -Pattern ".*#define ZLINK_VERSION_MAJOR ([0-9]+).*").Matches.Groups[1].Value
+  - ps: $env:ZLINK_VERSION_MINOR = (Select-String -Path .\include\zlink.h -Pattern ".*#define ZLINK_VERSION_MINOR ([0-9]+).*").Matches.Groups[1].Value
+  - ps: $env:ZLINK_VERSION_PATCH = (Select-String -Path .\include\zlink.h -Pattern ".*#define ZLINK_VERSION_PATCH ([0-9]+).*").Matches.Groups[1].Value
+  - ps: $env:ZLINK_VERSION = "${env:ZLINK_VERSION_MAJOR}.${env:ZLINK_VERSION_MINOR}.${env:ZLINK_VERSION_PATCH}"
+  - cmd: echo "ZLINK_VERSION is %ZLINK_VERSION%"
 
 build_script:
   - cmd: set verbosity=Minimal
   - cmd: if "%MSVCYEAR%"=="vs2008" set verbosity=Normal
   - cmd: if "%MSVCYEAR%"=="vs2008" set path=C:\Windows\Microsoft.NET\Framework\v3.5;%path% 
-  - cmd: cd "%LIBZMQ_BUILDDIR%"
+  - cmd: cd "%LIBZLINK_BUILDDIR%"
   - cmd: if "%PLATFORM:~0,5%" == "Win32" (
             if "%MSVCYEAR%"=="vs2008" (
-                cmake --build %LIBZMQ_BUILDDIR% --config %configuration% --target install
+                cmake --build %LIBZLINK_BUILDDIR% --config %configuration% --target install
             ) else (
-                cmake --build %LIBZMQ_BUILDDIR% --config %configuration% --target install -- -verbosity:Minimal -maxcpucount -logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+                cmake --build %LIBZLINK_BUILDDIR% --config %configuration% --target install -- -verbosity:Minimal -maxcpucount -logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
             )
          )
   - cmd: if "%PLATFORM%" == "x64" (
-            cmake --build %LIBZMQ_BUILDDIR% --config %configuration% --target install -- -verbosity:Minimal -maxcpucount -logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+            cmake --build %LIBZLINK_BUILDDIR% --config %configuration% --target install -- -verbosity:Minimal -maxcpucount -logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
          )
   - cmd: if "%PLATFORM%" == "cygwin64" (
             cmake --build . -- -j5
@@ -181,15 +181,15 @@ build_script:
 
 # TODO this does not work with sonarcloud.io, as it misses the sonar-cxx plugin
 # build_script:
-  # - cmd: msbuild %LIBZMQ_BUILDDIR%\ZeroMQ.sln /verbosity:detailed >%BUILDLOG%
+  # - cmd: msbuild %LIBZLINK_BUILDDIR%\Zlink.sln /verbosity:detailed >%BUILDLOG%
 
 after_build:
   # TODO this does not work with sonarcloud.io, as it misses the sonar-cxx plugin
-  # - cmd: cd "%LIBZMQ_SRCDIR%"
+  # - cmd: cd "%LIBZLINK_SRCDIR%"
   # - cmd: dir
   # - cmd: sonar-scanner-3.1.0.1141-windows\bin\sonar-scanner 
             # -Dsonar.scm.provider=git 
-            # -Dsonar.projectKey=libzmq-msvc 
+            # -Dsonar.projectKey=libzlink-msvc 
             # -Dsonar.organization=sigiesec-github 
             # -Dsonar.sources=include,src,tests,unittests 
             # -Dsonar.host.url=https://sonarcloud.io 
@@ -199,15 +199,15 @@ after_build:
             # -Dsonar.cxx.compiler.charset=UTF-8 
             # -Dsonar.cxx.compiler.regex=^(?<filename>.*)\\((?<line>[0-9]+)\\):\\x20warning\\x20(?<id>C\\d\\d\\d\\d):(?<message>.*)$
 # TODO this should be done differently, using the INSTALL cmake target, the current handling depends on the details of the CMakeLists.txt
-  - cmd: cd %LIBZMQ_BUILDDIR%\bin\%Configuration%"
-  - cmd: copy "%LIBZMQ_SRCDIR%\include\zmq.h" .
-  - cmd: copy ..\..\lib\%Configuration%\libzmq*.lib . & exit 0
-  - cmd: 7z a -y -bd -mx=9 libzmq.zip *.exe *.dll *.pdb *.h *.lib
-  - ps: Push-AppveyorArtifact "libzmq.zip" -Filename "libzmq-${env:ARTIFACT_NAME}-${env:ZMQ_VERSION_MAJOR}_${env:ZMQ_VERSION_MINOR}_${env:ZMQ_VERSION_PATCH}.zip"
+  - cmd: cd %LIBZLINK_BUILDDIR%\bin\%Configuration%"
+  - cmd: copy "%LIBZLINK_SRCDIR%\include\zlink.h" .
+  - cmd: copy ..\..\lib\%Configuration%\libzlink*.lib . & exit 0
+  - cmd: 7z a -y -bd -mx=9 libzlink.zip *.exe *.dll *.pdb *.h *.lib
+  - ps: Push-AppveyorArtifact "libzlink.zip" -Filename "libzlink-${env:ARTIFACT_NAME}-${env:ZLINK_VERSION_MAJOR}_${env:ZLINK_VERSION_MINOR}_${env:ZLINK_VERSION_PATCH}.zip"
 
 test_script:
-  - cmd: cd "%LIBZMQ_BUILDDIR%"
-# TODO run tests in parallel only on selected platforms, since they fail on others, see https://github.com/zeromq/libzmq/issues/3123
+  - cmd: cd "%LIBZLINK_BUILDDIR%"
+# TODO run tests in parallel only on selected platforms, since they fail on others, see https://github.com/zlink/libzlink/issues/3123
   - cmd: if "%CMAKE_GENERATOR%"=="Visual Studio 12 2013" set PARALLELIZE=ON
   - cmd: if "%CMAKE_GENERATOR%"=="Visual Studio 14 2015" set PARALLELIZE=ON
   - cmd: if "%CMAKE_GENERATOR%"=="Visual Studio 12 2013 Win64" set PARALLELIZE=ON
