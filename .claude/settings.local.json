@@ -1,9 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(powershell -NoProfile -Command \"$PROFILE\")",
-      "Bash(powershell:*)",
-      "Bash(wsl -e bash -c:*)"
-    ]
-  }
-}
